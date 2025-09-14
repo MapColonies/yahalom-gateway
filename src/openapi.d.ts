@@ -35,8 +35,11 @@ export type components = {
        * @description Unique session identifier
        */
       sessionId: number;
-      /** @description Severity level of the log */
-      severity: string;
+      /**
+       * @description Severity level of the log
+       * @enum {string}
+       */
+      severity: 'EMERGENCY' | 'ALERT' | 'CRITICAL' | 'ERROR' | 'WARNING' | 'NOTICE' | 'INFORMATIONAL' | 'DEBUG';
       /**
        * Format: date-time
        * @description Timestamp of the log entry
@@ -44,15 +47,40 @@ export type components = {
       timeStamp: string;
       /** @description Main message text */
       message: string;
-      messageParameters: components['schemas']['IAnalyticLogParameter'];
-      /** @description The component generating the log */
-      component: string;
-      /** @description Type/category of the message */
-      messageType: string;
+      messageParameters?: components['schemas']['IAnalyticLogParameter'];
+      /**
+       * @description The component generating the log
+       * @enum {string}
+       */
+      component: 'GENERAL' | 'MAP' | 'FTUE' | 'SIMULATOR';
+      /**
+       * @description Type/category of the message
+       * @enum {string}
+       */
+      messageType:
+        | 'APPSTARTED'
+        | 'APPEXITED'
+        | 'USERDETAILS'
+        | 'USERMACHINESPEC'
+        | 'USERDEVICES'
+        | 'DEVICECONNECTED'
+        | 'DEVICEDISCONNECTED'
+        | 'GAMEMODESTARTED'
+        | 'GAMEMODEENDED'
+        | 'IDLETIMESTARTED'
+        | 'IDLETIMEENDED'
+        | 'LAYERUSESTARTED'
+        | 'LAYERUSERENDED'
+        | 'MULTIPLAYERSTARTED'
+        | 'MULTIPLAYERENDED'
+        | 'LOCATION'
+        | 'ERROR'
+        | 'GENERALINFO'
+        | 'WARNING'
+        | 'CONSUMPTIONSTATUS'
+        | 'APPLICATIONDATA';
     };
-    IAnalyticLogParameter: {
-      [key: string]: string;
-    };
+    IAnalyticLogParameter: Record<string, never>;
   };
   responses: never;
   parameters: never;

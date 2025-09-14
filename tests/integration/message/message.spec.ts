@@ -6,6 +6,7 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
+import { messageObjectInstance, payload } from './../../../src/common/payloads';
 
 describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
@@ -28,29 +29,35 @@ describe('message', function () {
   describe('Happy Path', function () {
     it('should return 201 status code and create the message', async function () {
       const response = await requestSender.createMessage({
-        requestBody: {
-          sessionId: 9876543210,
-          severity: 'Error',
-          timeStamp: '2025-09-11T13:45:00.000Z',
-          message: 'Failed to authenticate user.',
-          messageParameters: {
-            userId: 'user123',
-            iP: '192.168.1.10',
-            attempt: '3',
-            reason: 'Invalid credentials',
-          },
-          component: 'AuthService',
-          messageType: 'Audit',
-        },
+        requestBody: messageObjectInstance,
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.CREATED);
     });
   });
+
   describe('Bad Path', function () {
-    // All requests with status code of 400
+    it('should return 400 status code for exceeding the time', async function () {
+      //  const response = await requestSender.createMessage({
+      //   requestBody: messageObjectInstance
+      // });
+      // expect(Date.now() + 1000).toBeGreaterThan(response.reques);
+      // expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+    });
+
+    it('should return 400 status code for not unique sessionId', async function () {
+      const firstResponse = await requestSender.createMessage({
+        requestBody: messageObjectInstance,
+      });
+      const secondResponse = await requestSender.createMessage({
+        requestBody: messageObjectInstance,
+      });
+
+      expect(secondResponse.status).toBe(httpStatusCodes.BAD_REQUEST);
+    });
   });
+
   describe('Sad Path', function () {
     // All requests with status code 4XX-5XX
   });

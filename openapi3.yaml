@@ -1,11 +1,11 @@
 openapi: 3.0.1
 info:
   title: Yahalom Gateway API
-  description: D
+  description: This is a restAPI service for 3d products
   version: 1.0.0
   license:
     name: Yahalom-Gateway repo link
-    url: https://youtube.com
+    url: https://github.com/MapColonies/yahalom-gateway/
 paths:
   /message:
     post:
@@ -54,7 +54,6 @@ components:
         - severity
         - timeStamp
         - message
-        - messageParameters
         - component
         - messageType
       properties:
@@ -64,6 +63,15 @@ components:
           description: Unique session identifier
         severity:
           type: string
+          enum:
+            - EMERGENCY
+            - ALERT
+            - CRITICAL
+            - ERROR
+            - WARNING
+            - NOTICE
+            - INFORMATIONAL
+            - DEBUG
           description: Severity level of the log
         timeStamp:
           type: string
@@ -72,16 +80,86 @@ components:
         message:
           type: string
           description: Main message text
-        messageParameters:
+        messageParameters: #Optional
           $ref: '#/components/schemas/IAnalyticLogParameter'
         component:
           type: string
+          enum:
+            - GENERAL
+            - MAP
+            - FTUE
+            - SIMULATOR
           description: The component generating the log
         messageType:
           type: string
+          enum:
+            - APPSTARTED
+            - APPEXITED
+            - USERDETAILS
+            - USERMACHINESPEC
+            - USERDEVICES
+            - DEVICECONNECTED
+            - DEVICEDISCONNECTED
+            - GAMEMODESTARTED
+            - GAMEMODEENDED
+            - IDLETIMESTARTED
+            - IDLETIMEENDED
+            - LAYERUSESTARTED
+            - LAYERUSERENDED
+            - MULTIPLAYERSTARTED
+            - MULTIPLAYERENDED
+            - LOCATION
+            - ERROR
+            - GENERALINFO
+            - WARNING
+            - CONSUMPTIONSTATUS
+            - APPLICATIONDATA
           description: Type/category of the message
+
+    # SeverityLevels:
+    #   type: string
+    #   enum:
+    #     - EMERGENCY
+    #     - ALERT
+    #     - CRITICAL
+    #     - ERROR
+    #     - WARNING
+    #     - NOTICE
+    #     - INFORMATIONAL
+    #     - DEBUG
+
+    # AnalyticsMessageTypes:
+    #   type: string
+    #   enum:
+    #     - APPSTARTED
+    #     - APPEXITED
+    #     - USERDETAILS
+    #     - USERMACHINESPEC
+    #     - USERDEVICES
+    #     - DEVICECONNECTED
+    #     - DEVICEDISCONNECTED
+    #     - GAMEMODESTARTED
+    #     - GAMEMODEENDED
+    #     - IDLETIMESTARTED
+    #     - IDLETIMEENDED
+    #     - LAYERUSESTARTED
+    #     - LAYERUSERENDED
+    #     - MULTIPLAYERSTARTED
+    #     - MULTIPLAYERENDED
+    #     - LOCATION
+    #     - ERROR
+    #     - GENERALINFO
+    #     - WARNING
+    #     - CONSUMPTIONSTATUS
+    #     - APPLICATIONDATA
+
+    # LogComponent:
+    #   type: string
+    #   enum:
+    #     - GENERAL
+    #     - MAP
+    #     - FTUE
+    #     - SIMULATOR
 
     IAnalyticLogParameter:
       type: object
-      additionalProperties:
-        type: string

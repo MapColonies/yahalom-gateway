@@ -6,7 +6,7 @@ interface IAnalyticLogParameter {
   durationMs?: number;
 }
 
-enum AnalyticsMessageTypes {
+export enum AnalyticsMessageTypes {
   APPSTARTED,
   APPEXITED,
   USERDETAILS,
@@ -30,18 +30,18 @@ enum AnalyticsMessageTypes {
   APPLICATIONDATA,
 }
 
-enum SeverityLevels {
-  EMERGENCY,
-  ALERT,
-  CRITICAL,
-  ERROR,
-  WARNING,
-  NOTICE,
-  INFORMATIONAL,
-  DEBUG,
+export enum SeverityLevels {
+  EMERGENCY = 'EMERGENCY',
+  ALERT = 'ALERT',
+  CRITICAL = 'CRITICAL',
+  ERROR = 'ERROR',
+  WARNING = 'WARNING',
+  NOTICE = 'NOTICE',
+  INFORMATIONAL = 'INFORMATIONAL',
+  DEBUG = 'DEBUG',
 }
 
-enum LogComponent {
+export enum LogComponent {
   GENERAL,
   MAP,
   FTUE,
