@@ -1,7 +1,7 @@
 {
   "name": "yahalom-gateway",
   "version": "1.0.0",
-  "description": "This is template for map colonies typescript service",
+  "description": "This is a restAPI service for 3d products",
   "main": "./src/index.ts",
   "scripts": {
     "test:unit": "jest --config=./tests/configurations/unit/jest.config.js",
@@ -70,7 +70,7 @@
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-html-reporters": "^3.1.4",
-    "jest-openapi": "^0.14.2",
+    "jest-openapi": "^0.14.1",
     "prettier": "^3.5.3",
     "pretty-quick": "^4.1.1",
     "rimraf": "^6.0.1",
