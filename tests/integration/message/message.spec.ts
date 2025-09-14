@@ -7,7 +7,7 @@ import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 
-describe('resourceName', function () {
+describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async function () {
@@ -26,23 +26,21 @@ describe('resourceName', function () {
   });
 
   describe('Happy Path', function () {
-    it('should return 200 status code and the resource', async function () {
-      const response = await requestSender.getResourceName();
-
-      expect(response.status).toBe(httpStatusCodes.OK);
-
-      const resource = response.body;
-      expect(response).toSatisfyApiSpec();
-      expect(resource.id).toBe(1);
-      expect(resource.name).toBe('ronin');
-      expect(resource.description).toBe('can you do a logistics run?');
-    });
-    it('should return 200 status code and create the resource', async function () {
-      const response = await requestSender.createResource({
+    it('should return 201 status code and create the message', async function () {
+      const response = await requestSender.createMessage({
         requestBody: {
-          description: 'aaa',
-          id: 1,
-          name: 'aaa',
+          sessionId: 9876543210,
+          severity: 'Error',
+          timeStamp: '2025-09-11T13:45:00.000Z',
+          message: 'Failed to authenticate user.',
+          messageParameters: {
+            userId: 'user123',
+            iP: '192.168.1.10',
+            attempt: '3',
+            reason: 'Invalid credentials',
+          },
+          component: 'AuthService',
+          messageType: 'Audit',
         },
       });
 

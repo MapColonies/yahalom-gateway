@@ -1,68 +1,31 @@
 openapi: 3.0.1
 info:
-  title: service-name
-  description: basic template for map colonies service
+  title: Yahalom Gateway API
+  description: D
   version: 1.0.0
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: Yahalom-Gateway repo link
+    url: https://youtube.com
 paths:
-  /anotherResource:
-    get:
-      operationId: getAnotherResource
-      tags:
-        - anotherResource
-      summary: gets the resource
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/anotherResource'
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  /resourceName:
-    get:
-      operationId: getResourceName
-      tags:
-        - resourceName
-      summary: gets the resource
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/resource'
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+  /message:
     post:
-      operationId: createResource
+      operationId: createMessage
       tags:
-        - resourceName
-      summary: creates a new record of type resource
+        - Message
+      summary: creates a new message
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/resource'
+              $ref: '#/components/schemas/ILogObject'
       responses:
         201:
           description: created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/resource'
+                $ref: '#/components/schemas/ILogObject'
         400:
           description: Bad Request
           content:
@@ -80,27 +43,45 @@ components:
       properties:
         message:
           type: string
-    resource:
+          description: A human-readable error message
+      example:
+        message: 'Invalid message ID provided.'
+
+    ILogObject:
       type: object
       required:
-        - id
-        - name
-        - description
+        - sessionId
+        - severity
+        - timeStamp
+        - message
+        - messageParameters
+        - component
+        - messageType
       properties:
-        id:
-          type: number
+        sessionId:
+          type: integer
           format: int64
-        name:
+          description: Unique session identifier
+        severity:
           type: string
-        description:
+          description: Severity level of the log
+        timeStamp:
           type: string
-    anotherResource:
+          format: date-time
+          description: Timestamp of the log entry
+        message:
+          type: string
+          description: Main message text
+        messageParameters:
+          $ref: '#/components/schemas/IAnalyticLogParameter'
+        component:
+          type: string
+          description: The component generating the log
+        messageType:
+          type: string
+          description: Type/category of the message
+
+    IAnalyticLogParameter:
       type: object
-      required:
-        - kind
-        - isAlive
-      properties:
-        kind:
-          type: string
-        isAlive:
-          type: boolean
+      additionalProperties:
+        type: string
