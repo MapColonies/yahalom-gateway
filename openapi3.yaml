@@ -25,7 +25,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ILogObject'
+                type: object
+                required:
+                  - Id
+                properties:
+                  Id:
+                    type: integer
+                    description: The ID of the created message
         400:
           description: Bad Request
           content:
@@ -116,50 +122,6 @@ components:
             - APPLICATIONDATA
           description: Type/category of the message
 
-    # SeverityLevels:
-    #   type: string
-    #   enum:
-    #     - EMERGENCY
-    #     - ALERT
-    #     - CRITICAL
-    #     - ERROR
-    #     - WARNING
-    #     - NOTICE
-    #     - INFORMATIONAL
-    #     - DEBUG
-
-    # AnalyticsMessageTypes:
-    #   type: string
-    #   enum:
-    #     - APPSTARTED
-    #     - APPEXITED
-    #     - USERDETAILS
-    #     - USERMACHINESPEC
-    #     - USERDEVICES
-    #     - DEVICECONNECTED
-    #     - DEVICEDISCONNECTED
-    #     - GAMEMODESTARTED
-    #     - GAMEMODEENDED
-    #     - IDLETIMESTARTED
-    #     - IDLETIMEENDED
-    #     - LAYERUSESTARTED
-    #     - LAYERUSERENDED
-    #     - MULTIPLAYERSTARTED
-    #     - MULTIPLAYERENDED
-    #     - LOCATION
-    #     - ERROR
-    #     - GENERALINFO
-    #     - WARNING
-    #     - CONSUMPTIONSTATUS
-    #     - APPLICATIONDATA
-
-    # LogComponent:
-    #   type: string
-    #   enum:
-    #     - GENERAL
-    #     - MAP
-    #     - FTUE
-    #     - SIMULATOR
-
     IAnalyticLogParameter:
-      type: object
+      type: array
+      items: {}

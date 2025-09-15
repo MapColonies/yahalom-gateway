@@ -1,5 +1,5 @@
-import { components, operations } from '@src/openapi';
-import { LogComponent, AnalyticsMessageTypes, SeverityLevels } from './interfaces';
+import { components } from '@src/openapi';
+import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from './interfaces';
 
 export type IMessageModel = components['schemas']['ILogObject'];
 
@@ -8,9 +8,9 @@ export const messageObjectInstance: IMessageModel = {
   severity: SeverityLevels.ERROR,
   timeStamp: '2025-09-11T13:45:00.000Z',
   message: 'Failed to authenticate user.',
-  messageParameters: {},
-  component: 'MAP',
-  messageType: 'APPEXITED',
+  messageParameters: [],
+  component: LogComponent.MAP,
+  messageType: AnalyticsMessageTypes.APPEXITED,
 };
 
 export const payload = {

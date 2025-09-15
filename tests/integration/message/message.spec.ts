@@ -39,15 +39,16 @@ describe('message', function () {
 
   describe('Bad Path', function () {
     it('should return 400 status code for exceeding the time', async function () {
-      //  const response = await requestSender.createMessage({
-      //   requestBody: messageObjectInstance
-      // });
-      // expect(Date.now() + 1000).toBeGreaterThan(response.reques);
-      // expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      const response = await requestSender.createMessage({
+        requestBody: messageObjectInstance,
+      });
+
+      expect(Date.now() + 1000).toBeGreaterThan(new Date(messageObjectInstance.timeStamp).getTime());
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
     });
 
-    it('should return 400 status code for not unique sessionId', async function () {
-      const firstResponse = await requestSender.createMessage({
+    it('should return 400 status code for not having unique sessionId', async function () {
+      await requestSender.createMessage({
         requestBody: messageObjectInstance,
       });
       const secondResponse = await requestSender.createMessage({

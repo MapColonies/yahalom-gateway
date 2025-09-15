@@ -80,7 +80,7 @@ export type components = {
         | 'CONSUMPTIONSTATUS'
         | 'APPLICATIONDATA';
     };
-    IAnalyticLogParameter: Record<string, never>;
+    IAnalyticLogParameter: unknown[];
   };
   responses: never;
   parameters: never;
@@ -109,7 +109,10 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ILogObject'];
+          'application/json': {
+            /** @description The ID of the created message */
+            Id: number;
+          };
         };
       };
       /** @description Bad Request */
