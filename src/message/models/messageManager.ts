@@ -11,7 +11,8 @@ export class MessageManager {
 
   public createMessage(message: IMessageModel): IMessageModel {
     this.logger.info({ msg: 'creating message' });
+    this.logger.debug({ msg: 'message recieved details', message });
 
-    return { ...message };
+    return message;
   }
 }

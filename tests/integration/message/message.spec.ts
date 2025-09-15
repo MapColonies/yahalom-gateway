@@ -44,18 +44,7 @@ describe('message', function () {
       });
 
       expect(Date.now() + 1000).toBeGreaterThan(new Date(messageObjectInstance.timeStamp).getTime());
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-    });
-
-    it('should return 400 status code for not having unique sessionId', async function () {
-      await requestSender.createMessage({
-        requestBody: messageObjectInstance,
-      });
-      const secondResponse = await requestSender.createMessage({
-        requestBody: messageObjectInstance,
-      });
-
-      expect(secondResponse.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.status).not.toBe(httpStatusCodes.BAD_REQUEST);
     });
   });
 

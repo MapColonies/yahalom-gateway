@@ -12,7 +12,3 @@ export const messageObjectInstance: IMessageModel = {
   component: LogComponent.MAP,
   messageType: AnalyticsMessageTypes.APPEXITED,
 };
-
-// export const payload = {
-//   body: messageObjectInstance,
-// };

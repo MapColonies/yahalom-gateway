@@ -1,11 +1,3 @@
-interface IAnalyticLogParameter {
-  userId?: string;
-  transactionId?: string;
-  errorCode?: number;
-  additionalInfo?: object;
-  durationMs?: number;
-}
-
 export enum AnalyticsMessageTypes {
   APPSTARTED = 'APPSTARTED',
   APPEXITED = 'APPEXITED',
@@ -58,7 +50,7 @@ export interface ILogObject {
   severity: SeverityLevels;
   timeStamp: Date;
   message: string;
-  messageParameters?: IAnalyticLogParameter;
+  messageParameters?: object;
   component: LogComponent;
   messageType: AnalyticsMessageTypes;
 }
