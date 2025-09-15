@@ -38,6 +38,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+    get:
+      operationId: getMessages
+      tags:
+        - Message
+      summary: gets the messages filtered
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ILogObject'
+        204:
+          description: No content - no messages found
+          content:
+            application/json:
+              schema:
+                required:
+                  - msg
+                properties:
+                  msg:
+                    type: string
+                    description: The message for intergrating
+
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
 security:
   - {}
 components:

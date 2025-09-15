@@ -27,13 +27,20 @@ describe('message', function () {
   });
 
   describe('Happy Path', function () {
-    it('should return 201 status code and create the message', async function () {
+    it('should return 201 status code and the internal id', async function () {
       const response = await requestSender.createMessage({
         requestBody: messageObjectInstance,
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.CREATED);
+    });
+
+    it('should return 200 status code and filtered messages', async function () {
+      const response = await requestSender.getMessages();
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
   });
 

@@ -1,6 +1,8 @@
 import jsLogger from '@map-colonies/js-logger';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageObjectInstance } from './../../../../src/common/payloads';
+import { localMesssagesStore } from './../../../../src/common/payloads';
+import { IMessageFilterParams } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;
 
@@ -16,6 +18,27 @@ describe('ResourceNameManager', () => {
       expect(message.sessionId).toBeGreaterThanOrEqual(0);
       expect(message).toHaveProperty('severity', 'ERROR');
       expect(message).toHaveProperty('message', 'Failed to authenticate user.');
+    });
+  });
+
+  describe('#getResource', () => {
+    const testQuery = {
+      sessionId: 2234234,
+      severity: 'ERROR',
+      component: 'MAP',
+      messageType: 'APPEXITED',
+    };
+
+    // this test only suitable for a local list store
+    it('return the resource of id 1', function () {
+      let messages: IMessageFilterParams[] = messageManager.getMessages(testQuery);
+
+      expect(messages.length).toBe(0);
+
+      localMesssagesStore.push(messageObjectInstance);
+      messages = messageManager.getMessages(testQuery);
+
+      expect(messages.length).toBe(1);
     });
   });
 });

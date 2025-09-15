@@ -8,7 +8,8 @@ export type paths = {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** gets the messages filtered */
+    get: operations['getMessages'];
     put?: never;
     /** creates a new message */
     post: operations['createMessage'];
@@ -90,6 +91,47 @@ export type components = {
 };
 export type $defs = Record<string, never>;
 export interface operations {
+  getMessages: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ILogObject'][];
+        };
+      };
+      /** @description No content - no messages found */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            /** @description The message for intergrating */
+            msg: string;
+          };
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+    };
+  };
   createMessage: {
     parameters: {
       query?: never;

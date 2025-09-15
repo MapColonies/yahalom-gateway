@@ -62,3 +62,10 @@ export interface ILogObject {
   component: LogComponent;
   messageType: AnalyticsMessageTypes;
 }
+
+export interface IMessageFilterParams {
+  severity?: string;
+  component?: string;
+  messageType?: string;
+  sessionId?: number;
+}
