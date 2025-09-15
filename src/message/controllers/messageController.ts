@@ -2,7 +2,6 @@ import type { Logger } from '@map-colonies/js-logger';
 import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
-import { v4 as uuidv4 } from 'uuid';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager } from '../models/messageManager';
@@ -30,15 +29,15 @@ export class MessageController {
     });
   }
 
-  public createMessage: TypedRequestHandlers['POST /message'] = async (req, res) => {
-    if (hasSessionId(req.body.sessionId)) return res.status(httpStatus.BAD_REQUEST).json({ error: 'sessionId should be unique' } as any);
+  public createMessage: TypedRequestHandlers['POST /message'] = (req, res) => {
+    if (hasSessionId(req.body.sessionId)) return res.status(httpStatus.BAD_REQUEST).json({ error: 'sessionId should be unique' });
 
     const internalId = ++this.internalId;
 
-    const createdMessage = await this.manager.createMessage({ ...req.body });
+    const createdMessage = this.manager.createMessage(req.body);
     uniqueSessionIds.add(createdMessage.sessionId);
 
     this.createdMessageCounter.inc(1);
-    return res.status(httpStatus.CREATED).json({ Id: internalId } as any);
+    return res.status(httpStatus.CREATED).json({ id: internalId });
   };
 }

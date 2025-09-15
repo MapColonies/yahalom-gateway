@@ -27,7 +27,7 @@ export type components = {
      *     } */
     error: {
       /** @description A human-readable error message */
-      message: string;
+      error: string;
     };
     ILogObject: {
       /**
@@ -111,7 +111,7 @@ export interface operations {
         content: {
           'application/json': {
             /** @description The ID of the created message */
-            Id: number;
+            id: number;
           };
         };
       };

@@ -27,9 +27,9 @@ paths:
               schema:
                 type: object
                 required:
-                  - Id
+                  - id
                 properties:
-                  Id:
+                  id:
                     type: integer
                     description: The ID of the created message
         400:
@@ -45,9 +45,9 @@ components:
     error:
       type: object
       required:
-        - message
+        - error
       properties:
-        message:
+        error:
           type: string
           description: A human-readable error message
       example:

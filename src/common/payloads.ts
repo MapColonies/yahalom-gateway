@@ -13,6 +13,6 @@ export const messageObjectInstance: IMessageModel = {
   messageType: AnalyticsMessageTypes.APPEXITED,
 };
 
-export const payload = {
-  body: messageObjectInstance,
-};
+// export const payload = {
+//   body: messageObjectInstance,
+// };
