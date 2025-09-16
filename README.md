@@ -4,9 +4,16 @@
 
 This repo is for managing messages with CRUD requests supporting telemetry.
 
-> [!IMPORTANT]
-> To regenerate the types on openapi change run the command `npm run generate:openapi-types`.
-
+## Telemetry Log Object
+| name | type | mandatory* | description |
+|---|---|---|---|
+| sessionId | number | true | Log identifier for the session |
+| severity | string | true | Specifies the logging level |
+| timeStamp | date | true | The exact date and time the log was logged |
+| message | string | true | The log message describing the event |
+| messageParameters | array | false | Optional parameters in addition |
+| component | string | true | Name of where the system component that generated the log |
+| messageType | string | true | Type of the message, used to filter the logs |
 
 ## Development
 When in development you should use the command `npm run start:dev`. The main benefits are that it enables offline mode for the config package, and source map support for NodeJS errors.
