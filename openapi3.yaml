@@ -1,68 +1,37 @@
 openapi: 3.0.1
 info:
-  title: service-name
-  description: basic template for map colonies service
+  title: Yahalom Gateway API
+  description: This is a restAPI service for 3d products
   version: 1.0.0
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: Yahalom-Gateway repo link
+    url: https://github.com/MapColonies/yahalom-gateway/
 paths:
-  /anotherResource:
-    get:
-      operationId: getAnotherResource
-      tags:
-        - anotherResource
-      summary: gets the resource
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/anotherResource'
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  /resourceName:
-    get:
-      operationId: getResourceName
-      tags:
-        - resourceName
-      summary: gets the resource
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/resource'
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+  /message:
     post:
-      operationId: createResource
+      operationId: createMessage
       tags:
-        - resourceName
-      summary: creates a new record of type resource
+        - Message
+      summary: creates a new message
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/resource'
+              $ref: '#/components/schemas/ILogObject'
       responses:
         201:
           description: created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/resource'
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: integer
+                    description: The ID of the created message
         400:
           description: Bad Request
           content:
@@ -76,31 +45,83 @@ components:
     error:
       type: object
       required:
-        - message
+        - error
       properties:
+        error:
+          type: string
+          description: A human-readable error message
+      example:
+        message: 'Invalid message ID provided.'
+
+    ILogObject:
+      type: object
+      required:
+        - sessionId
+        - severity
+        - timeStamp
+        - message
+        - component
+        - messageType
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+          description: Unique session identifier
+        severity:
+          type: string
+          enum:
+            - EMERGENCY
+            - ALERT
+            - CRITICAL
+            - ERROR
+            - WARNING
+            - NOTICE
+            - INFORMATIONAL
+            - DEBUG
+          description: Severity level of the log
+        timeStamp:
+          type: string
+          format: date-time
+          description: Timestamp of the log entry
         message:
           type: string
-    resource:
-      type: object
-      required:
-        - id
-        - name
-        - description
-      properties:
-        id:
-          type: number
-          format: int64
-        name:
+          description: Main message text
+        messageParameters: #Optional
+          $ref: '#/components/schemas/IAnalyticLogParameter'
+        component:
           type: string
-        description:
+          enum:
+            - GENERAL
+            - MAP
+            - FTUE
+            - SIMULATOR
+          description: The component generating the log
+        messageType:
           type: string
-    anotherResource:
-      type: object
-      required:
-        - kind
-        - isAlive
-      properties:
-        kind:
-          type: string
-        isAlive:
-          type: boolean
+          enum:
+            - APPSTARTED
+            - APPEXITED
+            - USERDETAILS
+            - USERMACHINESPEC
+            - USERDEVICES
+            - DEVICECONNECTED
+            - DEVICEDISCONNECTED
+            - GAMEMODESTARTED
+            - GAMEMODEENDED
+            - IDLETIMESTARTED
+            - IDLETIMEENDED
+            - LAYERUSESTARTED
+            - LAYERUSERENDED
+            - MULTIPLAYERSTARTED
+            - MULTIPLAYERENDED
+            - LOCATION
+            - ERROR
+            - GENERALINFO
+            - WARNING
+            - CONSUMPTIONSTATUS
+            - APPLICATIONDATA
+          description: Type/category of the message
+
+    IAnalyticLogParameter:
+      type: array
+      items: {}

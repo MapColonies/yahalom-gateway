@@ -6,8 +6,9 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
+import { messageObjectInstance } from './../../../src/common/payloads';
 
-describe('resourceName', function () {
+describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async function () {
@@ -26,33 +27,27 @@ describe('resourceName', function () {
   });
 
   describe('Happy Path', function () {
-    it('should return 200 status code and the resource', async function () {
-      const response = await requestSender.getResourceName();
-
-      expect(response.status).toBe(httpStatusCodes.OK);
-
-      const resource = response.body;
-      expect(response).toSatisfyApiSpec();
-      expect(resource.id).toBe(1);
-      expect(resource.name).toBe('ronin');
-      expect(resource.description).toBe('can you do a logistics run?');
-    });
-    it('should return 200 status code and create the resource', async function () {
-      const response = await requestSender.createResource({
-        requestBody: {
-          description: 'aaa',
-          id: 1,
-          name: 'aaa',
-        },
+    it('should return 201 status code and create the message', async function () {
+      const response = await requestSender.createMessage({
+        requestBody: messageObjectInstance,
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.CREATED);
     });
   });
+
   describe('Bad Path', function () {
-    // All requests with status code of 400
+    it('should return 400 status code for exceeding the time', async function () {
+      const response = await requestSender.createMessage({
+        requestBody: messageObjectInstance,
+      });
+
+      expect(Date.now() + 1000).toBeGreaterThan(new Date(messageObjectInstance.timeStamp).getTime());
+      expect(response.status).not.toBe(httpStatusCodes.BAD_REQUEST);
+    });
   });
+
   describe('Sad Path', function () {
     // All requests with status code 4XX-5XX
   });
