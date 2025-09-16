@@ -1,4 +1,4 @@
-# Yahalom Gatewaye
+# Yahalom Gateway
 
 ----------------------------------
 
