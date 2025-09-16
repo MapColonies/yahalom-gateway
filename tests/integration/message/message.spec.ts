@@ -36,11 +36,12 @@ describe('message', function () {
       expect(response.status).toBe(httpStatusCodes.CREATED);
     });
 
-    it('should return 200 status code and filtered messages', async function () {
+    // empty 'store', therefore should return 204
+    it('should return 204 status code and filtered messages', async function () {
       const response = await requestSender.getMessages();
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
     });
   });
 

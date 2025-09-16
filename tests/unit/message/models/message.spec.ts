@@ -1,7 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { MessageManager } from '@src/message/models/messageManager';
-import { messageObjectInstance } from './../../../../src/common/payloads';
-import { localMesssagesStore } from './../../../../src/common/payloads';
+import { messageObjectInstance, localMesssagesStore } from './../../../../src/common/payloads';
 import { IMessageFilterParams } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;
@@ -31,12 +30,12 @@ describe('ResourceNameManager', () => {
     it('return the resource of id 1', function () {
       let messages: IMessageFilterParams[] = messageManager.getMessages(testQuery);
 
-      expect(messages.length).toBe(0);
+      expect(messages).toHaveLength(0);
 
       localMesssagesStore.push(messageObjectInstance);
       messages = messageManager.getMessages(testQuery);
 
-      expect(messages.length).toBe(1);
+      expect(messages).toHaveLength(1);
     });
   });
 });
