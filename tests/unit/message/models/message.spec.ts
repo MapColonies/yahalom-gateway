@@ -15,9 +15,7 @@ describe('ResourceNameManager', () => {
     it('return the resource of id 1', function () {
       const message = messageManager.createMessage(messageObjectInstance);
 
-      expect(message.sessionId).toBeGreaterThanOrEqual(0);
-      expect(message).toHaveProperty('severity', 'ERROR');
-      expect(message).toHaveProperty('message', 'Failed to authenticate user.');
+      expect(message).toEqual(messageObjectInstance);
     });
   });
 

@@ -6,13 +6,6 @@ import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager } from '../models/messageManager';
 import { IMessageFilterParams } from './../../common/interfaces';
-import { localMesssagesStore } from './../../common/payloads';
-
-const uniqueSessionIds: Set<number> = new Set<number>();
-
-function hasSessionId(sessionId: number): boolean {
-  return uniqueSessionIds.has(sessionId);
-}
 
 @injectable()
 export class MessageController {
@@ -32,13 +25,9 @@ export class MessageController {
   }
 
   public createMessage: TypedRequestHandlers['POST /message'] = (req, res) => {
-    if (hasSessionId(req.body.sessionId)) return res.status(httpStatus.BAD_REQUEST).json({ error: 'SessionId should be unique' });
-
     const internalId = ++this.internalId;
 
-    const createdMessage = this.manager.createMessage(req.body);
-    uniqueSessionIds.add(createdMessage.sessionId);
-    localMesssagesStore.push(createdMessage); // local store(for get and post responses), should be replaced
+    this.manager.createMessage(req.body);
 
     this.createdMessageCounter.inc(1);
     return res.status(httpStatus.CREATED).json({ id: internalId });
