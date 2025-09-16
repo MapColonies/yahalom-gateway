@@ -7,6 +7,7 @@ import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { messageObjectInstance } from './../../../src/common/payloads';
+import { localMesssagesStore } from './../../../src/common/payloads';
 
 describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
@@ -36,12 +37,31 @@ describe('message', function () {
       expect(response.status).toBe(httpStatusCodes.CREATED);
     });
 
-    // empty 'store', therefore should return 204
-    it('should return 204 status code and filtered messages', async function () {
-      const response = await requestSender.getMessages();
+    it('should return 204 status code and appropriate message when no messages match filters', async function () {
+      localMesssagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
+
+      const response = await requestSender.getMessages({
+        queryParams: {
+          sessionId: 22342,
+          severity: 'ERROR',
+          component: 'MAP',
+          messageType: 'APPEXITED',
+        },
+      });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
+    });
+
+    it('should return 200 status code and filtered messages', async function () {
+      await requestSender.createMessage({
+        requestBody: messageObjectInstance,
+      });
+
+      const response = await requestSender.getMessages();
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).not.toBe(httpStatusCodes.NO_CONTENT);
     });
   });
 

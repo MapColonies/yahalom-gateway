@@ -43,6 +43,64 @@ paths:
       tags:
         - Message
       summary: gets the messages filtered
+      parameters:
+        - name: sessionId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: severity
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - EMERGENCY
+              - ALERT
+              - CRITICAL
+              - ERROR
+              - WARNING
+              - NOTICE
+              - INFORMATIONAL
+              - DEBUG
+        - name: component
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - GENERAL
+              - MAP
+              - FTUE
+              - SIMULATOR
+        - name: messageType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - APPSTARTED
+              - APPEXITED
+              - USERDETAILS
+              - USERMACHINESPEC
+              - USERDEVICES
+              - DEVICECONNECTED
+              - DEVICEDISCONNECTED
+              - GAMEMODESTARTED
+              - GAMEMODEENDED
+              - IDLETIMESTARTED
+              - IDLETIMEENDED
+              - LAYERUSESTARTED
+              - LAYERUSERENDED
+              - MULTIPLAYERSTARTED
+              - MULTIPLAYERENDED
+              - LOCATION
+              - ERROR
+              - GENERALINFO
+              - WARNING
+              - CONSUMPTIONSTATUS
+              - APPLICATIONDATA
       responses:
         200:
           description: Successful response
@@ -62,8 +120,7 @@ paths:
                 properties:
                   msg:
                     type: string
-                    description: The message for intergrating
-
+                    description: The message for integrating
         400:
           description: Bad Request
           content:

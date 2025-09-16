@@ -6,6 +6,7 @@ import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager } from '../models/messageManager';
 import { IMessageFilterParams } from './../../common/interfaces';
+import { localMesssagesStore } from './../../common/payloads';
 
 @injectable()
 export class MessageController {
@@ -27,7 +28,8 @@ export class MessageController {
   public createMessage: TypedRequestHandlers['POST /message'] = (req, res) => {
     const internalId = ++this.internalId;
 
-    this.manager.createMessage(req.body);
+    const newMessage = this.manager.createMessage(req.body);
+    localMesssagesStore.push(newMessage);
 
     this.createdMessageCounter.inc(1);
     return res.status(httpStatus.CREATED).json({ id: internalId });
@@ -38,7 +40,7 @@ export class MessageController {
       const params: IMessageFilterParams = req.query ?? {};
       const filteredMessages = this.manager.getMessages(params);
 
-      if (filteredMessages.length === 0) return res.status(httpStatus.NO_CONTENT).json({ msg: 'No messages foynd' });
+      if (filteredMessages.length === 0) return res.status(httpStatus.NO_CONTENT).json({ msg: 'No messages found' });
 
       return res.status(httpStatus.OK).json(filteredMessages);
     } catch (error) {

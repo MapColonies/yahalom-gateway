@@ -93,7 +93,33 @@ export type $defs = Record<string, never>;
 export interface operations {
   getMessages: {
     parameters: {
-      query?: never;
+      query?: {
+        sessionId?: number;
+        severity?: 'EMERGENCY' | 'ALERT' | 'CRITICAL' | 'ERROR' | 'WARNING' | 'NOTICE' | 'INFORMATIONAL' | 'DEBUG';
+        component?: 'GENERAL' | 'MAP' | 'FTUE' | 'SIMULATOR';
+        messageType?:
+          | 'APPSTARTED'
+          | 'APPEXITED'
+          | 'USERDETAILS'
+          | 'USERMACHINESPEC'
+          | 'USERDEVICES'
+          | 'DEVICECONNECTED'
+          | 'DEVICEDISCONNECTED'
+          | 'GAMEMODESTARTED'
+          | 'GAMEMODEENDED'
+          | 'IDLETIMESTARTED'
+          | 'IDLETIMEENDED'
+          | 'LAYERUSESTARTED'
+          | 'LAYERUSERENDED'
+          | 'MULTIPLAYERSTARTED'
+          | 'MULTIPLAYERENDED'
+          | 'LOCATION'
+          | 'ERROR'
+          | 'GENERALINFO'
+          | 'WARNING'
+          | 'CONSUMPTIONSTATUS'
+          | 'APPLICATIONDATA';
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -116,7 +142,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /** @description The message for intergrating */
+            /** @description The message for integrating */
             msg: string;
           };
         };
