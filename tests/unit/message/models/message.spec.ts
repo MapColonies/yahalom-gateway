@@ -13,7 +13,7 @@ describe('MessageManager', () => {
 
   describe('#createMessage', () => {
     it('should return the created message', () => {
-      const message = messageManager.createMessage(messageObjectInstance);
+      const message = messageManager.createMessage(messageObjectInstance, 1);
       expect(message).toEqual(messageObjectInstance);
     });
   });

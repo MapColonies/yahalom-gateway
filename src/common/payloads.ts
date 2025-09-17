@@ -11,6 +11,7 @@ export const messageObjectInstance: IMessageModel = {
   messageParameters: [],
   component: LogComponent.MAP,
   messageType: AnalyticsMessageTypes.APPEXITED,
+  id: 1,
 };
 
 export const localMesssagesStore: IMessageModel[] = [];
