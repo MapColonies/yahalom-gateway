@@ -26,13 +26,13 @@ export class MessageController {
   }
 
   public createMessage: TypedRequestHandlers['POST /message'] = (req, res) => {
-    const _id = ++this.internalId;
+    const id = ++this.internalId;
 
-    const newMessage = this.manager.createMessage(req.body, _id);
+    const newMessage = this.manager.createMessage(req.body, id);
     localMesssagesStore.push(newMessage);
 
     this.createdMessageCounter.inc(1);
-    return res.status(httpStatus.CREATED).json({ id: _id });
+    return res.status(httpStatus.CREATED).json({ id: id });
   };
 
   public getMessages: TypedRequestHandlers['GET /message'] = (req, res) => {

@@ -6,8 +6,8 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
+import { MessageManager } from './../../../src/message/models/messageManager';
 import { messageObjectInstance, localMesssagesStore } from './../../../src/common/payloads';
-import { MessageManager } from '../../../src/message/models/messageManager';
 
 describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
