@@ -6,8 +6,8 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
-import { messageObjectInstance } from './../../../src/common/payloads';
-import { localMesssagesStore } from './../../../src/common/payloads';
+import { messageObjectInstance, localMesssagesStore } from './../../../src/common/payloads';
+import { MessageManager } from '../../../src/message/models/messageManager';
 
 describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
@@ -52,6 +52,15 @@ describe('message', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
     });
+    it('should handle undefined req.query by defaulting to empty object and return 204 if no messages', async function () {
+      localMesssagesStore.length = 0;
+
+      const response = await requestSender.getMessages(); // no queryParams passed
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
+      //expect(response.body).toEqual({ msg: 'No messages found' });
+    });
 
     it('should return 200 status code and filtered messages', async function () {
       await requestSender.createMessage({
@@ -77,6 +86,17 @@ describe('message', function () {
   });
 
   describe('Sad Path', function () {
-    // All requests with status code 4XX-5XX
+    it('should return 500 status code when getMessages throws an error', async function () {
+      jest.spyOn(MessageManager.prototype, 'getMessages').mockImplementation(() => {
+        throw new Error('Simulated error');
+      });
+
+      const response = await requestSender.getMessages();
+
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ error: 'Failed to get messages' });
+
+      jest.restoreAllMocks();
+    });
   });
 });

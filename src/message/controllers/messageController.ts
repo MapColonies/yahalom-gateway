@@ -5,7 +5,7 @@ import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager } from '../models/messageManager';
-import { IMessageFilterParams } from './../../common/interfaces';
+import { IQueryModel } from './../../common/interfaces';
 import { localMesssagesStore } from './../../common/payloads';
 
 @injectable()
@@ -37,7 +37,7 @@ export class MessageController {
 
   public getMessages: TypedRequestHandlers['GET /message'] = (req, res) => {
     try {
-      const params: IMessageFilterParams = req.query ?? {};
+      const params: IQueryModel = req.query ?? {};
       const filteredMessages = this.manager.getMessages(params);
 
       if (filteredMessages.length === 0) return res.status(httpStatus.NO_CONTENT).json({ msg: 'No messages found' });

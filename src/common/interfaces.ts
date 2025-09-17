@@ -55,7 +55,7 @@ export interface ILogObject {
   messageType: AnalyticsMessageTypes;
 }
 
-export interface IMessageFilterParams {
+export interface IQueryModel {
   severity?: string;
   component?: string;
   messageType?: string;
