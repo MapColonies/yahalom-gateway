@@ -216,6 +216,8 @@ components:
             - CONSUMPTIONSTATUS
             - APPLICATIONDATA
           description: Type/category of the message
+        id:
+          type: number
 
     IAnalyticLogParameter:
       type: array

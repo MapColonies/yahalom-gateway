@@ -80,6 +80,7 @@ export type components = {
         | 'WARNING'
         | 'CONSUMPTIONSTATUS'
         | 'APPLICATIONDATA';
+      id?: number;
     };
     IAnalyticLogParameter: unknown[];
   };
@@ -149,6 +150,15 @@ export interface operations {
       };
       /** @description Bad Request */
       400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+      /** @description Bad Request */
+      500: {
         headers: {
           [name: string]: unknown;
         };

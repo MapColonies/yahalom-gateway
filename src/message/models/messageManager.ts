@@ -2,7 +2,7 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import type { components } from '@openapi';
 import { SERVICES } from '@common/constants';
-import { IMessageFilterParams } from './../../common/interfaces';
+import { IQueryModel } from './../../common/interfaces';
 import { localMesssagesStore } from './../../common/payloads';
 
 export type IMessageModel = components['schemas']['ILogObject'];
@@ -11,14 +11,14 @@ export type IMessageModel = components['schemas']['ILogObject'];
 export class MessageManager {
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {}
 
-  public createMessage(message: IMessageModel): IMessageModel {
+  public createMessage(message: IMessageModel, _id: number): IMessageModel {
     this.logger.info({ msg: 'creating message' });
     this.logger.debug({ msg: 'message recieved details', message });
 
-    return message;
+    return { ...message, id: _id };
   }
 
-  public getMessages(params: IMessageFilterParams): IMessageModel[] {
+  public getMessages(params: IQueryModel): IMessageModel[] {
     this.logger.info({ msg: 'getting filtered messages' });
 
     const { sessionId, severity, component, messageType } = params;
