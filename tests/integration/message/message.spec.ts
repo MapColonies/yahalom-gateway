@@ -53,6 +53,15 @@ describe('message', function () {
       expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
     });
 
+    it('should return 204 status code and hadnling if no query params provided', async function () {
+      localMesssagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
+
+      const response = await requestSender.getMessages();
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
+    });
+
     it('should return 200 status code and filtered messages', async function () {
       await requestSender.createMessage({
         requestBody: messageObjectInstance,

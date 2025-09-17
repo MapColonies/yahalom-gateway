@@ -37,12 +37,14 @@ export class MessageController {
 
   public getMessages: TypedRequestHandlers['GET /message'] = (req, res) => {
     try {
-      const params: IQueryModel = req.query ?? {};
-      const filteredMessages = this.manager.getMessages(params);
+      const params: IQueryModel | undefined = req.query;
+      if (params) {
+        const filteredMessages = this.manager.getMessages(params);
 
-      if (filteredMessages.length === 0) return res.status(httpStatus.NO_CONTENT).json({ msg: 'No messages found' });
+        if (filteredMessages.length === 0) return res.status(httpStatus.NO_CONTENT).json({ msg: 'No messages found' });
 
-      return res.status(httpStatus.OK).json(filteredMessages);
+        return res.status(httpStatus.OK).json(filteredMessages);
+      }
     } catch (error) {
       this.logger.error({ msg: 'Error retrieving messages', error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Failed to get messages' });
