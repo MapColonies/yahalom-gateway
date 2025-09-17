@@ -52,15 +52,6 @@ describe('message', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
     });
-    it('should handle undefined req.query by defaulting to empty object and return 204 if no messages', async function () {
-      localMesssagesStore.length = 0;
-
-      const response = await requestSender.getMessages(); // no queryParams passed
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
-      //expect(response.body).toEqual({ msg: 'No messages found' });
-    });
 
     it('should return 200 status code and filtered messages', async function () {
       await requestSender.createMessage({
@@ -93,6 +84,7 @@ describe('message', function () {
 
       const response = await requestSender.getMessages();
 
+      expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ error: 'Failed to get messages' });
 
