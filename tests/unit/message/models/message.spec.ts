@@ -13,8 +13,8 @@ describe('MessageManager', () => {
 
   describe('#createMessage', () => {
     it('should return the created message', () => {
-      const message = messageManager.createMessage(messageObjectInstance, 1);
-      expect(message).toEqual(messageObjectInstance);
+      const message = messageManager.createMessage(messageObjectInstance);
+      expect(message.sessionId).toBe(2234234);
     });
   });
 

@@ -8,10 +8,10 @@ export type paths = {
       path?: never;
       cookie?: never;
     };
-    /** gets the messages filtered */
+    /** Gets the messages filtered */
     get: operations['getMessages'];
     put?: never;
-    /** creates a new message */
+    /** Creates a new message */
     post: operations['createMessage'];
     delete?: never;
     options?: never;
@@ -24,13 +24,13 @@ export type webhooks = Record<string, never>;
 export type components = {
   schemas: {
     /** @example {
-     *       "message": "Invalid message ID provided."
+     *       "error": "Invalid message ID provided."
      *     } */
     error: {
       /** @description A human-readable error message */
       error: string;
     };
-    ILogObject: {
+    CreateLogObject: {
       /**
        * Format: int64
        * @description Unique session identifier
@@ -48,7 +48,8 @@ export type components = {
       timeStamp: string;
       /** @description Main message text */
       message: string;
-      messageParameters?: components['schemas']['IAnalyticLogParameter'];
+      /** @description Additional info */
+      messageParameters?: unknown[];
       /**
        * @description The component generating the log
        * @enum {string}
@@ -80,9 +81,14 @@ export type components = {
         | 'WARNING'
         | 'CONSUMPTIONSTATUS'
         | 'APPLICATIONDATA';
-      id?: number;
     };
-    IAnalyticLogParameter: unknown[];
+    ILogObject: components['schemas']['CreateLogObject'] & {
+      /**
+       * Format: uuid
+       * @description Unique identifier of the log entry
+       */
+      id: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -157,7 +163,7 @@ export interface operations {
           'application/json': components['schemas']['error'];
         };
       };
-      /** @description Bad Request */
+      /** @description Internal Server Error */
       500: {
         headers: {
           [name: string]: unknown;
@@ -177,20 +183,17 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['ILogObject'];
+        'application/json': components['schemas']['CreateLogObject'];
       };
     };
     responses: {
-      /** @description created */
+      /** @description Created */
       201: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': {
-            /** @description The ID of the created message */
-            id: number;
-          };
+          'application/json': components['schemas']['ILogObject'];
         };
       };
       /** @description Bad Request */

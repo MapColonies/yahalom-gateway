@@ -1,5 +1,6 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
+import { v4 as uuidv4 } from 'uuid';
 import type { components } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { IQueryModel } from './../../common/interfaces';
@@ -11,15 +12,21 @@ export type IMessageModel = components['schemas']['ILogObject'];
 export class MessageManager {
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {}
 
-  public createMessage(message: IMessageModel, _id: number): IMessageModel {
+  public createMessage(message: Omit<IMessageModel, 'id'>): IMessageModel {
     this.logger.info({ msg: 'creating message' });
     this.logger.debug({ msg: 'message recieved details', message });
 
-    return { ...message, id: _id };
+    const id = uuidv4();
+
+    const newMessage: IMessageModel = { ...message, id };
+
+    localMesssagesStore.push(newMessage);
+
+    return newMessage;
   }
 
   public getMessages(params: IQueryModel): IMessageModel[] {
-    this.logger.info({ msg: 'getting filtered messages' });
+    this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
     const { sessionId, severity, component, messageType } = params;
 
