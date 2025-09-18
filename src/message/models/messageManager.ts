@@ -11,11 +11,11 @@ export type IMessageModel = components['schemas']['ILogObject'];
 export class MessageManager {
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {}
 
-  public createMessage(message: IMessageModel, _id: number): IMessageModel {
+  public createMessage(message: IMessageModel, id: number): IMessageModel {
     this.logger.info({ msg: 'creating message' });
     this.logger.debug({ msg: 'message recieved details', message });
 
-    return { ...message, id: _id };
+    return { ...message, id: id };
   }
 
   public getMessages(params: IQueryModel): IMessageModel[] {
@@ -34,5 +34,12 @@ export class MessageManager {
     });
 
     return filteredMessages;
+  }
+
+  public getMessageById(id: number): IMessageModel | null {
+    this.logger.info({ msg: `Getting message by ID - ${id}` });
+
+    const message = localMesssagesStore.find((message) => message.id === id);
+    return message ?? null;
   }
 }

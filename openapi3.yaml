@@ -133,6 +133,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /message/{id}:
+    get:
+      operationId: getMessageById
+      tags:
+        - Message
+      summary: Gets a message by the provided ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the message to retrieve
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ILogObject'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
 security:
   - {}
 components:

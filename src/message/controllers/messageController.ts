@@ -50,4 +50,24 @@ export class MessageController {
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Failed to get messages' });
     }
   };
+
+  public getMessageById: TypedRequestHandlers['GET /message/{id}'] = (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        return res.status(httpStatus.BAD_REQUEST).json({ error: 'Invalid ID parameter' });
+      }
+
+      const message = this.manager.getMessageById(id);
+
+      if (!message) {
+        return res.status(httpStatus.NOT_FOUND).json({ error: `No message found with id ${id}` });
+      }
+
+      return res.status(httpStatus.OK).json(message);
+    } catch (error) {
+      this.logger.error({ msg: 'Error retrieving message', error });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Failed to get message' });
+    }
+  };
 }
