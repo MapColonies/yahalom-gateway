@@ -10,7 +10,6 @@ import { IQueryModel } from './../../common/interfaces';
 @injectable()
 export class MessageController {
   private readonly createdMessageCounter: Counter;
-  private readonly internalId = 0;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
@@ -29,7 +28,7 @@ export class MessageController {
       const newMessage = this.manager.createMessage(req.body);
 
       this.createdMessageCounter.inc(1);
-      return res.status(httpStatus.CREATED).json(newMessage);
+      return res.status(httpStatus.CREATED).json({ id: newMessage.id });
     } catch (error) {
       this.logger.error({ msg: 'Error creating message', error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Failed to create message' });

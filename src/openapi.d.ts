@@ -30,17 +30,40 @@ export type components = {
       /** @description A human-readable error message */
       error: string;
     };
+    /** @enum {string} */
+    SeverityEnum: 'EMERGENCY' | 'ALERT' | 'CRITICAL' | 'ERROR' | 'WARNING' | 'NOTICE' | 'INFORMATIONAL' | 'DEBUG';
+    /** @enum {string} */
+    ComponentEnum: 'GENERAL' | 'MAP' | 'FTUE' | 'SIMULATOR';
+    /** @enum {string} */
+    MessageTypeEnum:
+      | 'APPSTARTED'
+      | 'APPEXITED'
+      | 'USERDETAILS'
+      | 'USERMACHINESPEC'
+      | 'USERDEVICES'
+      | 'DEVICECONNECTED'
+      | 'DEVICEDISCONNECTED'
+      | 'GAMEMODESTARTED'
+      | 'GAMEMODEENDED'
+      | 'IDLETIMESTARTED'
+      | 'IDLETIMEENDED'
+      | 'LAYERUSESTARTED'
+      | 'LAYERUSERENDED'
+      | 'MULTIPLAYERSTARTED'
+      | 'MULTIPLAYERENDED'
+      | 'LOCATION'
+      | 'ERROR'
+      | 'GENERALINFO'
+      | 'WARNING'
+      | 'CONSUMPTIONSTATUS'
+      | 'APPLICATIONDATA';
     CreateLogObject: {
       /**
        * Format: int64
        * @description Unique session identifier
        */
       sessionId: number;
-      /**
-       * @description Severity level of the log
-       * @enum {string}
-       */
-      severity: 'EMERGENCY' | 'ALERT' | 'CRITICAL' | 'ERROR' | 'WARNING' | 'NOTICE' | 'INFORMATIONAL' | 'DEBUG';
+      severity: components['schemas']['SeverityEnum'];
       /**
        * Format: date-time
        * @description Timestamp of the log entry
@@ -50,37 +73,8 @@ export type components = {
       message: string;
       /** @description Additional info */
       messageParameters?: unknown[];
-      /**
-       * @description The component generating the log
-       * @enum {string}
-       */
-      component: 'GENERAL' | 'MAP' | 'FTUE' | 'SIMULATOR';
-      /**
-       * @description Type/category of the message
-       * @enum {string}
-       */
-      messageType:
-        | 'APPSTARTED'
-        | 'APPEXITED'
-        | 'USERDETAILS'
-        | 'USERMACHINESPEC'
-        | 'USERDEVICES'
-        | 'DEVICECONNECTED'
-        | 'DEVICEDISCONNECTED'
-        | 'GAMEMODESTARTED'
-        | 'GAMEMODEENDED'
-        | 'IDLETIMESTARTED'
-        | 'IDLETIMEENDED'
-        | 'LAYERUSESTARTED'
-        | 'LAYERUSERENDED'
-        | 'MULTIPLAYERSTARTED'
-        | 'MULTIPLAYERENDED'
-        | 'LOCATION'
-        | 'ERROR'
-        | 'GENERALINFO'
-        | 'WARNING'
-        | 'CONSUMPTIONSTATUS'
-        | 'APPLICATIONDATA';
+      component: components['schemas']['ComponentEnum'];
+      messageType: components['schemas']['MessageTypeEnum'];
     };
     ILogObject: components['schemas']['CreateLogObject'] & {
       /**
@@ -91,7 +85,12 @@ export type components = {
     };
   };
   responses: never;
-  parameters: never;
+  parameters: {
+    SessionId: number;
+    Severity: components['schemas']['SeverityEnum'];
+    Component: components['schemas']['ComponentEnum'];
+    MessageType: components['schemas']['MessageTypeEnum'];
+  };
   requestBodies: never;
   headers: never;
   pathItems: never;
@@ -101,31 +100,10 @@ export interface operations {
   getMessages: {
     parameters: {
       query?: {
-        sessionId?: number;
-        severity?: 'EMERGENCY' | 'ALERT' | 'CRITICAL' | 'ERROR' | 'WARNING' | 'NOTICE' | 'INFORMATIONAL' | 'DEBUG';
-        component?: 'GENERAL' | 'MAP' | 'FTUE' | 'SIMULATOR';
-        messageType?:
-          | 'APPSTARTED'
-          | 'APPEXITED'
-          | 'USERDETAILS'
-          | 'USERMACHINESPEC'
-          | 'USERDEVICES'
-          | 'DEVICECONNECTED'
-          | 'DEVICEDISCONNECTED'
-          | 'GAMEMODESTARTED'
-          | 'GAMEMODEENDED'
-          | 'IDLETIMESTARTED'
-          | 'IDLETIMEENDED'
-          | 'LAYERUSESTARTED'
-          | 'LAYERUSERENDED'
-          | 'MULTIPLAYERSTARTED'
-          | 'MULTIPLAYERENDED'
-          | 'LOCATION'
-          | 'ERROR'
-          | 'GENERALINFO'
-          | 'WARNING'
-          | 'CONSUMPTIONSTATUS'
-          | 'APPLICATIONDATA';
+        sessionId?: components['parameters']['SessionId'];
+        severity?: components['parameters']['Severity'];
+        component?: components['parameters']['Component'];
+        messageType?: components['parameters']['MessageType'];
       };
       header?: never;
       path?: never;
@@ -147,12 +125,7 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            /** @description The message for integrating */
-            msg: string;
-          };
-        };
+        content?: never;
       };
       /** @description Bad Request */
       400: {
@@ -193,11 +166,22 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['ILogObject'];
+          'application/json': {
+            id?: string;
+          };
         };
       };
       /** @description Bad Request */
       400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+      /** @description Internal Server Error */
+      500: {
         headers: {
           [name: string]: unknown;
         };

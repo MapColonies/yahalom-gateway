@@ -6,6 +6,7 @@ info:
   license:
     name: Yahalom-Gateway repo link
     url: https://github.com/MapColonies/yahalom-gateway/
+
 paths:
   /message:
     post:
@@ -25,96 +26,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ILogObject'
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-    get:
-      operationId: getMessages
-      tags:
-        - Message
-      summary: Gets the messages filtered
-      parameters:
-        - name: sessionId
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int64
-        - name: severity
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - EMERGENCY
-              - ALERT
-              - CRITICAL
-              - ERROR
-              - WARNING
-              - NOTICE
-              - INFORMATIONAL
-              - DEBUG
-        - name: component
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - GENERAL
-              - MAP
-              - FTUE
-              - SIMULATOR
-        - name: messageType
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - APPSTARTED
-              - APPEXITED
-              - USERDETAILS
-              - USERMACHINESPEC
-              - USERDEVICES
-              - DEVICECONNECTED
-              - DEVICEDISCONNECTED
-              - GAMEMODESTARTED
-              - GAMEMODEENDED
-              - IDLETIMESTARTED
-              - IDLETIMEENDED
-              - LAYERUSESTARTED
-              - LAYERUSERENDED
-              - MULTIPLAYERSTARTED
-              - MULTIPLAYERENDED
-              - LOCATION
-              - ERROR
-              - GENERALINFO
-              - WARNING
-              - CONSUMPTIONSTATUS
-              - APPLICATIONDATA
-      responses:
-        200:
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ILogObject'
-        204:
-          description: No content - no messages found
-          content:
-            application/json:
-              schema:
-                required:
-                  - msg
+                type: object
                 properties:
-                  msg:
+                  id:
                     type: string
-                    description: The message for integrating
         400:
           description: Bad Request
           content:
@@ -127,10 +42,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+
+    get:
+      operationId: getMessages
+      tags:
+        - Message
+      summary: Gets the messages filtered
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/Severity'
+        - $ref: '#/components/parameters/Component'
+        - $ref: '#/components/parameters/MessageType'
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ILogObject'
+        204:
+          description: No content - no messages found
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
 security:
   - {}
 
 components:
+  parameters:
+    SessionId:
+      name: sessionId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int64
+    Severity:
+      name: severity
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/SeverityEnum'
+    Component:
+      name: component
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/ComponentEnum'
+    MessageType:
+      name: messageType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/MessageTypeEnum'
+
   schemas:
     error:
       type: object
@@ -142,6 +119,51 @@ components:
           description: A human-readable error message
       example:
         error: 'Invalid message ID provided.'
+
+    SeverityEnum:
+      type: string
+      enum:
+        - EMERGENCY
+        - ALERT
+        - CRITICAL
+        - ERROR
+        - WARNING
+        - NOTICE
+        - INFORMATIONAL
+        - DEBUG
+
+    ComponentEnum:
+      type: string
+      enum:
+        - GENERAL
+        - MAP
+        - FTUE
+        - SIMULATOR
+
+    MessageTypeEnum:
+      type: string
+      enum:
+        - APPSTARTED
+        - APPEXITED
+        - USERDETAILS
+        - USERMACHINESPEC
+        - USERDEVICES
+        - DEVICECONNECTED
+        - DEVICEDISCONNECTED
+        - GAMEMODESTARTED
+        - GAMEMODEENDED
+        - IDLETIMESTARTED
+        - IDLETIMEENDED
+        - LAYERUSESTARTED
+        - LAYERUSERENDED
+        - MULTIPLAYERSTARTED
+        - MULTIPLAYERENDED
+        - LOCATION
+        - ERROR
+        - GENERALINFO
+        - WARNING
+        - CONSUMPTIONSTATUS
+        - APPLICATIONDATA
 
     CreateLogObject:
       type: object
@@ -158,17 +180,7 @@ components:
           format: int64
           description: Unique session identifier
         severity:
-          type: string
-          enum:
-            - EMERGENCY
-            - ALERT
-            - CRITICAL
-            - ERROR
-            - WARNING
-            - NOTICE
-            - INFORMATIONAL
-            - DEBUG
-          description: Severity level of the log
+          $ref: '#/components/schemas/SeverityEnum'
         timeStamp:
           type: string
           format: date-time
@@ -178,40 +190,12 @@ components:
           description: Main message text
         messageParameters:
           type: array
+          items: {}
           description: Additional info
         component:
-          type: string
-          enum:
-            - GENERAL
-            - MAP
-            - FTUE
-            - SIMULATOR
-          description: The component generating the log
+          $ref: '#/components/schemas/ComponentEnum'
         messageType:
-          type: string
-          enum:
-            - APPSTARTED
-            - APPEXITED
-            - USERDETAILS
-            - USERMACHINESPEC
-            - USERDEVICES
-            - DEVICECONNECTED
-            - DEVICEDISCONNECTED
-            - GAMEMODESTARTED
-            - GAMEMODEENDED
-            - IDLETIMESTARTED
-            - IDLETIMEENDED
-            - LAYERUSESTARTED
-            - LAYERUSERENDED
-            - MULTIPLAYERSTARTED
-            - MULTIPLAYERENDED
-            - LOCATION
-            - ERROR
-            - GENERALINFO
-            - WARNING
-            - CONSUMPTIONSTATUS
-            - APPLICATIONDATA
-          description: Type/category of the message
+          $ref: '#/components/schemas/MessageTypeEnum'
 
     ILogObject:
       allOf:
