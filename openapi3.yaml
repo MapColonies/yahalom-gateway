@@ -62,8 +62,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ILogObject'
-        204:
-          description: No content - no messages found
         400:
           description: Bad Request
           content:
@@ -112,13 +110,13 @@ components:
     error:
       type: object
       required:
-        - error
+        - message
       properties:
-        error:
+        message:
           type: string
           description: A human-readable error message
       example:
-        error: 'Invalid message ID provided.'
+        message: 'Invalid message ID provided.'
 
     SeverityEnum:
       type: string
@@ -189,8 +187,7 @@ components:
           type: string
           description: Main message text
         messageParameters:
-          type: array
-          items: {}
+          type: object
           description: Additional info
         component:
           $ref: '#/components/schemas/ComponentEnum'

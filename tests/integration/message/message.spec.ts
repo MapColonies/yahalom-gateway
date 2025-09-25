@@ -37,7 +37,7 @@ describe('message', function () {
       expect(response.status).toBe(httpStatusCodes.CREATED);
     });
 
-    it('should return 204 status code and appropriate message when no messages match filters', async function () {
+    it('should return 200 status code and appropriate message when no messages match filters', async function () {
       localMesssagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
 
       const response = await requestSender.getMessages({
@@ -50,16 +50,16 @@ describe('message', function () {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
 
-    it('should return 204 status code and hadnling if no query params provided', async function () {
+    it('should return 200 status code and hadnling if no query params provided', async function () {
       localMesssagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
 
       const response = await requestSender.getMessages();
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.NO_CONTENT);
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
 
     it('should return 200 status code and filtered messages', async function () {
@@ -95,7 +95,7 @@ describe('message', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ error: 'Failed to get messages' });
+      expect(response.body).toEqual({ message: 'Failed to get messages' });
 
       jest.restoreAllMocks();
     });

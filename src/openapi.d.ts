@@ -24,11 +24,11 @@ export type webhooks = Record<string, never>;
 export type components = {
   schemas: {
     /** @example {
-     *       "error": "Invalid message ID provided."
+     *       "message": "Invalid message ID provided."
      *     } */
     error: {
       /** @description A human-readable error message */
-      error: string;
+      message: string;
     };
     /** @enum {string} */
     SeverityEnum: 'EMERGENCY' | 'ALERT' | 'CRITICAL' | 'ERROR' | 'WARNING' | 'NOTICE' | 'INFORMATIONAL' | 'DEBUG';
@@ -72,7 +72,7 @@ export type components = {
       /** @description Main message text */
       message: string;
       /** @description Additional info */
-      messageParameters?: unknown[];
+      messageParameters?: Record<string, never>;
       component: components['schemas']['ComponentEnum'];
       messageType: components['schemas']['MessageTypeEnum'];
     };
@@ -119,13 +119,6 @@ export interface operations {
         content: {
           'application/json': components['schemas']['ILogObject'][];
         };
-      };
-      /** @description No content - no messages found */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
       };
       /** @description Bad Request */
       400: {
