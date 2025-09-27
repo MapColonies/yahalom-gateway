@@ -1,0 +1,209 @@
+openapi: 3.0.1
+info:
+  title: Yahalom Gateway API
+  description: This is a restAPI service for 3d products
+  version: 1.0.0
+  license:
+    name: Yahalom-Gateway repo link
+    url: https://github.com/MapColonies/yahalom-gateway/
+
+paths:
+  /message:
+    post:
+      operationId: createMessage
+      tags:
+        - Message
+      summary: Creates a new message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLogObject'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+    get:
+      operationId: getMessages
+      tags:
+        - Message
+      summary: Gets the messages filtered
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/Severity'
+        - $ref: '#/components/parameters/Component'
+        - $ref: '#/components/parameters/MessageType'
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ILogObject'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+security:
+  - {}
+
+components:
+  parameters:
+    SessionId:
+      name: sessionId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int64
+    Severity:
+      name: severity
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/SeverityEnum'
+    Component:
+      name: component
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/ComponentEnum'
+    MessageType:
+      name: messageType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/MessageTypeEnum'
+
+  schemas:
+    error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: A human-readable error message
+      example:
+        message: 'Invalid message ID provided.'
+
+    SeverityEnum:
+      type: string
+      enum:
+        - EMERGENCY
+        - ALERT
+        - CRITICAL
+        - ERROR
+        - WARNING
+        - NOTICE
+        - INFORMATIONAL
+        - DEBUG
+
+    ComponentEnum:
+      type: string
+      enum:
+        - GENERAL
+        - MAP
+        - FTUE
+        - SIMULATOR
+
+    MessageTypeEnum:
+      type: string
+      enum:
+        - APPSTARTED
+        - APPEXITED
+        - USERDETAILS
+        - USERMACHINESPEC
+        - USERDEVICES
+        - DEVICECONNECTED
+        - DEVICEDISCONNECTED
+        - GAMEMODESTARTED
+        - GAMEMODEENDED
+        - IDLETIMESTARTED
+        - IDLETIMEENDED
+        - LAYERUSESTARTED
+        - LAYERUSERENDED
+        - MULTIPLAYERSTARTED
+        - MULTIPLAYERENDED
+        - LOCATION
+        - ERROR
+        - GENERALINFO
+        - WARNING
+        - CONSUMPTIONSTATUS
+        - APPLICATIONDATA
+
+    CreateLogObject:
+      type: object
+      required:
+        - sessionId
+        - severity
+        - timeStamp
+        - message
+        - component
+        - messageType
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+          description: Unique session identifier
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        timeStamp:
+          type: string
+          format: date-time
+          description: Timestamp of the log entry
+        message:
+          type: string
+          description: Main message text
+        messageParameters:
+          type: object
+          description: Additional info
+          additionalProperties: true
+          nullable: true
+        component:
+          $ref: '#/components/schemas/ComponentEnum'
+        messageType:
+          $ref: '#/components/schemas/MessageTypeEnum'
+
+    ILogObject:
+      allOf:
+        - $ref: '#/components/schemas/CreateLogObject'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier of the log entry
