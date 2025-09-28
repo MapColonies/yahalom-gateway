@@ -8,7 +8,7 @@ export const messageObjectInstance: IMessageModel = {
   severity: SeverityLevels.ERROR,
   timeStamp: '2025-09-11T13:45:00.000Z',
   message: 'Failed to authenticate user.',
-  messageParameters: null,
+  messageParameters: undefined,
   component: LogComponent.MAP,
   messageType: AnalyticsMessageTypes.APPEXITED,
   id: '1',
