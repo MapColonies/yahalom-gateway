@@ -4,12 +4,13 @@ import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
-import { MessageManager } from '../models/messageManager';
+import { MessageManager, ILogObject } from '../models/messageManager';
+import { localMesssagesStore } from '../../common/mocks';
+import { IQueryModel } from './../../common/interfaces';
 
 @injectable()
 export class MessageController {
   private readonly createdMessageCounter: Counter;
-  private internalId = 0;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
@@ -24,11 +25,29 @@ export class MessageController {
   }
 
   public createMessage: TypedRequestHandlers['POST /message'] = (req, res) => {
-    const internalId = ++this.internalId;
+    try {
+      const newMessage = this.manager.createMessage(req.body);
 
-    this.manager.createMessage(req.body);
+      this.createdMessageCounter.inc(1);
+      return res.status(httpStatus.CREATED).json({ id: newMessage.id });
+    } catch (error) {
+      this.logger.error({ msg: 'Error creating message', error });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create message' });
+    }
+  };
 
-    this.createdMessageCounter.inc(1);
-    return res.status(httpStatus.CREATED).json({ id: internalId });
+  public getMessages: TypedRequestHandlers['GET /message'] = (req, res) => {
+    try {
+      const params: IQueryModel | undefined = req.query;
+
+      const hasParams = !!params && Object.keys(params).length > 0;
+
+      const resultMessages: ILogObject[] = hasParams ? this.manager.getMessages(params) : localMesssagesStore;
+
+      return res.status(httpStatus.OK).json(resultMessages);
+    } catch (error) {
+      this.logger.error({ msg: 'Error retrieving messages', error });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get messages' });
+    }
   };
 }

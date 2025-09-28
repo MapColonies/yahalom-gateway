@@ -7,6 +7,7 @@ const messageRouterFactory: FactoryFunction<Router> = (dependencyContainer) => {
   const controller = dependencyContainer.resolve(MessageController);
 
   router.post('/', controller.createMessage);
+  router.get('/', controller.getMessages);
 
   return router;
 };

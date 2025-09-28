@@ -53,4 +53,12 @@ export interface ILogObject {
   messageParameters?: object;
   component: LogComponent;
   messageType: AnalyticsMessageTypes;
+  id?: string;
+}
+
+export interface IQueryModel {
+  severity?: string;
+  component?: string;
+  messageType?: string;
+  sessionId?: number;
 }
