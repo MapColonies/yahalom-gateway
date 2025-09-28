@@ -1,29 +1,36 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
+import { v4 as uuidv4 } from 'uuid';
 import type { components } from '@openapi';
 import { SERVICES } from '@common/constants';
+import { localMesssagesStore } from '../../common/mocks';
 import { IQueryModel } from './../../common/interfaces';
-import { localMesssagesStore } from './../../common/payloads';
 
-export type IMessageModel = components['schemas']['ILogObject'];
+export type ILogObject = components['schemas']['ILogObject'];
 
 @injectable()
 export class MessageManager {
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {}
 
-  public createMessage(message: IMessageModel, id: number): IMessageModel {
+  public createMessage(message: Omit<ILogObject, 'id'>): ILogObject {
     this.logger.info({ msg: 'creating message' });
     this.logger.debug({ msg: 'message recieved details', message });
 
-    return { ...message, id: id };
+    const id = uuidv4();
+
+    const newMessage: ILogObject = { ...message, id };
+
+    localMesssagesStore.push(newMessage);
+
+    return newMessage;
   }
 
-  public getMessages(params: IQueryModel): IMessageModel[] {
-    this.logger.info({ msg: 'getting filtered messages' });
+  public getMessages(params: IQueryModel): ILogObject[] {
+    this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
     const { sessionId, severity, component, messageType } = params;
 
-    const allMessages: IMessageModel[] = localMesssagesStore;
+    const allMessages: ILogObject[] = localMesssagesStore;
 
     const filteredMessages = allMessages.filter((instance) => {
       if (severity != null && instance.severity !== severity) return false;
@@ -36,10 +43,10 @@ export class MessageManager {
     return filteredMessages;
   }
 
-  public getMessageById(id: number): IMessageModel | null {
+  public getMessageById(id: string): ILogObject | undefined {
     this.logger.info({ msg: `Getting message by ID - ${id}` });
 
     const message = localMesssagesStore.find((message) => message.id === id);
-    return message ?? null;
+    return message ?? undefined;
   }
 }

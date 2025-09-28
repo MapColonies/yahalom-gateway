@@ -53,7 +53,7 @@ export interface ILogObject {
   messageParameters?: object;
   component: LogComponent;
   messageType: AnalyticsMessageTypes;
-  id?: number;
+  id?: string;
 }
 
 export interface IQueryModel {

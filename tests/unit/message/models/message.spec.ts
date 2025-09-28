@@ -1,6 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { MessageManager } from '@src/message/models/messageManager';
-import { messageObjectInstance, localMesssagesStore } from './../../../../src/common/payloads';
+import { getResponseMessage, localMesssagesStore } from '../../../../src/common/mocks';
 import { IQueryModel } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;
@@ -13,14 +13,14 @@ describe('MessageManager', () => {
 
   describe('#createMessage', () => {
     it('should return the created message', () => {
-      const message = messageManager.createMessage(messageObjectInstance, 1);
-      expect(message).toEqual(messageObjectInstance);
+      const message = messageManager.createMessage(getResponseMessage);
+      expect(message.sessionId).toBe(2234234);
     });
   });
 
   describe('#getMessages', () => {
     beforeEach(() => {
-      localMesssagesStore.push(messageObjectInstance); // for testing the quary
+      localMesssagesStore.push(getResponseMessage); // for testing the quary
     });
 
     it('should return matching message with all filters', () => {
@@ -33,7 +33,7 @@ describe('MessageManager', () => {
 
       const messages = messageManager.getMessages(query);
       expect(messages).toHaveLength(1);
-      expect(messages[0]).toEqual(messageObjectInstance);
+      expect(messages[0]).toEqual(getResponseMessage);
     });
 
     it('should return message if filters are empty', () => {
@@ -103,6 +103,16 @@ describe('MessageManager', () => {
       };
       const messages = messageManager.getMessages(query);
       expect(messages).toHaveLength(1);
+    });
+
+    it('should return the message with the given Id', () => {
+      const message = messageManager.getMessageById(getResponseMessage.id);
+      expect(message).toEqual(getResponseMessage);
+    });
+
+    it('should return null if no message with the given ID exists', () => {
+      const message = messageManager.getMessageById('non-existent-id');
+      expect(message).toBeUndefined();
     });
   });
 });
