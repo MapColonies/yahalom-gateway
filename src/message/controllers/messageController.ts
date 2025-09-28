@@ -5,8 +5,8 @@ import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager, ILogObject } from '../models/messageManager';
+import { localMesssagesStore } from '../../common/mocks';
 import { IQueryModel } from './../../common/interfaces';
-import { localMesssagesStore } from './../../common/payloads';
 
 @injectable()
 export class MessageController {

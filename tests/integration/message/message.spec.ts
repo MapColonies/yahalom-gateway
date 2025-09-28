@@ -6,8 +6,8 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
+import { getResponseMessage, localMesssagesStore } from '../../../src/common/mocks';
 import { MessageManager } from './../../../src/message/models/messageManager';
-import { messageObjectInstance, localMesssagesStore } from './../../../src/common/payloads';
 
 describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
@@ -31,7 +31,7 @@ describe('message', function () {
   describe('Happy Path', function () {
     it('should return 201 status code and the internal id', async function () {
       const response = await requestSender.createMessage({
-        requestBody: messageObjectInstance,
+        requestBody: getResponseMessage,
       });
 
       expect(response).toSatisfyApiSpec();
@@ -71,7 +71,7 @@ describe('message', function () {
 
     it('should return 200 status code and filtered messages', async function () {
       await requestSender.createMessage({
-        requestBody: messageObjectInstance,
+        requestBody: getResponseMessage,
       });
 
       const response = await requestSender.getMessages();
@@ -84,10 +84,10 @@ describe('message', function () {
   describe('Bad Path', function () {
     it('should return 400 status code for exceeding the time', async function () {
       const response = await requestSender.createMessage({
-        requestBody: messageObjectInstance,
+        requestBody: getResponseMessage,
       });
 
-      expect(Date.now() + 1000).toBeGreaterThan(new Date(messageObjectInstance.timeStamp).getTime());
+      expect(Date.now() + 1000).toBeGreaterThan(new Date(getResponseMessage.timeStamp).getTime());
       expect(response.status).not.toBe(httpStatusCodes.BAD_REQUEST);
     });
   });
@@ -98,7 +98,7 @@ describe('message', function () {
         throw new Error('Simulated error');
       });
 
-      const response = await requestSender.createMessage({ requestBody: messageObjectInstance });
+      const response = await requestSender.createMessage({ requestBody: getResponseMessage });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to create message' });
