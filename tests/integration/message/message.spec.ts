@@ -6,7 +6,7 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
-import { getResponseMessage, localMesssagesStore } from '../../../src/common/mocks';
+import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
 import { MessageManager } from './../../../src/message/models/messageManager';
 
 describe('message', function () {
@@ -25,7 +25,7 @@ describe('message', function () {
       useChild: true,
     });
     requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
-    localMesssagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
+    localMessagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
   });
 
   describe('Happy Path', function () {
@@ -81,9 +81,20 @@ describe('message', function () {
     });
 
     it('should return 200 and the correct message for a valid Id', async () => {
-      localMesssagesStore.push(getResponseMessage);
+      localMessagesStore.push(getResponseMessage);
 
       const response = await requestSender.getMessageById({
+        pathParams: { id: getResponseMessage.id },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+    });
+
+    it('should return 200 and Id of the deleted message', async () => {
+      localMessagesStore.push(getResponseMessage);
+
+      const response = await requestSender.deleteMessageById({
         pathParams: { id: getResponseMessage.id },
       });
 
@@ -104,7 +115,7 @@ describe('message', function () {
   });
 
   describe('Sad Path', function () {
-    it('should return 404 when the message Id does not exist', async () => {
+    it('should return 404 when the message Id does not exist for get request', async () => {
       const response = await requestSender.getMessageById({
         pathParams: { id: 'non-existent-id' },
       });
@@ -112,7 +123,19 @@ describe('message', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
       expect(response.body).toEqual({
-        message: 'No message found with id non-existent-id',
+        message: "No message found with id 'non-existent-id'",
+      });
+    });
+
+    it('should return 404 when the message Id does not exist for delete request', async () => {
+      const response = await requestSender.deleteMessageById({
+        pathParams: { id: 'non-existent-id' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.body).toEqual({
+        message: "No message found to delete with id 'non-existent-id'",
       });
     });
 
@@ -146,6 +169,36 @@ describe('message', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to get messages' });
+
+      jest.restoreAllMocks();
+    });
+
+    it('should return 500 status code when getMessageById throws an error', async () => {
+      jest.spyOn(MessageManager.prototype, 'getMessageById').mockImplementation(() => {
+        throw new Error('Simulated error');
+      });
+
+      const response = await requestSender.getMessageById({
+        pathParams: { id: getResponseMessage.id },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to get message by id' });
+
+      jest.restoreAllMocks();
+    });
+
+    it('should return 500 status code when deleteMessageById throws an error', async () => {
+      jest.spyOn(MessageManager.prototype, 'deleteMessageById').mockImplementation(() => {
+        throw new Error('Simulated error');
+      });
+
+      const response = await requestSender.deleteMessageById({
+        pathParams: { id: getResponseMessage.id },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to delete message' });
 
       jest.restoreAllMocks();
     });

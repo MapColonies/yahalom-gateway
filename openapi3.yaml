@@ -115,6 +115,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
 
+    delete:
+      operationId: deleteMessageById
+      tags:
+        - Message
+      summary: Deletes a message by the provided ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the message to retrieve
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
 security:
   - {}
 

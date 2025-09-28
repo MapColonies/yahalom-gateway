@@ -3,7 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
 import type { components } from '@openapi';
 import { SERVICES } from '@common/constants';
-import { localMesssagesStore } from '../../common/mocks';
+import { localMessagesStore } from '../../common/mocks';
 import { IQueryModel } from './../../common/interfaces';
 
 export type ILogObject = components['schemas']['ILogObject'];
@@ -20,7 +20,7 @@ export class MessageManager {
 
     const newMessage: ILogObject = { ...message, id };
 
-    localMesssagesStore.push(newMessage);
+    localMessagesStore.push(newMessage);
 
     return newMessage;
   }
@@ -30,7 +30,7 @@ export class MessageManager {
 
     const { sessionId, severity, component, messageType } = params;
 
-    const allMessages: ILogObject[] = localMesssagesStore;
+    const allMessages: ILogObject[] = localMessagesStore;
 
     const filteredMessages = allMessages.filter((instance) => {
       if (severity != null && instance.severity !== severity) return false;
@@ -46,7 +46,21 @@ export class MessageManager {
   public getMessageById(id: string): ILogObject | undefined {
     this.logger.info({ msg: `Getting message by ID - ${id}` });
 
-    const message = localMesssagesStore.find((message) => message.id === id);
+    const message = localMessagesStore.find((message) => message.id === id);
     return message ?? undefined;
+  }
+
+  public deleteMessageById(id: string): ILogObject | undefined {
+    this.logger.info({ msg: `Deleting message by ID - ${id}` });
+
+    const index = localMessagesStore.findIndex((message) => message.id === id);
+
+    const NOT_FOUND = -1;
+    if (index !== NOT_FOUND) {
+      const [deletedMessage] = localMessagesStore.splice(index, 1);
+      return deletedMessage;
+    }
+
+    return undefined;
   }
 }
