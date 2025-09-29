@@ -2,7 +2,7 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
 import type { components } from '@openapi';
-import { SERVICES } from '@common/constants';
+import { SERVICES, NOT_FOUND } from '@common/constants';
 import { localMessagesStore } from '../../common/mocks';
 import { IQueryModel } from './../../common/interfaces';
 
@@ -55,7 +55,6 @@ export class MessageManager {
 
     const index = localMessagesStore.findIndex((message) => message.id === id);
 
-    const NOT_FOUND = -1;
     if (index !== NOT_FOUND) {
       const [deletedMessage] = localMessagesStore.splice(index, 1);
       return deletedMessage;

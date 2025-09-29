@@ -112,9 +112,7 @@ describe('message', function () {
       expect(Date.now() + 1000).toBeGreaterThan(new Date(getResponseMessage.timeStamp).getTime());
       expect(response.status).not.toBe(httpStatusCodes.BAD_REQUEST);
     });
-  });
 
-  describe('Sad Path', function () {
     it('should return 404 when the message Id does not exist for get request', async () => {
       const response = await requestSender.getMessageById({
         pathParams: { id: 'non-existent-id' },
@@ -138,6 +136,12 @@ describe('message', function () {
         message: "No message found to delete with id 'non-existent-id'",
       });
     });
+  });
+
+  describe('Sad Path', function () {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
     it('should return 500 status code when createMessage throws an error', async () => {
       jest.spyOn(MessageManager.prototype, 'createMessage').mockImplementation(() => {
@@ -148,8 +152,6 @@ describe('message', function () {
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to create message' });
-
-      jest.restoreAllMocks();
     });
 
     it('should return 500 status code when getMessages throws an error -  gets params', async function () {
@@ -169,8 +171,6 @@ describe('message', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to get messages' });
-
-      jest.restoreAllMocks();
     });
 
     it('should return 500 status code when getMessageById throws an error', async () => {
@@ -184,8 +184,6 @@ describe('message', function () {
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to get message by id' });
-
-      jest.restoreAllMocks();
     });
 
     it('should return 500 status code when deleteMessageById throws an error', async () => {
@@ -199,8 +197,6 @@ describe('message', function () {
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to delete message' });
-
-      jest.restoreAllMocks();
     });
   });
 });
