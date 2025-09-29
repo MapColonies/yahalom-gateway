@@ -72,9 +72,9 @@ export class MessageController {
     try {
       const id = req.params.id;
 
-      const deletedMessage = this.manager.deleteMessageById(id);
+      const message = this.manager.deleteMessageById(id);
 
-      if (!deletedMessage) {
+      if (!message) {
         return res.status(httpStatus.NOT_FOUND).json({ message: `No message found to delete with id '${id}'` });
       }
 

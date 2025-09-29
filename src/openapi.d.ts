@@ -34,7 +34,7 @@ export type paths = {
     delete: operations['deleteMessageById'];
     options?: never;
     head?: never;
-    /** Deletes a message by the provided ID */
+    /** Updates a message by the provided ID */
     patch: operations['patchMessageById'];
     trace?: never;
   };
@@ -96,6 +96,28 @@ export type components = {
       } | null;
       component: components['schemas']['ComponentEnum'];
       messageType: components['schemas']['MessageTypeEnum'];
+    };
+    /** @description Partial update for log object (id not allowed) */
+    UpdateLogObject: {
+      /**
+       * Format: int64
+       * @description Unique session identifier
+       */
+      sessionId?: number;
+      severity?: components['schemas']['SeverityEnum'];
+      /**
+       * Format: date-time
+       * @description Timestamp of the log entry
+       */
+      timeStamp?: string;
+      /** @description Main message text */
+      message?: string;
+      /** @description Additional info */
+      messageParameters?: {
+        [key: string]: unknown;
+      } | null;
+      component?: components['schemas']['ComponentEnum'];
+      messageType?: components['schemas']['MessageTypeEnum'];
     };
     ILogObject: components['schemas']['CreateLogObject'] & {
       /**
@@ -313,7 +335,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateLogObject'];
+      };
+    };
     responses: {
       /** @description Successful response */
       200: {

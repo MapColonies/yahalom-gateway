@@ -82,7 +82,6 @@ describe('message', function () {
 
     it('should return 200 and the correct message for a valid Id', async () => {
       localMessagesStore.push(getResponseMessage);
-      localMessagesStore.push(getResponseMessage);
 
       const response = await requestSender.getMessageById({
         pathParams: { id: getResponseMessage.id },
@@ -108,11 +107,12 @@ describe('message', function () {
 
       const response = await requestSender.patchMessageById({
         pathParams: { id: getResponseMessage.id },
-        requestBody: { severity: 'WARNING' },
+        requestBody: { message: 'message was updated' },
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body.message).toBe('message was updated');
     });
   });
 

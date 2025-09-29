@@ -66,11 +66,6 @@ export class MessageManager {
   public patchMessageById(id: string, messageChanges: ILogObject): ILogObject | undefined {
     this.logger.info({ msg: `Pathcing message by ID - ${id}`, id });
 
-    // message id is not changeable
-    if (messageChanges.id) {
-      return undefined;
-    }
-
     const index = localMessagesStore.findIndex((message) => message.id === id);
 
     if (index !== NOT_FOUND) {

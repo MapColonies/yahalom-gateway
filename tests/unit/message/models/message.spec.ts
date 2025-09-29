@@ -142,14 +142,5 @@ describe('MessageManager', () => {
       const result = messageManager.patchMessageById('999', patch as ILogObject);
       expect(result).toBeUndefined();
     });
-
-    it('should return undefined if trying to change Id', () => {
-      const patch: Partial<ILogObject> = {
-        id: 'new-id',
-      };
-
-      const result = messageManager.patchMessageById('1', patch as ILogObject);
-      expect(result).toBeUndefined();
-    });
   });
 });
