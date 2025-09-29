@@ -104,5 +104,15 @@ describe('MessageManager', () => {
       const messages = messageManager.getMessages(query);
       expect(messages).toHaveLength(1);
     });
+
+    it('should return the message with the given Id', () => {
+      const message = messageManager.getMessageById(getResponseMessage.id);
+      expect(message).toEqual(getResponseMessage);
+    });
+
+    it('should return null if no message with the given ID exists', () => {
+      const message = messageManager.getMessageById('non-existent-id');
+      expect(message).toBeUndefined();
+    });
   });
 });

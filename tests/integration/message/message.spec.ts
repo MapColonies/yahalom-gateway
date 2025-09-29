@@ -77,7 +77,19 @@ describe('message', function () {
       const response = await requestSender.getMessages();
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).not.toBe(httpStatusCodes.NO_CONTENT);
+      expect(response.status).toBe(httpStatusCodes.OK);
+    });
+
+    it('should return 200 and the correct message for a valid Id', async () => {
+      localMesssagesStore.push(getResponseMessage);
+
+      const response = await requestSender.getMessageById({
+        pathParams: { id: getResponseMessage.id },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual(getResponseMessage);
     });
   });
 
@@ -93,6 +105,18 @@ describe('message', function () {
   });
 
   describe('Sad Path', function () {
+    it('should return 404 when the message Id does not exist', async () => {
+      const response = await requestSender.getMessageById({
+        pathParams: { id: 'non-existent-id' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.body).toEqual({
+        message: 'No message found with id non-existent-id',
+      });
+    });
+
     it('should return 500 status code when createMessage throws an error', async () => {
       jest.spyOn(MessageManager.prototype, 'createMessage').mockImplementation(() => {
         throw new Error('Simulated error');
