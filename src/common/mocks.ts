@@ -15,4 +15,4 @@ export const getResponseMessage: IMessageModel = {
 };
 
 // TODO: delete this row when real database will appear
-export const localMesssagesStore: IMessageModel[] = [];
+export const localMessagesStore: IMessageModel[] = [];

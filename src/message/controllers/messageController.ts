@@ -5,7 +5,7 @@ import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager, ILogObject } from '../models/messageManager';
-import { localMesssagesStore } from '../../common/mocks';
+import { localMessagesStore } from '../../common/mocks';
 import { IQueryModel } from './../../common/interfaces';
 
 @injectable()
@@ -42,7 +42,7 @@ export class MessageController {
 
       const hasParams = !!params && Object.keys(params).length > 0;
 
-      const resultMessages: ILogObject[] = hasParams ? this.manager.getMessages(params) : localMesssagesStore;
+      const resultMessages: ILogObject[] = hasParams ? this.manager.getMessages(params) : localMessagesStore;
 
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {
@@ -53,18 +53,35 @@ export class MessageController {
 
   public getMessageById: TypedRequestHandlers['GET /message/{id}'] = (req, res) => {
     try {
-      const id = String(req.params.id);
+      const id = req.params.id;
 
       const message = this.manager.getMessageById(id);
 
       if (!message) {
-        return res.status(httpStatus.NOT_FOUND).json({ message: `No message found with id ${id}` });
+        return res.status(httpStatus.NOT_FOUND).json({ message: `No message found with id '${id}'` });
       }
 
       return res.status(httpStatus.OK).json(message);
     } catch (error) {
       this.logger.error({ msg: 'Error retrieving message', error });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get message' });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get message by id' });
+    }
+  };
+
+  public deleteMessageById: TypedRequestHandlers['DELETE /message/{id}'] = (req, res) => {
+    try {
+      const id = req.params.id;
+
+      const message = this.manager.deleteMessageById(id);
+
+      if (!message) {
+        return res.status(httpStatus.NOT_FOUND).json({ message: `No message found to delete with id '${id}'` });
+      }
+
+      return res.status(httpStatus.OK).json();
+    } catch (error) {
+      this.logger.error({ msg: 'Error retrieving message', error });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete message' });
     }
   };
 }

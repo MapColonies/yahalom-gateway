@@ -30,7 +30,8 @@ export type paths = {
     get: operations['getMessageById'];
     put?: never;
     post?: never;
-    delete?: never;
+    /** Deletes a message by the provided ID */
+    delete: operations['deleteMessageById'];
     options?: never;
     head?: never;
     patch?: never;
@@ -243,6 +244,54 @@ export interface operations {
         };
       };
       /** @description Internal Server Error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+    };
+  };
+  deleteMessageById: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The ID of the message to retrieve */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+      /** @description Internal Server Error+ */
       500: {
         headers: {
           [name: string]: unknown;

@@ -1,6 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { MessageManager } from '@src/message/models/messageManager';
-import { getResponseMessage, localMesssagesStore } from '../../../../src/common/mocks';
+import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
 import { IQueryModel } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;
@@ -8,7 +8,7 @@ let messageManager: MessageManager;
 describe('MessageManager', () => {
   beforeEach(() => {
     messageManager = new MessageManager(jsLogger({ enabled: false }));
-    localMesssagesStore.length = 0; // clear the store before each test
+    localMessagesStore.length = 0; // clear the store before each test
   });
 
   describe('#createMessage', () => {
@@ -20,7 +20,7 @@ describe('MessageManager', () => {
 
   describe('#getMessages', () => {
     beforeEach(() => {
-      localMesssagesStore.push(getResponseMessage); // for testing the quary
+      localMessagesStore.push(getResponseMessage); // for testing the quary, should be replaced when adding db
     });
 
     it('should return matching message with all filters', () => {
@@ -110,8 +110,18 @@ describe('MessageManager', () => {
       expect(message).toEqual(getResponseMessage);
     });
 
-    it('should return null if no message with the given ID exists', () => {
+    it('should return null if no message with the given Id exists for get request', () => {
       const message = messageManager.getMessageById('non-existent-id');
+      expect(message).toBeUndefined();
+    });
+
+    it('should return the deleted message Id with', () => {
+      const message = messageManager.deleteMessageById(getResponseMessage.id);
+      expect(message).toEqual(getResponseMessage);
+    });
+
+    it('should return null if no message with the given Id exists for delete request', () => {
+      const message = messageManager.deleteMessageById('non-existent-id');
       expect(message).toBeUndefined();
     });
   });
