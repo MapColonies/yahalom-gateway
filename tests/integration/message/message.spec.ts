@@ -91,7 +91,7 @@ describe('message', function () {
       expect(response.status).toBe(httpStatusCodes.OK);
     });
 
-    it('should return 200 and Id of the deleted message', async () => {
+    it('should return 200 for successful deleted message request', async () => {
       localMessagesStore.push(getResponseMessage);
 
       const response = await requestSender.deleteMessageById({

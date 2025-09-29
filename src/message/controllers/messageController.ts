@@ -78,7 +78,7 @@ export class MessageController {
         return res.status(httpStatus.NOT_FOUND).json({ message: `No message found to delete with id '${id}'` });
       }
 
-      return res.status(httpStatus.OK).json({ id: `Message with id '${id}' was deleted successfully` });
+      return res.status(httpStatus.OK).json();
     } catch (error) {
       this.logger.error({ msg: 'Error retrieving message', error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete message' });

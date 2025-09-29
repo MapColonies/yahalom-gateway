@@ -271,11 +271,7 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content: {
-          'application/json': {
-            id?: string;
-          };
-        };
+        content?: never;
       };
       /** @description Bad Request */
       400: {
