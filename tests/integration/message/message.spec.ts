@@ -89,6 +89,7 @@ describe('message', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual(getResponseMessage);
     });
   });
 

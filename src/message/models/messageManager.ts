@@ -44,7 +44,7 @@ export class MessageManager {
   }
 
   public getMessageById(id: string): ILogObject | undefined {
-    this.logger.info({ msg: `Getting message by ID - ${id}` });
+    this.logger.info({ msg: `Getting message by ID - ${id}` }, id);
 
     const message = localMesssagesStore.find((message) => message.id === id);
     return message ?? undefined;
