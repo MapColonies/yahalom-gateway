@@ -47,7 +47,7 @@ export class MessageManager {
     this.logger.info({ msg: `Getting message by ID - ${id}`, id });
 
     const message = localMessagesStore.find((message) => message.id === id);
-    return message ?? undefined;
+    return message;
   }
 
   public deleteMessageById(id: string): ILogObject | undefined {
