@@ -9,6 +9,7 @@ describe('MessageManager', () => {
   beforeEach(() => {
     messageManager = new MessageManager(jsLogger({ enabled: false }));
     localMessagesStore.length = 0; // clear the store before each test
+    localMessagesStore.length = 0; // clear the store before each test
   });
 
   describe('#createMessage', () => {
@@ -20,6 +21,7 @@ describe('MessageManager', () => {
 
   describe('#getMessages', () => {
     beforeEach(() => {
+      localMessagesStore.push(getResponseMessage); // for testing the quary, should be replaced when adding db
       localMessagesStore.push(getResponseMessage); // for testing the quary, should be replaced when adding db
     });
 
@@ -110,6 +112,7 @@ describe('MessageManager', () => {
       expect(message).toEqual(getResponseMessage);
     });
 
+    it('should return null if no message with the given Id exists for get request', () => {
     it('should return null if no message with the given Id exists for get request', () => {
       const message = messageManager.getMessageById('non-existent-id');
       expect(message).toBeUndefined();

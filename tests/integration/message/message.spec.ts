@@ -7,6 +7,7 @@ import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
+import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
 import { MessageManager } from './../../../src/message/models/messageManager';
 
 describe('message', function () {
@@ -25,6 +26,7 @@ describe('message', function () {
       useChild: true,
     });
     requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+    localMessagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
     localMessagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
   });
 
@@ -82,6 +84,7 @@ describe('message', function () {
 
     it('should return 200 and the correct message for a valid Id', async () => {
       localMessagesStore.push(getResponseMessage);
+      localMessagesStore.push(getResponseMessage);
 
       const response = await requestSender.getMessageById({
         pathParams: { id: getResponseMessage.id },
@@ -124,7 +127,9 @@ describe('message', function () {
       expect(Date.now() + 1000).toBeGreaterThan(new Date(getResponseMessage.timeStamp).getTime());
       expect(response.status).not.toBe(httpStatusCodes.BAD_REQUEST);
     });
+    });
 
+    it('should return 404 when the message Id does not exist for get request', async () => {
     it('should return 404 when the message Id does not exist for get request', async () => {
       const response = await requestSender.getMessageById({
         pathParams: { id: 'non-existent-id' },
