@@ -72,9 +72,9 @@ export class MessageController {
     try {
       const id = req.params.id;
 
-      const message = this.manager.deleteMessageById(id);
+      const deletedMessage = this.manager.deleteMessageById(id);
 
-      if (!message) {
+      if (!deletedMessage) {
         return res.status(httpStatus.NOT_FOUND).json({ message: `No message found to delete with id '${id}'` });
       }
 
@@ -82,6 +82,28 @@ export class MessageController {
     } catch (error) {
       this.logger.error({ msg: 'Error retrieving message', error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete message' });
+    }
+  };
+
+  public patchMessageById: TypedRequestHandlers['PATCH /message/{id}'] = (req, res) => {
+    try {
+      const id = req.params.id;
+      const messageChanges = req.body as ILogObject | undefined;
+
+      if (!messageChanges || Object.keys(messageChanges).length === 0) {
+        return res.status(httpStatus.BAD_REQUEST).json({ message: `No params found to patch with id '${id}'` });
+      }
+
+      const updatedMessage = this.manager.patchMessageById(id, messageChanges);
+
+      if (!updatedMessage) {
+        return res.status(httpStatus.NOT_FOUND).json({ message: `No message found with id '${id}'` });
+      }
+
+      return res.status(httpStatus.OK).json(updatedMessage);
+    } catch (error) {
+      this.logger.error({ msg: 'Error retrieving message', error });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to patch message' });
     }
   };
 }

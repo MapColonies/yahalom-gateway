@@ -101,6 +101,18 @@ describe('message', function () {
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
     });
+
+    it('should return 200 and patched message when valid id and body are provided', async () => {
+      localMessagesStore.push(getResponseMessage);
+
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: getResponseMessage.id },
+        requestBody: { severity: 'WARNING' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+    });
   });
 
   describe('Bad Path', function () {
@@ -134,6 +146,34 @@ describe('message', function () {
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
       expect(response.body).toEqual({
         message: "No message found to delete with id 'non-existent-id'",
+      });
+    });
+
+    it('should return 400 when patch body is empty', async () => {
+      localMessagesStore.push(getResponseMessage);
+
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: getResponseMessage.id },
+        requestBody: {},
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        message: `No params found to patch with id '${getResponseMessage.id}'`,
+      });
+    });
+
+    it('should return 404 when patching non-existent id', async () => {
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: 'non-existent-id' },
+        requestBody: { severity: 'WARNING' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.body).toEqual({
+        message: "No message found with id 'non-existent-id'",
       });
     });
   });
@@ -197,6 +237,20 @@ describe('message', function () {
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to delete message' });
+    });
+
+    it('should return 500 status code when patchMessageById throws an error', async () => {
+      jest.spyOn(MessageManager.prototype, 'patchMessageById').mockImplementation(() => {
+        throw new Error('Simulated error');
+      });
+
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: getResponseMessage.id },
+        requestBody: { severity: 'WARNING' },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to patch message' });
     });
   });
 });

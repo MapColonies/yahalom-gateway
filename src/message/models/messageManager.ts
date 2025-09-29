@@ -51,13 +51,33 @@ export class MessageManager {
   }
 
   public deleteMessageById(id: string): ILogObject | undefined {
-    this.logger.info({ msg: `Deleting message by ID - ${id}, id` });
+    this.logger.info({ msg: `Deleting message by ID - ${id}`, id });
 
     const index = localMessagesStore.findIndex((message) => message.id === id);
 
     if (index !== NOT_FOUND) {
       const [deletedMessage] = localMessagesStore.splice(index, 1);
       return deletedMessage;
+    }
+
+    return undefined;
+  }
+
+  public patchMessageById(id: string, messageChanges: ILogObject): ILogObject | undefined {
+    this.logger.info({ msg: `Pathcing message by ID - ${id}`, id });
+
+    // message id is not changeable
+    if (messageChanges.id) {
+      return undefined;
+    }
+
+    const index = localMessagesStore.findIndex((message) => message.id === id);
+
+    if (index !== NOT_FOUND) {
+      localMessagesStore[index] = { ...localMessagesStore[index], ...messageChanges };
+
+      const updatedMessage = localMessagesStore[index];
+      return updatedMessage;
     }
 
     return undefined;
