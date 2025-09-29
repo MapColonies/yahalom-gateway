@@ -51,7 +51,7 @@ export class MessageManager {
   }
 
   public deleteMessageById(id: string): ILogObject | undefined {
-    this.logger.info({ msg: `Deleting message by ID - ${id}` });
+    this.logger.info({ msg: `Deleting message by ID - ${id}, id` });
 
     const index = localMessagesStore.findIndex((message) => message.id === id);
 
