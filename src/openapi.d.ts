@@ -31,10 +31,11 @@ export type paths = {
     put?: never;
     post?: never;
     /** Deletes a message by the provided ID */
-    delete: operations['deleteMessageById'];
+    delete: operations['tryDeleteMessageById'];
     options?: never;
     head?: never;
-    patch?: never;
+    /** Updates a message by the provided ID */
+    patch: operations['patchMessageById'];
     trace?: never;
   };
 };
@@ -95,6 +96,28 @@ export type components = {
       } | null;
       component: components['schemas']['ComponentEnum'];
       messageType: components['schemas']['MessageTypeEnum'];
+    };
+    /** @description Partial update for log object (id not allowed) */
+    PatchBodyFields: {
+      /**
+       * Format: int64
+       * @description Unique session identifier
+       */
+      sessionId?: number;
+      severity?: components['schemas']['SeverityEnum'];
+      /**
+       * Format: date-time
+       * @description Timestamp of the log entry
+       */
+      timeStamp?: string;
+      /** @description Main message text */
+      message?: string;
+      /** @description Additional info */
+      messageParameters?: {
+        [key: string]: unknown;
+      } | null;
+      component?: components['schemas']['ComponentEnum'];
+      messageType?: components['schemas']['MessageTypeEnum'];
     };
     ILogObject: components['schemas']['CreateLogObject'] & {
       /**
@@ -254,7 +277,7 @@ export interface operations {
       };
     };
   };
-  deleteMessageById: {
+  tryDeleteMessageById: {
     parameters: {
       query?: never;
       header?: never;
@@ -272,6 +295,60 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+      /** @description Internal Server Error+ */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['error'];
+        };
+      };
+    };
+  };
+  patchMessageById: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The ID of the message to retrieve */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PatchBodyFields'];
+      };
+    };
+    responses: {
+      /** @description Successful response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ILogObject'];
+        };
       };
       /** @description Bad Request */
       400: {

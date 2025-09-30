@@ -1,5 +1,5 @@
 import jsLogger from '@map-colonies/js-logger';
-import { MessageManager } from '@src/message/models/messageManager';
+import { ILogObject, MessageManager } from '@src/message/models/messageManager';
 import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
 import { IQueryModel } from './../../../../src/common/interfaces';
 
@@ -115,14 +115,32 @@ describe('MessageManager', () => {
       expect(message).toBeUndefined();
     });
 
-    it('should return the deleted message Id with', () => {
-      const message = messageManager.deleteMessageById(getResponseMessage.id);
-      expect(message).toEqual(getResponseMessage);
+    it('should return true for the deleted message', () => {
+      const message = messageManager.tryDeleteMessageById(getResponseMessage.id);
+      expect(message).toBeTruthy();
     });
 
     it('should return null if no message with the given Id exists for delete request', () => {
-      const message = messageManager.deleteMessageById('non-existent-id');
-      expect(message).toBeUndefined();
+      const message = messageManager.tryDeleteMessageById('non-existent-id');
+      expect(message).toBeFalsy();
+    });
+
+    it('should return the updated message', () => {
+      const patch: Partial<ILogObject> = {
+        message: 'updated',
+      };
+
+      const updated = messageManager.patchMessageById('1', patch as ILogObject);
+      expect(updated).toHaveProperty('message', 'updated');
+    });
+
+    it('should return undefined if message Id does not exist', () => {
+      const patch: Partial<ILogObject> = {
+        message: 'nope',
+      };
+
+      const result = messageManager.patchMessageById('999', patch as ILogObject);
+      expect(result).toBeUndefined();
     });
   });
 });

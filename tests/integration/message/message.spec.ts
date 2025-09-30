@@ -94,12 +94,25 @@ describe('message', function () {
     it('should return 200 for successful deleted message request', async () => {
       localMessagesStore.push(getResponseMessage);
 
-      const response = await requestSender.deleteMessageById({
+      const response = await requestSender.tryDeleteMessageById({
         pathParams: { id: getResponseMessage.id },
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
+    });
+
+    it('should return 200 and patched message when valid id and body are provided', async () => {
+      localMessagesStore.push(getResponseMessage);
+
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: getResponseMessage.id },
+        requestBody: { message: 'message was updated' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body.message).toBe('message was updated');
     });
   });
 
@@ -126,7 +139,7 @@ describe('message', function () {
     });
 
     it('should return 404 when the message Id does not exist for delete request', async () => {
-      const response = await requestSender.deleteMessageById({
+      const response = await requestSender.tryDeleteMessageById({
         pathParams: { id: 'non-existent-id' },
       });
 
@@ -134,6 +147,34 @@ describe('message', function () {
       expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
       expect(response.body).toEqual({
         message: "No message found to delete with id 'non-existent-id'",
+      });
+    });
+
+    it('should return 400 when patch body is empty', async () => {
+      localMessagesStore.push(getResponseMessage);
+
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: getResponseMessage.id },
+        requestBody: {},
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({
+        message: `No params found to patch with id '${getResponseMessage.id}'`,
+      });
+    });
+
+    it('should return 404 when patching non-existent id', async () => {
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: 'non-existent-id' },
+        requestBody: { severity: 'WARNING' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+      expect(response.body).toEqual({
+        message: "No message found with id 'non-existent-id'",
       });
     });
   });
@@ -186,17 +227,31 @@ describe('message', function () {
       expect(response.body).toEqual({ message: 'Failed to get message by id' });
     });
 
-    it('should return 500 status code when deleteMessageById throws an error', async () => {
-      jest.spyOn(MessageManager.prototype, 'deleteMessageById').mockImplementation(() => {
+    it('should return 500 status code when tryDeleteMessageById throws an error', async () => {
+      jest.spyOn(MessageManager.prototype, 'tryDeleteMessageById').mockImplementation(() => {
         throw new Error('Simulated error');
       });
 
-      const response = await requestSender.deleteMessageById({
+      const response = await requestSender.tryDeleteMessageById({
         pathParams: { id: getResponseMessage.id },
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to delete message' });
+    });
+
+    it('should return 500 status code when patchMessageById throws an error', async () => {
+      jest.spyOn(MessageManager.prototype, 'patchMessageById').mockImplementation(() => {
+        throw new Error('Simulated error');
+      });
+
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: getResponseMessage.id },
+        requestBody: { severity: 'WARNING' },
+      });
+
+      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({ message: 'Failed to patch message' });
     });
   });
 });
