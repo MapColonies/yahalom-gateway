@@ -50,7 +50,7 @@ export class MessageManager {
     return message;
   }
 
-  public tryDeleteMessageById(id: string): boolean | undefined {
+  public tryDeleteMessageById(id: string): boolean {
     this.logger.info({ msg: `Deleting message by ID - ${id}`, id });
 
     const index = localMessagesStore.findIndex((message) => message.id === id);
@@ -60,7 +60,7 @@ export class MessageManager {
       return true;
     }
 
-    return undefined;
+    return false;
   }
 
   public patchMessageById(id: string, messageChanges: ILogObject): ILogObject | undefined {
