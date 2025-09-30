@@ -50,14 +50,29 @@ export class MessageManager {
     return message;
   }
 
-  public deleteMessageById(id: string): ILogObject | undefined {
-    this.logger.info({ msg: `Deleting message by ID - ${id}, id` });
+  public tryDeleteMessageById(id: string): boolean {
+    this.logger.info({ msg: `Deleting message by ID - ${id}`, id });
 
     const index = localMessagesStore.findIndex((message) => message.id === id);
 
     if (index !== NOT_FOUND) {
-      const [deletedMessage] = localMessagesStore.splice(index, 1);
-      return deletedMessage;
+      localMessagesStore.splice(index, 1);
+      return true;
+    }
+
+    return false;
+  }
+
+  public patchMessageById(id: string, messageChanges: ILogObject): ILogObject | undefined {
+    this.logger.info({ msg: `Pathcing message by ID - ${id}`, id });
+
+    const index = localMessagesStore.findIndex((message) => message.id === id);
+
+    if (index !== NOT_FOUND) {
+      localMessagesStore[index] = { ...localMessagesStore[index], ...messageChanges };
+
+      const updatedMessage = localMessagesStore[index];
+      return updatedMessage;
     }
 
     return undefined;
