@@ -94,7 +94,7 @@ describe('message', function () {
     it('should return 200 for successful deleted message request', async () => {
       localMessagesStore.push(getResponseMessage);
 
-      const response = await requestSender.deleteMessageById({
+      const response = await requestSender.tryDeleteMessageById({
         pathParams: { id: getResponseMessage.id },
       });
 
@@ -139,7 +139,7 @@ describe('message', function () {
     });
 
     it('should return 404 when the message Id does not exist for delete request', async () => {
-      const response = await requestSender.deleteMessageById({
+      const response = await requestSender.tryDeleteMessageById({
         pathParams: { id: 'non-existent-id' },
       });
 
@@ -227,12 +227,12 @@ describe('message', function () {
       expect(response.body).toEqual({ message: 'Failed to get message by id' });
     });
 
-    it('should return 500 status code when deleteMessageById throws an error', async () => {
-      jest.spyOn(MessageManager.prototype, 'deleteMessageById').mockImplementation(() => {
+    it('should return 500 status code when tryDeleteMessageById throws an error', async () => {
+      jest.spyOn(MessageManager.prototype, 'tryDeleteMessageById').mockImplementation(() => {
         throw new Error('Simulated error');
       });
 
-      const response = await requestSender.deleteMessageById({
+      const response = await requestSender.tryDeleteMessageById({
         pathParams: { id: getResponseMessage.id },
       });
 

@@ -31,7 +31,7 @@ export type paths = {
     put?: never;
     post?: never;
     /** Deletes a message by the provided ID */
-    delete: operations['deleteMessageById'];
+    delete: operations['tryDeleteMessageById'];
     options?: never;
     head?: never;
     /** Updates a message by the provided ID */
@@ -98,7 +98,7 @@ export type components = {
       messageType: components['schemas']['MessageTypeEnum'];
     };
     /** @description Partial update for log object (id not allowed) */
-    UpdateLogObject: {
+    PatchBodyFields: {
       /**
        * Format: int64
        * @description Unique session identifier
@@ -277,7 +277,7 @@ export interface operations {
       };
     };
   };
-  deleteMessageById: {
+  tryDeleteMessageById: {
     parameters: {
       query?: never;
       header?: never;
@@ -337,7 +337,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['UpdateLogObject'];
+        'application/json': components['schemas']['PatchBodyFields'];
       };
     };
     responses: {

@@ -115,7 +115,7 @@ paths:
                 $ref: '#/components/schemas/error'
 
     delete:
-      operationId: deleteMessageById
+      operationId: tryDeleteMessageById
       tags:
         - Message
       summary: Deletes a message by the provided ID

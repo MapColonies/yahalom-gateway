@@ -9,7 +9,7 @@ const messageRouterFactory: FactoryFunction<Router> = (dependencyContainer) => {
   router.post('/', controller.createMessage);
   router.get('/', controller.getMessages);
   router.get('/:id', controller.getMessageById);
-  router.delete('/:id', controller.deleteMessageById);
+  router.delete('/:id', controller.tryDeleteMessageById);
   router.patch('/:id', controller.patchMessageById);
 
   return router;

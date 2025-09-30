@@ -68,13 +68,13 @@ export class MessageController {
     }
   };
 
-  public deleteMessageById: TypedRequestHandlers['DELETE /message/{id}'] = (req, res) => {
+  public tryDeleteMessageById: TypedRequestHandlers['DELETE /message/{id}'] = (req, res) => {
     try {
       const id = req.params.id;
 
-      const tryPatchMessage = this.manager.deleteMessageById(id);
+      const isDeleted = this.manager.tryDeleteMessageById(id);
 
-      if (!tryPatchMessage) {
+      if (!isDeleted!) {
         return res.status(httpStatus.NOT_FOUND).json({ message: `No message found to delete with id '${id}'` });
       }
 
