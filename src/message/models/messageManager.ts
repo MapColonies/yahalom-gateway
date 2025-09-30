@@ -50,14 +50,14 @@ export class MessageManager {
     return message;
   }
 
-  public deleteMessageById(id: string): ILogObject | undefined {
+  public deleteMessageById(id: string): boolean | undefined {
     this.logger.info({ msg: `Deleting message by ID - ${id}`, id });
 
     const index = localMessagesStore.findIndex((message) => message.id === id);
 
     if (index !== NOT_FOUND) {
-      const [deletedMessage] = localMessagesStore.splice(index, 1);
-      return deletedMessage;
+      localMessagesStore.splice(index, 1);
+      return true;
     }
 
     return undefined;

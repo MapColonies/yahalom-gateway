@@ -115,9 +115,9 @@ describe('MessageManager', () => {
       expect(message).toBeUndefined();
     });
 
-    it('should return the deleted message Id', () => {
+    it('should return true for the deleted message', () => {
       const message = messageManager.deleteMessageById(getResponseMessage.id);
-      expect(message).toEqual(getResponseMessage);
+      expect(message).toEqual(true);
     });
 
     it('should return null if no message with the given Id exists for delete request', () => {
