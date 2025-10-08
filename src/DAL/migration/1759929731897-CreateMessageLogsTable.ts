@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
 export class CreateMessageLogsTable1759929731897 implements MigrationInterface {

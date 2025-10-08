@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { Message } from './entities/Message';
