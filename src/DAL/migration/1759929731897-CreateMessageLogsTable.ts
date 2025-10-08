@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class CreateMessageLogsTable1759919024652 implements MigrationInterface {
+export class CreateMessageLogsTable1759929731897 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -8,7 +8,7 @@ export class CreateMessageLogsTable1759919024652 implements MigrationInterface {
         columns: [
           {
             name: 'id',
-            type: 'serial', // or 'int' if you prefer, but it's a string in your entity — likely a mistake?
+            type: 'varchar', // TOOD: change type to serial/int when implemeting CRUD with pg
             isPrimary: true,
           },
           {
@@ -54,6 +54,6 @@ export class CreateMessageLogsTable1759919024652 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('messlog_objectage');
+    await queryRunner.dropTable('log_object');
   }
 }
