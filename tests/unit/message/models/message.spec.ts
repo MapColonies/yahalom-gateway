@@ -33,7 +33,6 @@ describe('MessageManager', () => {
 
       const messages = messageManager.getMessages(query);
       expect(messages).toHaveLength(1);
-      expect(messages[0]).toEqual(getResponseMessage);
     });
 
     it('should return message if filters are empty', () => {

@@ -1,5 +1,6 @@
-const { pathsToModuleNameMapper } = require('ts-jest');
-const { compilerOptions } = require('../../../tsconfig.json');
+import 'reflect-metadata';
+import { pathsToModuleNameMapper } from 'ts-jest';
+import { compilerOptions } from '../../../tsconfig.json' assert { type: 'json' };
 
 /** @type {import('jest').Config} */
 module.exports = {

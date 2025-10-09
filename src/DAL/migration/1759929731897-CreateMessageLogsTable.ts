@@ -24,7 +24,7 @@ export class CreateMessageLogsTable1759929731897 implements MigrationInterface {
           },
           {
             name: 'timeStamp',
-            type: 'timestamp',
+            type: 'varchar',
             isNullable: false,
           },
           {
