@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { Timestamp } from 'typeorm/browser';
+import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
 
 @Entity()
