@@ -1,4 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Timestamp } from 'typeorm/browser';
+import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
 
 @Entity()
 export class Message {
@@ -8,21 +10,21 @@ export class Message {
   @Column()
   public sessionId!: number;
 
-  @Column()
-  public severity!: string;
+  @Column({ type: 'enum', enum: SeverityLevels })
+  public severity!: SeverityLevels;
 
   @Column()
-  public timeStamp!: Date;
+  public timeStamp!: Timestamp;
 
-  @Column()
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   public message!: string;
 
   @Column('jsonb', { default: {} })
   public messageParameters!: Record<string, undefined>;
 
-  @Column()
-  public component!: string;
+  @Column({ type: 'enum', enum: LogComponent })
+  public component!: LogComponent;
 
-  @Column()
-  public messageType!: string;
+  @Column({ type: 'enum', enum: AnalyticsMessageTypes })
+  public messageType!: AnalyticsMessageTypes;
 }
