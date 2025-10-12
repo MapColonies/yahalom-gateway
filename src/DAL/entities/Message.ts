@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
 

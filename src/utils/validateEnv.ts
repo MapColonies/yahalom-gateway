@@ -1,4 +1,5 @@
 /* eslint-disable */
+/* istanbul ignore file */
 import { cleanEnv, str, port } from 'envalid';
 
 export const env = cleanEnv(process.env, {
