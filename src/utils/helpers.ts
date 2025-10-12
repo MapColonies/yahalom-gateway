@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Message } from '@src/DAL/entities/Message';
 import { ILogObject } from './../../src/common/interfaces';
 

@@ -2,10 +2,14 @@ import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
+import { DeepPartial } from 'typeorm';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
+import { Message } from '@src/DAL/entities/Message';
+import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
+import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '@src/common/interfaces';
 import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
 import { MessageManager } from './../../../src/message/models/messageManager';
 
@@ -13,19 +17,50 @@ describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
 
   beforeAll(async function () {
-    await initConfig(true);
+    try {
+      await initConfig(true);
+      console.log('✅ Config initialized');
+
+      if (!messageLogsDataSource.isInitialized) {
+        await messageLogsDataSource.initialize();
+        console.log('✅ DataSource initialized');
+      } else {
+        console.log('ℹ️ DataSource already initialized');
+      }
+
+      // ✅ Run migrations here
+      await messageLogsDataSource.runMigrations();
+      console.log('✅ Migrations applied');
+    } catch (err) {
+      console.error('❌ Error in beforeAll:', err);
+      throw new Error('💥 Failing in beforeAll: ');
+    }
   });
 
   beforeEach(async function () {
-    const [app] = await getApp({
-      override: [
-        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-      ],
-      useChild: true,
-    });
-    requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
-    localMessagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
+    try {
+      const [app] = await getApp({
+        override: [
+          { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
+          { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
+        ],
+        useChild: true,
+      });
+
+      requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+      localMessagesStore.length = 0;
+
+      console.log('✅ App and requestSender initialized');
+
+      const repo = messageLogsDataSource.getRepository(Message);
+      console.log('🛠 Repository:', repo.metadata.tableName);
+
+      await repo.clear();
+      console.log('✅ Message table cleared');
+    } catch (err) {
+      console.error('❌ Error in beforeEach:', err);
+      throw new Error('💥 Failing in beforeEach: ');
+    }
   });
 
   describe('Happy Path', function () {
@@ -39,6 +74,18 @@ describe('message', function () {
     });
 
     it('should return 200 status code and appropriate message when no messages match filters', async function () {
+      const message: DeepPartial<Message> = {
+        id: 'not-matching-id',
+        sessionId: 9999,
+        severity: 'INFO' as SeverityLevels,
+        component: 'OTHER' as LogComponent,
+        messageType: 'APPSTARTED' as AnalyticsMessageTypes,
+        message: 'Non-matching message',
+        timeStamp: new Date(),
+      };
+
+      await messageLogsDataSource.getRepository(Message).save(message);
+
       const response = await requestSender.getMessages({
         queryParams: {
           sessionId: 22342,
@@ -50,13 +97,27 @@ describe('message', function () {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual([]);
     });
 
-    it('should return 200 status code and hadnling if no query params provided', async function () {
+    it('should return 200 status code and handling if no query params provided', async function () {
+      const message: DeepPartial<Message> = {
+        id: 'no-filters-id',
+        sessionId: 2234234,
+        severity: 'ERROR' as SeverityLevels,
+        component: 'MAP' as LogComponent,
+        messageType: 'APPEXITED' as AnalyticsMessageTypes,
+        message: 'Test message',
+        timeStamp: new Date(),
+      };
+
+      await messageLogsDataSource.getRepository(Message).save(message);
+
       const response = await requestSender.getMessages();
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toHaveLength(1);
     });
 
     it('should return 200 and empty array when query params explicitly set to undefined', async () => {
@@ -70,14 +131,30 @@ describe('message', function () {
     });
 
     it('should return 200 status code and filtered messages', async function () {
-      await requestSender.createMessage({
-        requestBody: getResponseMessage,
-      });
+      const message: DeepPartial<Message> = {
+        id: 'matching-id',
+        sessionId: 2234234,
+        severity: 'ERROR' as SeverityLevels,
+        component: 'MAP' as LogComponent,
+        messageType: 'APPEXITED' as AnalyticsMessageTypes,
+        message: 'Test message',
+        timeStamp: new Date(),
+      };
 
-      const response = await requestSender.getMessages();
+      await messageLogsDataSource.getRepository(Message).save(message);
+
+      const response = await requestSender.getMessages({
+        queryParams: {
+          sessionId: 2234234,
+          severity: 'ERROR',
+          component: 'MAP',
+          messageType: 'APPEXITED',
+        },
+      });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toHaveLength(1);
     });
 
     it('should return 200 and the correct message for a valid Id', async () => {

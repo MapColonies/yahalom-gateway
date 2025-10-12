@@ -4,8 +4,11 @@
   "description": "This is a restAPI service for 3d products",
   "main": "./src/index.ts",
   "scripts": {
-    "test:unit": "jest --config=./tests/configurations/unit/jest.config.js",
-    "test:integration": "jest --config=./tests/configurations/integration/jest.config.js",
+    "test:unit": "jest --config=./tests/configurations/unit/jest.config.cjs",
+    "test:integration": "cross-env NODE_ENV=test jest --config=./tests/configurations/integration/jest.config.cjs",
+    "docker:db": "docker-compose up -d",
+    "docker:db:stop": "docker-compose down",
+    "test:integration:docker": "npm run docker:db && npm run migration:run && npm run test:integration && npm run docker:db:stop",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "prelint:fix": "npm run format:fix",

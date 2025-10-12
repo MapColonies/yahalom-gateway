@@ -1,9 +1,31 @@
+import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { ILogObject, MessageManager } from '@src/message/models/messageManager';
+import { MessageManager } from '@src/message/models/messageManager';
+import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
+import { Message } from '@src/DAL/entities/Message';
 import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
-import { IQueryModel } from './../../../../src/common/interfaces';
+import { IQueryModel, ILogObject, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;
+
+jest.mock('@src/DAL/messageLogsSource', () => {
+  return {
+    messageLogsDataSource: {
+      getRepository: jest.fn(),
+    },
+  };
+});
+
+const mockAndWhere = jest.fn().mockReturnThis();
+const mockGetMany = jest.fn();
+
+const mockCreateQueryBuilder = jest.fn().mockReturnValue({
+  andWhere: mockAndWhere,
+  getMany: mockGetMany,
+});
+const mockRepository = {
+  createQueryBuilder: mockCreateQueryBuilder,
+};
 
 describe('MessageManager', () => {
   beforeEach(() => {
@@ -20,88 +42,78 @@ describe('MessageManager', () => {
 
   describe('#getMessages', () => {
     beforeEach(() => {
+      messageManager = new MessageManager(jsLogger({ enabled: false }));
       localMessagesStore.push(getResponseMessage); // for testing the quary, should be replaced when adding db
+
+      mockAndWhere.mockClear();
+      mockGetMany.mockClear();
+      mockCreateQueryBuilder.mockClear();
+
+      (messageLogsDataSource.getRepository as jest.Mock).mockImplementation((entity) => {
+        if (entity === Message) {
+          return mockRepository;
+        }
+        return null;
+      });
     });
 
-    it('should return matching message with all filters', () => {
+    it('should return messages filtered by all parameters', async () => {
+      const fakeMessage: Partial<ILogObject> = {
+        id: '1',
+        sessionId: 123,
+        severity: 'ERROR' as SeverityLevels,
+        component: 'MAP' as LogComponent,
+        messageType: 'APPEXITED' as AnalyticsMessageTypes,
+        message: 'some message',
+        timeStamp: new Date().toISOString(),
+      };
+
+      mockGetMany.mockResolvedValue([fakeMessage]);
+
       const query: IQueryModel = {
-        sessionId: 2234234,
+        sessionId: 123,
         severity: 'ERROR',
         component: 'MAP',
         messageType: 'APPEXITED',
       };
 
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
+      const result = await messageManager.getMessages(query);
+
+      expect(mockCreateQueryBuilder).toHaveBeenCalledWith('log');
+      expect(mockAndWhere).toHaveBeenCalledTimes(4);
+      expect(mockGetMany).toHaveBeenCalled();
+      expect(result).toHaveLength(1);
+      expect(result[0]).toHaveProperty('message', 'some message');
     });
 
-    it('should return message if filters are empty', () => {
-      const messages = messageManager.getMessages({});
-      expect(messages).toHaveLength(1);
-    });
-
-    it('should return no message if severity does not match', () => {
-      const query: IQueryModel = {
-        severity: 'WARNING',
+    it('should build query with only provided filters', async () => {
+      const fakeMessage: Partial<ILogObject> = {
+        id: '2',
+        sessionId: 321,
+        message: 'filtered by severity only',
+        severity: 'INFO' as SeverityLevels,
+        timeStamp: new Date().toISOString(),
       };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(0);
+
+      mockGetMany.mockResolvedValue([fakeMessage]);
+
+      const query: IQueryModel = {
+        severity: 'INFO',
+      };
+
+      const result = await messageManager.getMessages(query);
+
+      expect(mockCreateQueryBuilder).toHaveBeenCalledWith('log');
+      expect(mockAndWhere).toHaveBeenCalledTimes(1);
+      expect(result[0]).toHaveProperty('severity', 'INFO');
     });
 
-    it('should return no message if component does not match', () => {
-      const query: IQueryModel = {
-        component: 'NOT-MAP',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(0);
-    });
+    it('should return an empty array if no messages match', async () => {
+      mockGetMany.mockResolvedValue([]);
 
-    it('should return no message if messageType does not match', () => {
-      const query: IQueryModel = {
-        messageType: 'UNKNOWN',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(0);
-    });
+      const result = await messageManager.getMessages({ sessionId: 999 });
 
-    it('should return no message if sessionId does not match', () => {
-      const query: IQueryModel = {
-        sessionId: 999999,
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(0);
-    });
-
-    it('should return message if only severity matches', () => {
-      const query: IQueryModel = {
-        severity: 'ERROR',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
-    });
-
-    it('should return message if only component matches', () => {
-      const query: IQueryModel = {
-        component: 'MAP',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
-    });
-
-    it('should return message if only messageType matches', () => {
-      const query: IQueryModel = {
-        messageType: 'APPEXITED',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
-    });
-
-    it('should return message if only sessionId matches', () => {
-      const query: IQueryModel = {
-        sessionId: 2234234,
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
+      expect(result).toEqual([]);
     });
 
     it('should return the message with the given Id', () => {
