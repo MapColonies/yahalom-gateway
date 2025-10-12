@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+/* istanbul ignore file */
+import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
 
 @Entity()
@@ -12,14 +13,14 @@ export class Message {
   @Column({ type: 'enum', enum: SeverityLevels })
   public severity!: SeverityLevels;
 
-  @Column()
-  public timeStamp!: string;
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  public timeStamp!: Timestamp;
 
   @Column()
   public message!: string;
 
-  @Column('jsonb', { default: {} })
-  public messageParameters!: Record<string, undefined>;
+  @Column('jsonb', { nullable: true })
+  public messageParameters!: Record<string, unknown> | undefined;
 
   @Column({ type: 'enum', enum: LogComponent })
   public component!: LogComponent;

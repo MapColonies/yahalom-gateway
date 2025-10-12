@@ -6,7 +6,7 @@ import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager, ILogObject } from '../models/messageManager';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
-import { IQueryModel } from './../../common/interfaces';
+import { IQueryModel, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
 import { Message } from './../../DAL/entities/Message';
 
 @injectable()
@@ -42,7 +42,16 @@ export class MessageController {
       const params: IQueryModel | undefined = req.query;
       const hasParams = !!params && Object.keys(params).length > 0;
 
-      const resultMessages = hasParams ? await this.manager.getMessages(params) : await messageLogsDataSource.getRepository(Message).find();
+      const rawMessages = hasParams ? await this.manager.getMessages(params) : await messageLogsDataSource.getRepository(Message).find();
+
+      const resultMessages = rawMessages.map((msg) => ({
+        ...msg,
+        timeStamp: msg.timeStamp.toString(),
+        severity: msg.severity as SeverityLevels,
+        component: msg.component as LogComponent,
+        messageType: msg.messageType as AnalyticsMessageTypes,
+      }));
+
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {
       this.logger.error({ msg: 'Error retrieving messages', error });

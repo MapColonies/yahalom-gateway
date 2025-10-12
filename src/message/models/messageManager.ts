@@ -7,6 +7,7 @@ import { localMessagesStore } from '../../common/mocks';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { IQueryModel } from './../../common/interfaces';
 import { Message } from './../../DAL/entities/Message';
+import { mapMessageToILogObject } from './../../utils/helpers';
 
 export type ILogObject = components['schemas']['ILogObject'];
 
@@ -50,7 +51,9 @@ export class MessageManager {
       queryBuilder.andWhere('log.sessionId = :sessionId', { sessionId });
     }
 
-    return queryBuilder.getMany();
+    const resultMessages = await queryBuilder.getMany();
+
+    return resultMessages.map(mapMessageToILogObject);
   }
 
   public getMessageById(id: string): ILogObject | undefined {

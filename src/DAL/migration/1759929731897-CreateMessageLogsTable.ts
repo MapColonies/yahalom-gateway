@@ -5,7 +5,7 @@ export class CreateMessageLogsTable1759929731897 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'log_object',
+        name: 'message_log',
         columns: [
           {
             name: 'id',
@@ -24,7 +24,7 @@ export class CreateMessageLogsTable1759929731897 implements MigrationInterface {
           },
           {
             name: 'timeStamp',
-            type: 'varchar',
+            type: 'timestamp',
             isNullable: false,
           },
           {
@@ -55,6 +55,6 @@ export class CreateMessageLogsTable1759929731897 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('log_object');
+    await queryRunner.dropTable('message_log');
   }
 }

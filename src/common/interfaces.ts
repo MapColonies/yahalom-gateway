@@ -46,14 +46,14 @@ export interface IConfig {
 }
 
 export interface ILogObject {
-  sessionId: bigint;
+  sessionId: number;
   severity: SeverityLevels;
-  timeStamp: Date;
+  timeStamp: string;
   message: string;
-  messageParameters?: object;
+  messageParameters?: { [key: string]: unknown } | undefined;
   component: LogComponent;
   messageType: AnalyticsMessageTypes;
-  id?: string;
+  id: string;
 }
 
 export interface IQueryModel {
