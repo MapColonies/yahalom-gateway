@@ -28,7 +28,6 @@ describe('message', function () {
         console.log('ℹ️ DataSource already initialized');
       }
 
-      // ✅ Run migrations here
       await messageLogsDataSource.runMigrations();
       console.log('✅ Migrations applied');
     } catch (err) {
@@ -51,12 +50,6 @@ describe('message', function () {
       localMessagesStore.length = 0;
 
       console.log('✅ App and requestSender initialized');
-
-      const repo = messageLogsDataSource.getRepository(Message);
-      console.log('🛠 Repository:', repo.metadata.tableName);
-
-      await repo.clear();
-      console.log('✅ Message table cleared');
     } catch (err) {
       console.error('❌ Error in beforeEach:', err);
       throw new Error('💥 Failing in beforeEach: ');
@@ -77,8 +70,8 @@ describe('message', function () {
       const message: DeepPartial<Message> = {
         id: 'not-matching-id',
         sessionId: 9999,
-        severity: 'INFO' as SeverityLevels,
-        component: 'OTHER' as LogComponent,
+        severity: 'ALERT' as SeverityLevels,
+        component: 'GENERAL' as LogComponent,
         messageType: 'APPSTARTED' as AnalyticsMessageTypes,
         message: 'Non-matching message',
         timeStamp: new Date(),

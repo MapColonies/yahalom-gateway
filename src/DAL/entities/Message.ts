@@ -11,7 +11,7 @@ export class Message {
   @Column('int')
   public sessionId!: number;
 
-  @Column({ type: 'enum', enum: SeverityLevels })
+  @Column({ type: 'enum', enum: SeverityLevels, enumName: 'message_severity_enum' })
   public severity!: SeverityLevels;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
@@ -23,9 +23,9 @@ export class Message {
   @Column('jsonb', { nullable: true })
   public messageParameters!: Record<string, unknown> | undefined;
 
-  @Column({ type: 'enum', enum: LogComponent })
+  @Column({ type: 'enum', enum: LogComponent, enumName: 'message_component_enum' })
   public component!: LogComponent;
 
-  @Column({ type: 'enum', enum: AnalyticsMessageTypes })
+  @Column({ type: 'enum', enum: AnalyticsMessageTypes, enumName: 'message_type_enum' })
   public messageType!: AnalyticsMessageTypes;
 }
