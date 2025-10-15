@@ -36,6 +36,18 @@ describe('message', function () {
     }
   });
 
+  afterAll(async () => {
+    try {
+      if (messageLogsDataSource.isInitialized) {
+        await messageLogsDataSource.destroy();
+        console.log('🧹 DataSource destroyed');
+      }
+    } catch (err) {
+      console.error('❌ Error in afterAll:', err);
+      throw err;
+    }
+  });
+
   beforeEach(async function () {
     try {
       const [app] = await getApp({
@@ -50,6 +62,12 @@ describe('message', function () {
       localMessagesStore.length = 0;
 
       console.log('✅ App and requestSender initialized');
+
+      const repo = messageLogsDataSource.getRepository(Message);
+      console.log('🛠 Repository:', repo.metadata.tableName);
+
+      await repo.clear();
+      console.log('✅ Message table cleared');
     } catch (err) {
       console.error('❌ Error in beforeEach:', err);
       throw new Error('💥 Failing in beforeEach: ');
@@ -68,7 +86,7 @@ describe('message', function () {
 
     it('should return 200 status code and appropriate message when no messages match filters', async function () {
       const message: DeepPartial<Message> = {
-        id: 'not-matching-id',
+        id: '71173ce2-acb2-43e0-9680-e889799a698b',
         sessionId: 9999,
         severity: 'ALERT' as SeverityLevels,
         component: 'GENERAL' as LogComponent,
@@ -95,7 +113,7 @@ describe('message', function () {
 
     it('should return 200 status code and handling if no query params provided', async function () {
       const message: DeepPartial<Message> = {
-        id: 'no-filters-id',
+        id: '71173ce2-acb2-43e0-9680-e889799a698b',
         sessionId: 2234234,
         severity: 'ERROR' as SeverityLevels,
         component: 'MAP' as LogComponent,
@@ -125,7 +143,7 @@ describe('message', function () {
 
     it('should return 200 status code and filtered messages', async function () {
       const message: DeepPartial<Message> = {
-        id: 'matching-id',
+        id: '71173ce2-acb2-43e0-9680-e889799a698b',
         sessionId: 2234234,
         severity: 'ERROR' as SeverityLevels,
         component: 'MAP' as LogComponent,

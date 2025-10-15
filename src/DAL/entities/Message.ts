@@ -1,11 +1,11 @@
 /* istanbul ignore file */
 import 'reflect-metadata';
-import { Entity, PrimaryColumn, Column, Timestamp } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
 
 @Entity()
 export class Message {
-  @PrimaryColumn('text') //TODO: Should be of type PrimaryGeneratedColumn in the near future and int
+  @PrimaryGeneratedColumn('uuid')
   public id!: string;
 
   @Column('int')
