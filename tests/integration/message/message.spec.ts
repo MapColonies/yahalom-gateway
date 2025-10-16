@@ -12,6 +12,7 @@ import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '@src/common/interfaces';
 import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
 import { MessageManager } from './../../../src/message/models/messageManager';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
@@ -86,7 +87,7 @@ describe('message', function () {
 
     it('should return 200 status code and appropriate message when no messages match filters', async function () {
       const message: DeepPartial<Message> = {
-        id: '71173ce2-acb2-43e0-9680-e889799a698b',
+        id: uuidv4(),
         sessionId: 9999,
         severity: 'ALERT' as SeverityLevels,
         component: 'GENERAL' as LogComponent,
@@ -113,7 +114,7 @@ describe('message', function () {
 
     it('should return 200 status code and handling if no query params provided', async function () {
       const message: DeepPartial<Message> = {
-        id: '71173ce2-acb2-43e0-9680-e889799a698b',
+        id: uuidv4(),
         sessionId: 2234234,
         severity: 'ERROR' as SeverityLevels,
         component: 'MAP' as LogComponent,
@@ -143,7 +144,7 @@ describe('message', function () {
 
     it('should return 200 status code and filtered messages', async function () {
       const message: DeepPartial<Message> = {
-        id: '71173ce2-acb2-43e0-9680-e889799a698b',
+        id: uuidv4(),
         sessionId: 2234234,
         severity: 'ERROR' as SeverityLevels,
         component: 'MAP' as LogComponent,
