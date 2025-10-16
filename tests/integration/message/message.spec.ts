@@ -3,6 +3,7 @@ import { trace } from '@opentelemetry/api';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { DeepPartial } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
@@ -12,7 +13,6 @@ import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '@src/common/interfaces';
 import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
 import { MessageManager } from './../../../src/message/models/messageManager';
-import { v4 as uuidv4 } from 'uuid';
 
 describe('message', function () {
   let requestSender: RequestSender<paths, operations>;
