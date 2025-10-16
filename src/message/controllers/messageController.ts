@@ -5,8 +5,9 @@ import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager, ILogObject } from '../models/messageManager';
-import { localMessagesStore } from '../../common/mocks';
-import { IQueryModel } from './../../common/interfaces';
+import { messageLogsDataSource } from '../../DAL/messageLogsSource';
+import { IQueryModel, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
+import { Message } from './../../DAL/entities/Message';
 
 @injectable()
 export class MessageController {
@@ -36,13 +37,20 @@ export class MessageController {
     }
   };
 
-  public getMessages: TypedRequestHandlers['GET /message'] = (req, res) => {
+  public getMessages: TypedRequestHandlers['GET /message'] = async (req, res) => {
     try {
       const params: IQueryModel | undefined = req.query;
-
       const hasParams = !!params && Object.keys(params).length > 0;
 
-      const resultMessages: ILogObject[] = hasParams ? this.manager.getMessages(params) : localMessagesStore;
+      const rawMessages = hasParams ? await this.manager.getMessages(params) : await messageLogsDataSource.getRepository(Message).find();
+
+      const resultMessages = rawMessages.map((msg) => ({
+        ...msg,
+        timeStamp: msg.timeStamp.toString(),
+        severity: msg.severity as SeverityLevels,
+        component: msg.component as LogComponent,
+        messageType: msg.messageType as AnalyticsMessageTypes,
+      }));
 
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {

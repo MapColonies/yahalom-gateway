@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Application } from 'express';
 import { DependencyContainer } from 'tsyringe';
 import { registerExternalValues, RegisterOptions } from './containerConfig';

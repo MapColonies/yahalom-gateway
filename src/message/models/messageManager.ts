@@ -4,7 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND } from '@common/constants';
 import { localMessagesStore } from '../../common/mocks';
+import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { IQueryModel } from './../../common/interfaces';
+import { Message } from './../../DAL/entities/Message';
+import { mapMessageToILogObject } from './../../utils/helpers';
 
 export type ILogObject = components['schemas']['ILogObject'];
 
@@ -25,22 +28,32 @@ export class MessageManager {
     return newMessage;
   }
 
-  public getMessages(params: IQueryModel): ILogObject[] {
+  public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
     const { sessionId, severity, component, messageType } = params;
 
-    const allMessages: ILogObject[] = localMessagesStore;
+    const queryBuilder = messageLogsDataSource.getRepository(Message).createQueryBuilder('log');
 
-    const filteredMessages = allMessages.filter((instance) => {
-      if (severity != null && instance.severity !== severity) return false;
-      if (component != null && instance.component !== component) return false;
-      if (messageType != null && instance.messageType !== messageType) return false;
-      if (sessionId != null && instance.sessionId !== sessionId) return false;
-      return true;
-    });
+    if (severity != null) {
+      queryBuilder.andWhere('log.severity = :severity', { severity });
+    }
 
-    return filteredMessages;
+    if (component != null) {
+      queryBuilder.andWhere('log.component = :component', { component });
+    }
+
+    if (messageType != null) {
+      queryBuilder.andWhere('log.messageType = :messageType', { messageType });
+    }
+
+    if (sessionId != null) {
+      queryBuilder.andWhere('log.sessionId = :sessionId', { sessionId });
+    }
+
+    const resultMessages = await queryBuilder.getMany();
+
+    return resultMessages.map(mapMessageToILogObject);
   }
 
   public getMessageById(id: string): ILogObject | undefined {
