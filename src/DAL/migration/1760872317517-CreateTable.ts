@@ -1,12 +1,9 @@
-/* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class ChangeMessageIdToUuid1760533897665 implements MigrationInterface {
+export class CreateTable1760872317517 implements MigrationInterface {
+  name = 'CreateTable1760872317517';
+
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE "message" DROP CONSTRAINT "PK_ba01f0a3e0123651915008bc578"`);
-    await queryRunner.query(`ALTER TABLE "message" DROP COLUMN "id"`);
-    await queryRunner.query(`ALTER TABLE "message" ADD "id" uuid NOT NULL DEFAULT uuid_generate_v4()`);
-    await queryRunner.query(`ALTER TABLE "message" ADD CONSTRAINT "PK_ba01f0a3e0123651915008bc578" PRIMARY KEY ("id")`);
     await queryRunner.query(`ALTER TYPE "public"."message_severity_enum" RENAME TO "message_severity_enum_old"`);
     await queryRunner.query(
       `CREATE TYPE "public"."message_severity_enum" AS ENUM('EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR', 'WARNING', 'NOTICE', 'INFORMATIONAL', 'DEBUG')`
@@ -38,9 +35,5 @@ export class ChangeMessageIdToUuid1760533897665 implements MigrationInterface {
     );
     await queryRunner.query(`DROP TYPE "public"."message_severity_enum"`);
     await queryRunner.query(`ALTER TYPE "public"."message_severity_enum_old" RENAME TO "message_severity_enum"`);
-    await queryRunner.query(`ALTER TABLE "message" DROP CONSTRAINT "PK_ba01f0a3e0123651915008bc578"`);
-    await queryRunner.query(`ALTER TABLE "message" DROP COLUMN "id"`);
-    await queryRunner.query(`ALTER TABLE "message" ADD "id" text NOT NULL`);
-    await queryRunner.query(`ALTER TABLE "message" ADD CONSTRAINT "PK_ba01f0a3e0123651915008bc578" PRIMARY KEY ("id")`);
   }
 }
