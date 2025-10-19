@@ -7,7 +7,7 @@ import { SERVICES } from '@common/constants';
 import { MessageManager, ILogObject } from '../models/messageManager';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { IQueryModel, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
-import { Message } from './../../DAL/entities/Message';
+import { Message } from '../../DAL/entities/message';
 
 @injectable()
 export class MessageController {

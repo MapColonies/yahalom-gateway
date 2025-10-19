@@ -1,8 +1,7 @@
 /* istanbul ignore file */
-import 'dotenv/config';
 import config from 'config';
 import { DataSource } from 'typeorm';
-import { Message } from './entities/Message';
+import { Message } from './entities/message';
 
 interface DbConfig {
   host: string;

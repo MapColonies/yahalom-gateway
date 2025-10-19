@@ -6,7 +6,7 @@ import { SERVICES, NOT_FOUND } from '@common/constants';
 import { localMessagesStore } from '../../common/mocks';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { IQueryModel } from './../../common/interfaces';
-import { Message } from './../../DAL/entities/Message';
+import { Message } from '../../DAL/entities/message';
 import { mapMessageToILogObject } from './../../utils/helpers';
 
 export type ILogObject = components['schemas']['ILogObject'];

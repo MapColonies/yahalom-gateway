@@ -8,7 +8,7 @@ import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
-import { Message } from '@src/DAL/entities/Message';
+import { Message } from '@src/DAL/entities/message';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '@src/common/interfaces';
 import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';

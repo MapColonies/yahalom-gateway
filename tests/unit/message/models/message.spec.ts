@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
-import { Message } from '@src/DAL/entities/Message';
+import { Message } from '@src/DAL/entities/message';
 import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
 import { IQueryModel, ILogObject, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../../../src/common/interfaces';
 

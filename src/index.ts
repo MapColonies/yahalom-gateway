@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-import 'dotenv/config';
 import { createServer } from 'http';
 import { createTerminus } from '@godaddy/terminus';
 import { Logger } from '@map-colonies/js-logger';
