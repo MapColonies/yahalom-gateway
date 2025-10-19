@@ -4,7 +4,7 @@ import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { DeepPartial } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Message } from '@src/DAL/entities/message';
+import { Message } from '@src/DAL/entities/Message';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';

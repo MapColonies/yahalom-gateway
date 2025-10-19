@@ -6,7 +6,7 @@ import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager, ILogObject } from '../models/messageManager';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
-import { Message } from '../../DAL/entities/message';
+import { Message } from '../../DAL/entities/Message';
 import { IQueryModel, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
 import { mapMessageToILogObject } from './../../utils/helpers';
 

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { Message } from '@src/DAL/entities/message';
+import { Message } from '@src/DAL/entities/Message';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { mapMessageToILogObject } from './../../../../src/utils/helpers';

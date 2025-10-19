@@ -5,7 +5,7 @@ import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/mocks';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
-import { Message } from '../../DAL/entities/message';
+import { Message } from '../../DAL/entities/Message';
 import { IQueryModel } from './../../common/interfaces';
 import { mapMessageToILogObject } from './../../utils/helpers';
 
