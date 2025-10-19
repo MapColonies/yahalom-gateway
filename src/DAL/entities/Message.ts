@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '../../common/interfaces';
 
 @Entity()
-export class message {
+export class Message {
   @PrimaryGeneratedColumn('uuid')
   public id!: string;
 

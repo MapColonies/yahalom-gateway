@@ -2,7 +2,7 @@
 import config from 'config';
 import { DataSource } from 'typeorm';
 import { DbConfig } from '@src/common/interfaces';
-import { message } from './entities/message';
+import { Message } from './entities/message';
 
 const dbConfig = config.get<DbConfig>('db');
 
@@ -15,6 +15,6 @@ export const messageLogsDataSource = new DataSource({
   database: dbConfig.name,
   synchronize: false,
   logging: false,
-  entities: [message],
+  entities: [Message],
   migrations: ['src/DAL/migration/**/*.ts'],
 });

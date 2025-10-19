@@ -1,8 +1,8 @@
 /* istanbul ignore file */
-import { message } from '@src/DAL/entities/message';
+import { Message } from '@src/DAL/entities/message';
 import { ILogObject } from './../../src/common/interfaces';
 
-export const mapMessageToILogObject = (msg: message): ILogObject => {
+export const mapMessageToILogObject = (msg: Message): ILogObject => {
   return {
     id: msg.id,
     sessionId: msg.sessionId,

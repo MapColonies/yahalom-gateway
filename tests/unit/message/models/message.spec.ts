@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { message } from '@src/DAL/entities/message';
+import { Message } from '@src/DAL/entities/message';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
@@ -50,7 +50,7 @@ describe('MessageManager', () => {
       mockCreateQueryBuilder.mockClear();
 
       (messageLogsDataSource.getRepository as jest.Mock).mockImplementation((entity) => {
-        if (entity === message) {
+        if (entity === Message) {
           return mockRepository;
         }
         return null;
