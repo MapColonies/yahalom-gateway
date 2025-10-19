@@ -25,7 +25,7 @@ describe('message', function () {
       useChild: true,
     });
     requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
-    localMessagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
+    localMessagesStore.length = 0; // ensure 'store' list is empty, TODO: change when connecting db
   });
 
   describe('Happy Path', function () {
