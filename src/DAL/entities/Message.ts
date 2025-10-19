@@ -1,10 +1,9 @@
 /* istanbul ignore file */
-import 'reflect-metadata';
 import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '../../common/interfaces';
 
 @Entity()
-export class Message {
+export class message {
   @PrimaryGeneratedColumn('uuid')
   public id!: string;
 

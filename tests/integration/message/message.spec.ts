@@ -4,7 +4,7 @@ import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { DeepPartial } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Message } from '@src/DAL/entities/message';
+import { message } from '@src/DAL/entities/message';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
@@ -64,7 +64,7 @@ describe('message', function () {
 
       console.log('✅ App and requestSender initialized');
 
-      const repo = messageLogsDataSource.getRepository(Message);
+      const repo = messageLogsDataSource.getRepository(message);
       console.log('🛠 Repository:', repo.metadata.tableName);
 
       await repo.clear();
@@ -86,7 +86,7 @@ describe('message', function () {
     });
 
     it('should return 200 status code and appropriate message when no messages match filters', async function () {
-      const message: DeepPartial<Message> = {
+      const messageInstance: DeepPartial<message> = {
         id: uuidv4(),
         sessionId: 9999,
         severity: 'ALERT' as SeverityLevels,
@@ -96,7 +96,7 @@ describe('message', function () {
         timeStamp: new Date(),
       };
 
-      await messageLogsDataSource.getRepository(Message).save(message);
+      await messageLogsDataSource.getRepository(message).save(messageInstance);
 
       const response = await requestSender.getMessages({
         queryParams: {
@@ -113,7 +113,7 @@ describe('message', function () {
     });
 
     it('should return 200 status code and handling if no query params provided', async function () {
-      const message: DeepPartial<Message> = {
+      const messageInstance: DeepPartial<message> = {
         id: uuidv4(),
         sessionId: 2234234,
         severity: 'ERROR' as SeverityLevels,
@@ -123,7 +123,7 @@ describe('message', function () {
         timeStamp: new Date(),
       };
 
-      await messageLogsDataSource.getRepository(Message).save(message);
+      await messageLogsDataSource.getRepository(message).save(messageInstance);
 
       const response = await requestSender.getMessages();
 
@@ -143,7 +143,7 @@ describe('message', function () {
     });
 
     it('should return 200 status code and filtered messages', async function () {
-      const message: DeepPartial<Message> = {
+      const messageInstace: DeepPartial<message> = {
         id: uuidv4(),
         sessionId: 2234234,
         severity: 'ERROR' as SeverityLevels,
@@ -153,7 +153,7 @@ describe('message', function () {
         timeStamp: new Date(),
       };
 
-      await messageLogsDataSource.getRepository(Message).save(message);
+      await messageLogsDataSource.getRepository(message).save(messageInstace);
 
       const response = await requestSender.getMessages({
         queryParams: {
