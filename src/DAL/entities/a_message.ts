@@ -26,5 +26,5 @@ export class Message {
   public component!: LogComponent;
 
   @Column({ type: 'enum', enum: AnalyticsMessageTypes, enumName: 'message_type_enum' })
-  public messageType!: AnalyticsMessageTypes;
+  public messageType!: AnalyticsMessageTypes; //aa
 }

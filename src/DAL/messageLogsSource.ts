@@ -2,7 +2,7 @@
 import config from 'config';
 import { DataSource } from 'typeorm';
 import { DbConfig } from '@src/common/interfaces';
-import { Message } from '@src/DAL/entities/Message';
+import { Message } from '@src/DAL/entities/message';
 
 const dbConfig = config.get<DbConfig>('db');
 

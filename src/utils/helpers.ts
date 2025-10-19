@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { Message } from '@src/DAL/entities/Message';
+import { Message } from '@src/DAL/entities/message';
 import { ILogObject } from './../../src/common/interfaces';
 
 export const mapMessageToILogObject = (msg: Message): ILogObject => {
