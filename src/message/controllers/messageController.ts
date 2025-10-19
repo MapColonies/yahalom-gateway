@@ -7,7 +7,7 @@ import { SERVICES } from '@common/constants';
 import { MessageManager, ILogObject } from '../models/messageManager';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { Message } from '../../DAL/entities/message';
-import { IQueryModel, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
+import { IQueryModel } from './../../common/interfaces';
 import { mapMessageToILogObject } from './../../utils/helpers';
 
 @injectable()

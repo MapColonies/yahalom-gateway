@@ -1,12 +1,11 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
+import { SelectQueryBuilder } from 'typeorm';
 import { Message } from '@src/DAL/entities/message';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
-import { mapMessageToILogObject } from './../../../../src/utils/helpers';
 import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
 import { IQueryModel, ILogObject, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../../../src/common/interfaces';
-import { Timestamp } from 'bson';
 
 let messageManager: MessageManager;
 
@@ -159,27 +158,30 @@ describe('MessageManager', () => {
 
   describe('MessageManager private andWhere', () => {
     it('should call queryBuilder.andWhere with proper SQL and parameter', () => {
-      const fakeQueryBuilder = {
+      const fakeQueryBuilder: Pick<SelectQueryBuilder<Message>, 'andWhere'> = {
         andWhere: jest.fn().mockReturnThis(),
       };
 
       const manager = new MessageManager(jsLogger({ enabled: false }));
 
-      (manager as any).andWhere(fakeQueryBuilder, 'log.severity', 'ERROR');
-      (manager as any).andWhere(fakeQueryBuilder, 'log.component', null);
+      // @ts-expect-error calling private method for testing
+      manager.andWhere(fakeQueryBuilder, 'log.severity', 'ERROR');
+      // @ts-expect-error calling private method for testing
+      manager.andWhere(fakeQueryBuilder, 'log.component', null);
 
       expect(fakeQueryBuilder.andWhere).toHaveBeenCalledTimes(1);
       expect(fakeQueryBuilder.andWhere).toHaveBeenCalledWith('log.severity = :severity', { severity: 'ERROR' });
     });
 
     it('should use the full field name if split returns empty', () => {
-      const fakeQueryBuilder = {
+      const fakeQueryBuilder: Pick<SelectQueryBuilder<Message>, 'andWhere'> = {
         andWhere: jest.fn().mockReturnThis(),
       };
 
       const manager = new MessageManager(jsLogger({ enabled: false }));
 
-      (manager as any).andWhere(fakeQueryBuilder, 'customField', 123);
+      // @ts-expect-error calling private method for testing
+      manager.andWhere(fakeQueryBuilder, 'customField', 123);
 
       expect(fakeQueryBuilder.andWhere).toHaveBeenCalledWith('customField = :customField', { customField: 123 });
     });

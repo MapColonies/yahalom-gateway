@@ -1,6 +1,7 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
+import { SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/mocks';
@@ -45,13 +46,6 @@ export class MessageManager {
     return resultMessages.map(mapMessageToILogObject);
   }
 
-  private andWhere(queryBuilder: any, field: string, value: any): void {
-    if (value != null) {
-      const paramName = field.split('.').pop() ?? field;
-      queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });
-    }
-  }
-
   public getMessageById(id: string): ILogObject | undefined {
     this.logger.info({ msg: `Getting message by ID - ${id}`, id });
 
@@ -85,5 +79,12 @@ export class MessageManager {
     }
 
     return undefined;
+  }
+
+  private andWhere(queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
+    if (value != null) {
+      const paramName = field.split('.').pop() ?? field;
+      queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });
+    }
   }
 }
