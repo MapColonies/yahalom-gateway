@@ -1,8 +1,7 @@
+/* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateTable1760872317517 implements MigrationInterface {
-  name = 'CreateTable1760872317517';
-
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TYPE "public"."message_severity_enum" RENAME TO "message_severity_enum_old"`);
     await queryRunner.query(

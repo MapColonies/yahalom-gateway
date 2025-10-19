@@ -13,6 +13,7 @@ const customImportResolver = {
       },
       node: {
         extensions: ['.js', '.ts', '.json'],
+        project: './tsconfig.json',
       },
     },
   },
