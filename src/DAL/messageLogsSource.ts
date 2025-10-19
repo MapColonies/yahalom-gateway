@@ -1,15 +1,8 @@
 /* istanbul ignore file */
 import config from 'config';
 import { DataSource } from 'typeorm';
+import { DbConfig } from '@src/common/interfaces';
 import { Message } from './entities/message';
-
-interface DbConfig {
-  host: string;
-  port: number;
-  user: string;
-  password: string;
-  name: string;
-}
 
 const dbConfig = config.get<DbConfig>('db');
 

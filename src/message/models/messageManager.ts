@@ -2,11 +2,11 @@ import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
 import type { components } from '@openapi';
-import { SERVICES, NOT_FOUND } from '@common/constants';
+import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/mocks';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
-import { IQueryModel } from './../../common/interfaces';
 import { Message } from '../../DAL/entities/message';
+import { IQueryModel } from './../../common/interfaces';
 import { mapMessageToILogObject } from './../../utils/helpers';
 
 export type ILogObject = components['schemas']['ILogObject'];
@@ -33,7 +33,7 @@ export class MessageManager {
 
     const { sessionId, severity, component, messageType } = params;
 
-    const queryBuilder = messageLogsDataSource.getRepository(Message).createQueryBuilder('log');
+    const queryBuilder = messageLogsDataSource.getRepository(Message).createQueryBuilder(QUERY_BUILDER_NAME);
 
     if (severity != null) {
       queryBuilder.andWhere('log.severity = :severity', { severity });

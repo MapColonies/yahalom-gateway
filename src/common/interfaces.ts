@@ -62,3 +62,11 @@ export interface IQueryModel {
   messageType?: string;
   sessionId?: number;
 }
+
+export interface DbConfig {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  name: string;
+}

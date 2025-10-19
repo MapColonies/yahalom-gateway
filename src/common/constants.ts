@@ -16,3 +16,5 @@ export const SERVICES = {
 /* eslint-enable @typescript-eslint/naming-convention */
 
 export const NOT_FOUND = -1;
+
+export const QUERY_BUILDER_NAME = 'log';
