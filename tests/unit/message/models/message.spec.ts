@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { Message } from '@src/DAL/entities/message';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
+import { Message } from './../../../../src/DAL/entities/message';
 import { IQueryModel, ILogObject, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;

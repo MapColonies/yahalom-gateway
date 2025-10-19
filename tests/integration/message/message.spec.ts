@@ -4,7 +4,6 @@ import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { DeepPartial } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Message } from '@src/DAL/entities/message';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
@@ -12,6 +11,7 @@ import { initConfig } from '@src/common/config';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '@src/common/interfaces';
 import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
+import { Message } from './../../../src/DAL/entities/message';
 import { MessageManager } from './../../../src/message/models/messageManager';
 
 describe('message', function () {
