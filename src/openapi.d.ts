@@ -42,9 +42,11 @@ export type paths = {
 export type webhooks = Record<string, never>;
 export type components = {
   schemas: {
-    /** @example {
+    /**
+     * @example {
      *       "message": "Invalid message ID provided."
-     *     } */
+     *     }
+     */
     error: {
       /** @description A human-readable error message */
       message: string;
