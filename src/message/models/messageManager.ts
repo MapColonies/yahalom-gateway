@@ -35,25 +35,21 @@ export class MessageManager {
 
     const queryBuilder = messageLogsDataSource.getRepository(Message).createQueryBuilder(QUERY_BUILDER_NAME);
 
-    if (severity != null) {
-      queryBuilder.andWhere('log.severity = :severity', { severity });
-    }
-
-    if (component != null) {
-      queryBuilder.andWhere('log.component = :component', { component });
-    }
-
-    if (messageType != null) {
-      queryBuilder.andWhere('log.messageType = :messageType', { messageType });
-    }
-
-    if (sessionId != null) {
-      queryBuilder.andWhere('log.sessionId = :sessionId', { sessionId });
-    }
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
 
     const resultMessages = await queryBuilder.getMany();
 
     return resultMessages.map(mapMessageToILogObject);
+  }
+
+  private andWhere(queryBuilder: any, field: string, value: any): void {
+    if (value != null) {
+      const paramName = field.split('.').pop() ?? field;
+      queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });
+    }
   }
 
   public getMessageById(id: string): ILogObject | undefined {

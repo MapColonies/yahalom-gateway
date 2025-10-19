@@ -8,6 +8,7 @@ import { MessageManager, ILogObject } from '../models/messageManager';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { Message } from '../../DAL/entities/message';
 import { IQueryModel, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../common/interfaces';
+import { mapMessageToILogObject } from './../../utils/helpers';
 
 @injectable()
 export class MessageController {
@@ -42,15 +43,14 @@ export class MessageController {
       const params: IQueryModel | undefined = req.query;
       const hasParams = !!params && Object.keys(params).length > 0;
 
-      const rawMessages = hasParams ? await this.manager.getMessages(params) : await messageLogsDataSource.getRepository(Message).find();
+      let resultMessages: ILogObject[];
 
-      const resultMessages = rawMessages.map((msg) => ({
-        ...msg,
-        timeStamp: msg.timeStamp.toString(),
-        severity: msg.severity as SeverityLevels,
-        component: msg.component as LogComponent,
-        messageType: msg.messageType as AnalyticsMessageTypes,
-      }));
+      if (!hasParams) {
+        const rawMessages = await messageLogsDataSource.getRepository(Message).find();
+        resultMessages = rawMessages.map(mapMessageToILogObject); // doing the right conversions
+      } else {
+        resultMessages = await this.manager.getMessages(params);
+      }
 
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {
