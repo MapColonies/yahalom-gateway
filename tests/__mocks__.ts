@@ -1,5 +1,5 @@
 import { components } from '@src/openapi';
-import { SeverityLevels, LogComponent, AnalyticsMessageTypes, IQueryModel } from './interfaces';
+import { SeverityLevels, LogComponent, AnalyticsMessageTypes, IQueryModel } from './../src/common/interfaces';
 
 export type IMessageModel = components['schemas']['ILogObject'];
 

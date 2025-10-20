@@ -40,17 +40,11 @@ export class MessageController {
 
   public getMessages: TypedRequestHandlers['GET /message'] = async (req, res) => {
     try {
-      const params: IQueryModel | undefined = req.query;
-      const hasParams = !!params && Object.keys(params).length > 0;
+      const params: IQueryModel = req.query ?? {};
 
       let resultMessages: ILogObject[];
 
-      if (!hasParams) {
-        const rawMessages = await messageLogsDataSource.getRepository(Message).find();
-        resultMessages = rawMessages.map(mapMessageToILogObject); // doing the right conversions
-      } else {
-        resultMessages = await this.manager.getMessages(params);
-      }
+      resultMessages = await this.manager.getMessages(params);
 
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {

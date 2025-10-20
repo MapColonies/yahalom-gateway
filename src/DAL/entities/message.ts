@@ -7,7 +7,7 @@ export class Message {
   @PrimaryGeneratedColumn('uuid')
   public id!: string;
 
-  @Column('bigint')
+  @Column('text')
   public sessionId!: string;
 
   @Column({ type: 'enum', enum: SeverityLevels, enumName: 'message_severity_enum' })

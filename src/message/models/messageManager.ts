@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
-import { localMessagesStore } from '../../common/mocks';
+import { localMessagesStore } from '../../../tests/__mocks__';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { Message } from '../../DAL/entities/message';
 import { IQueryModel } from './../../common/interfaces';
@@ -31,6 +31,11 @@ export class MessageManager {
 
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
+
+    if (!(!!params && Object.keys(params).length > 0)) {
+      const rawMessages = await messageLogsDataSource.getRepository(Message).find();
+      return rawMessages.map(mapMessageToILogObject); // doing the right conversions
+    }
 
     const { sessionId, severity, component, messageType } = params;
 
