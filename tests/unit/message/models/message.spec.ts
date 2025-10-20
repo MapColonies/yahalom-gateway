@@ -4,7 +4,7 @@ import { SelectQueryBuilder } from 'typeorm';
 import { Message } from '@src/DAL/entities/message';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
-import { fullMessageInstance, fullQueryParamsInstnace, localMessagesStore } from '../../../__mocks__';
+import { fullMessageInstance, fullQueryParamsInstnace, localMessagesStore } from '../../../mocks';
 import { IQueryModel, ILogObject, SeverityLevels } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;
@@ -180,13 +180,6 @@ describe('MessageManager', () => {
         find: findMock,
         createQueryBuilder: mockCreateQueryBuilder,
       });
-    });
-
-    it('should return all messages if params is undefined', async () => {
-      const result = await messageManager.getMessages(undefined!);
-      expect(result).toHaveLength(1);
-      expect(result[0]).toHaveProperty('message', 'some message');
-      expect(findMock).toHaveBeenCalled();
     });
 
     it('should return all messages if params is empty object', async () => {

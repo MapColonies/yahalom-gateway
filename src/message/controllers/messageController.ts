@@ -5,10 +5,7 @@ import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { MessageManager, ILogObject } from '../models/messageManager';
-import { messageLogsDataSource } from '../../DAL/messageLogsSource';
-import { Message } from '../../DAL/entities/message';
 import { IQueryModel } from './../../common/interfaces';
-import { mapMessageToILogObject } from './../../utils/helpers';
 
 @injectable()
 export class MessageController {
@@ -42,9 +39,7 @@ export class MessageController {
     try {
       const params: IQueryModel = req.query ?? {};
 
-      let resultMessages: ILogObject[];
-
-      resultMessages = await this.manager.getMessages(params);
+      const resultMessages: ILogObject[] = await this.manager.getMessages(params);
 
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {
