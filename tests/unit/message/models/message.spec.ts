@@ -5,7 +5,7 @@ import { Message } from '@src/DAL/entities/message';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { fullMessageInstance, fullQueryParamsInstnace, localMessagesStore } from '../../../../src/common/mocks';
-import { IQueryModel, ILogObject, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../../../src/common/interfaces';
+import { IQueryModel, ILogObject, SeverityLevels } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;
 
