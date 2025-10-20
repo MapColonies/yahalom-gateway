@@ -1,5 +1,5 @@
 import { components } from '@src/openapi';
-import { SeverityLevels, LogComponent, AnalyticsMessageTypes, IQueryModel } from './interfaces';
+import { SeverityLevels, LogComponent, AnalyticsMessageTypes, IQueryModel } from '../src/common/interfaces';
 
 export type IMessageModel = components['schemas']['ILogObject'];
 
@@ -12,9 +12,6 @@ export const fullMessageInstance: IMessageModel = {
   message: 'some message',
   timeStamp: new Date().toISOString(),
 };
-
-// TODO: delete this row when real database will appear
-export const localMessagesStore: IMessageModel[] = [];
 
 export const fullQueryParamsInstnace: IQueryModel = {
   sessionId: '2234234',

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
-import { localMessagesStore } from '../../common/mocks';
+import { localMessagesStore } from '../../common/localMocks';
 import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { Message } from '../../DAL/entities/message';
 import { IQueryModel } from './../../common/interfaces';

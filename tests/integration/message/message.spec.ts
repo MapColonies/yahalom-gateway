@@ -11,7 +11,8 @@ import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '@src/common/interfaces';
-import { fullMessageInstance, localMessagesStore } from '../../../src/common/mocks';
+import { localMessagesStore } from '@src/common/localMocks';
+import { fullMessageInstance } from '../../mocks';
 import { MessageManager } from './../../../src/message/models/messageManager';
 
 describe('message', function () {
