@@ -11,7 +11,7 @@ import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '@src/common/interfaces';
-import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
+import { fullMessageInstance, localMessagesStore } from '../../../src/common/mocks';
 import { MessageManager } from './../../../src/message/models/messageManager';
 
 describe('message', function () {
@@ -78,7 +78,7 @@ describe('message', function () {
   describe('Happy Path', function () {
     it('should return 201 status code and the internal id', async function () {
       const response = await requestSender.createMessage({
-        requestBody: getResponseMessage,
+        requestBody: fullMessageInstance,
       });
 
       expect(response).toSatisfyApiSpec();
@@ -170,10 +170,10 @@ describe('message', function () {
     });
 
     it('should return 200 and the correct message for a valid Id', async () => {
-      localMessagesStore.push(getResponseMessage);
+      localMessagesStore.push(fullMessageInstance);
 
       const response = await requestSender.getMessageById({
-        pathParams: { id: getResponseMessage.id },
+        pathParams: { id: fullMessageInstance.id },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -181,10 +181,10 @@ describe('message', function () {
     });
 
     it('should return 200 for successful deleted message request', async () => {
-      localMessagesStore.push(getResponseMessage);
+      localMessagesStore.push(fullMessageInstance);
 
       const response = await requestSender.tryDeleteMessageById({
-        pathParams: { id: getResponseMessage.id },
+        pathParams: { id: fullMessageInstance.id },
       });
 
       expect(response).toSatisfyApiSpec();
@@ -192,10 +192,10 @@ describe('message', function () {
     });
 
     it('should return 200 and patched message when valid id and body are provided', async () => {
-      localMessagesStore.push(getResponseMessage);
+      localMessagesStore.push(fullMessageInstance);
 
       const response = await requestSender.patchMessageById({
-        pathParams: { id: getResponseMessage.id },
+        pathParams: { id: fullMessageInstance.id },
         requestBody: { message: 'message was updated' },
       });
 
@@ -208,10 +208,10 @@ describe('message', function () {
   describe('Bad Path', function () {
     it('should return 400 status code for exceeding the time', async function () {
       const response = await requestSender.createMessage({
-        requestBody: getResponseMessage,
+        requestBody: fullMessageInstance,
       });
 
-      expect(Date.now() + 1000).toBeGreaterThan(new Date(getResponseMessage.timeStamp).getTime());
+      expect(Date.now() + 1000).toBeGreaterThan(new Date(fullMessageInstance.timeStamp).getTime());
       expect(response.status).not.toBe(httpStatusCodes.BAD_REQUEST);
     });
 
@@ -240,17 +240,17 @@ describe('message', function () {
     });
 
     it('should return 400 when patch body is empty', async () => {
-      localMessagesStore.push(getResponseMessage);
+      localMessagesStore.push(fullMessageInstance);
 
       const response = await requestSender.patchMessageById({
-        pathParams: { id: getResponseMessage.id },
+        pathParams: { id: fullMessageInstance.id },
         requestBody: {},
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({
-        message: `No params found to patch with id '${getResponseMessage.id}'`,
+        message: `No params found to patch with id '${fullMessageInstance.id}'`,
       });
     });
 
@@ -278,7 +278,7 @@ describe('message', function () {
         throw new Error('Simulated error');
       });
 
-      const response = await requestSender.createMessage({ requestBody: getResponseMessage });
+      const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).toEqual({ message: 'Failed to create message' });
@@ -309,7 +309,7 @@ describe('message', function () {
       });
 
       const response = await requestSender.getMessageById({
-        pathParams: { id: getResponseMessage.id },
+        pathParams: { id: fullMessageInstance.id },
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -322,7 +322,7 @@ describe('message', function () {
       });
 
       const response = await requestSender.tryDeleteMessageById({
-        pathParams: { id: getResponseMessage.id },
+        pathParams: { id: fullMessageInstance.id },
       });
 
       expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -335,7 +335,7 @@ describe('message', function () {
       });
 
       const response = await requestSender.patchMessageById({
-        pathParams: { id: getResponseMessage.id },
+        pathParams: { id: fullMessageInstance.id },
         requestBody: { severity: 'WARNING' },
       });
 

@@ -4,7 +4,7 @@ import { SelectQueryBuilder } from 'typeorm';
 import { Message } from '@src/DAL/entities/message';
 import { MessageManager } from '@src/message/models/messageManager';
 import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
-import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
+import { fullMessageInstance, fullQueryParamsInstnace, localMessagesStore } from '../../../../src/common/mocks';
 import { IQueryModel, ILogObject, SeverityLevels, LogComponent, AnalyticsMessageTypes } from './../../../../src/common/interfaces';
 
 let messageManager: MessageManager;
@@ -36,7 +36,7 @@ describe('MessageManager', () => {
 
   describe('#createMessage', () => {
     it('should return the created message', () => {
-      const message = messageManager.createMessage(getResponseMessage);
+      const message = messageManager.createMessage(fullMessageInstance);
       expect(message.sessionId).toBe('2234234');
     });
   });
@@ -44,7 +44,7 @@ describe('MessageManager', () => {
   describe('#getMessages', () => {
     beforeEach(() => {
       messageManager = new MessageManager(jsLogger({ enabled: false }));
-      localMessagesStore.push(getResponseMessage); // for testing the quary, should be replaced when adding db
+      localMessagesStore.push(fullMessageInstance); // for testing the quary, should be replaced when adding db
 
       mockAndWhere.mockClear();
       mockGetMany.mockClear();
@@ -59,26 +59,9 @@ describe('MessageManager', () => {
     });
 
     it('should return messages filtered by all parameters', async () => {
-      const fakeMessage: Partial<ILogObject> = {
-        id: '1',
-        sessionId: '123',
-        severity: 'ERROR' as SeverityLevels,
-        component: 'MAP' as LogComponent,
-        messageType: 'APPEXITED' as AnalyticsMessageTypes,
-        message: 'some message',
-        timeStamp: new Date().toISOString(),
-      };
+      mockGetMany.mockResolvedValue([fullMessageInstance]);
 
-      mockGetMany.mockResolvedValue([fakeMessage]);
-
-      const query: IQueryModel = {
-        sessionId: '123',
-        severity: 'ERROR',
-        component: 'MAP',
-        messageType: 'APPEXITED',
-      };
-
-      const result = await messageManager.getMessages(query);
+      const result = await messageManager.getMessages(fullQueryParamsInstnace);
 
       expect(mockCreateQueryBuilder).toHaveBeenCalledWith('log');
       expect(mockAndWhere).toHaveBeenCalledTimes(4);
@@ -118,8 +101,8 @@ describe('MessageManager', () => {
     });
 
     it('should return the message with the given Id', () => {
-      const message = messageManager.getMessageById(getResponseMessage.id);
-      expect(message).toEqual(getResponseMessage);
+      const message = messageManager.getMessageById(fullMessageInstance.id);
+      expect(message).toEqual(fullMessageInstance);
     });
 
     it('should return null if no message with the given Id exists for get request', () => {
@@ -128,7 +111,7 @@ describe('MessageManager', () => {
     });
 
     it('should return true for the deleted message', () => {
-      const message = messageManager.tryDeleteMessageById(getResponseMessage.id);
+      const message = messageManager.tryDeleteMessageById(fullMessageInstance.id);
       expect(message).toBeTruthy();
     });
 
