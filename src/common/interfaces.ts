@@ -46,7 +46,7 @@ export interface IConfig {
 }
 
 export interface ILogObject {
-  sessionId: number;
+  sessionId: string;
   severity: SeverityLevels;
   timeStamp: string;
   message: string;
@@ -60,7 +60,7 @@ export interface IQueryModel {
   severity?: string;
   component?: string;
   messageType?: string;
-  sessionId?: number;
+  sessionId?: string;
 }
 
 export interface DbConfig {

@@ -37,7 +37,7 @@ describe('MessageManager', () => {
   describe('#createMessage', () => {
     it('should return the created message', () => {
       const message = messageManager.createMessage(getResponseMessage);
-      expect(message.sessionId).toBe(2234234);
+      expect(message.sessionId).toBe('2234234');
     });
   });
 
@@ -61,7 +61,7 @@ describe('MessageManager', () => {
     it('should return messages filtered by all parameters', async () => {
       const fakeMessage: Partial<ILogObject> = {
         id: '1',
-        sessionId: 123,
+        sessionId: '123',
         severity: 'ERROR' as SeverityLevels,
         component: 'MAP' as LogComponent,
         messageType: 'APPEXITED' as AnalyticsMessageTypes,
@@ -72,7 +72,7 @@ describe('MessageManager', () => {
       mockGetMany.mockResolvedValue([fakeMessage]);
 
       const query: IQueryModel = {
-        sessionId: 123,
+        sessionId: '123',
         severity: 'ERROR',
         component: 'MAP',
         messageType: 'APPEXITED',
@@ -90,7 +90,7 @@ describe('MessageManager', () => {
     it('should build query with only provided filters', async () => {
       const fakeMessage: Partial<ILogObject> = {
         id: '2',
-        sessionId: 321,
+        sessionId: '321',
         message: 'filtered by severity only',
         severity: 'INFO' as SeverityLevels,
         timeStamp: new Date().toISOString(),
@@ -112,7 +112,7 @@ describe('MessageManager', () => {
     it('should return an empty array if no messages match', async () => {
       mockGetMany.mockResolvedValue([]);
 
-      const result = await messageManager.getMessages({ sessionId: 999 });
+      const result = await messageManager.getMessages({ sessionId: '999' });
 
       expect(result).toEqual([]);
     });

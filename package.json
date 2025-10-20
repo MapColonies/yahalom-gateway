@@ -28,7 +28,7 @@
     "typeorm": "ts-node --esm ./node_modules/typeorm/cli.js",
     "migration:create": "npm run typeorm -- migration:generate -d ./src/DAL/messageLogsSource.ts",
     "migration:run": "npm run typeorm migration:run -- -d ./src/DAL/messageLogsSource.ts",
-    "migration:revert": "npm run typeorm migration:revert",
+    "migration:revert": "ts-node --esm ./node_modules/typeorm/cli.js migration:revert -d ./src/DAL/messageLogsSource.ts",
     "schema:sync": "npm run typeorm schema:sync"
   },
   "directories": {

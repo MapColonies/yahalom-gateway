@@ -7,8 +7,8 @@ export class Message {
   @PrimaryGeneratedColumn('uuid')
   public id!: string;
 
-  @Column('int')
-  public sessionId!: number;
+  @Column('bigint')
+  public sessionId!: string;
 
   @Column({ type: 'enum', enum: SeverityLevels, enumName: 'message_severity_enum' })
   public severity!: SeverityLevels;
@@ -20,7 +20,7 @@ export class Message {
   public message!: string;
 
   @Column('jsonb', { nullable: true })
-  public messageParameters!: Record<string, unknown> | undefined;
+  public messageParameters?: Record<string, unknown>;
 
   @Column({ type: 'enum', enum: LogComponent, enumName: 'message_component_enum' })
   public component!: LogComponent;

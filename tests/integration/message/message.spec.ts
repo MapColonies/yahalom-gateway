@@ -88,7 +88,7 @@ describe('message', function () {
     it('should return 200 status code and appropriate message when no messages match filters', async function () {
       const messageInstance: DeepPartial<Message> = {
         id: uuidv4(),
-        sessionId: 9999,
+        sessionId: '9999',
         severity: 'ALERT' as SeverityLevels,
         component: 'GENERAL' as LogComponent,
         messageType: 'APPSTARTED' as AnalyticsMessageTypes,
@@ -100,7 +100,7 @@ describe('message', function () {
 
       const response = await requestSender.getMessages({
         queryParams: {
-          sessionId: 22342,
+          sessionId: '22342',
           severity: 'ERROR',
           component: 'MAP',
           messageType: 'APPEXITED',
@@ -115,7 +115,7 @@ describe('message', function () {
     it('should return 200 status code and handling if no query params provided', async function () {
       const messageInstance: DeepPartial<Message> = {
         id: uuidv4(),
-        sessionId: 2234234,
+        sessionId: '2234234',
         severity: 'ERROR' as SeverityLevels,
         component: 'MAP' as LogComponent,
         messageType: 'APPEXITED' as AnalyticsMessageTypes,
@@ -145,7 +145,7 @@ describe('message', function () {
     it('should return 200 status code and filtered messages', async function () {
       const messageInstace: DeepPartial<Message> = {
         id: uuidv4(),
-        sessionId: 2234234,
+        sessionId: '2234234',
         severity: 'ERROR' as SeverityLevels,
         component: 'MAP' as LogComponent,
         messageType: 'APPEXITED' as AnalyticsMessageTypes,
@@ -157,7 +157,7 @@ describe('message', function () {
 
       const response = await requestSender.getMessages({
         queryParams: {
-          sessionId: 2234234,
+          sessionId: '2234234',
           severity: 'ERROR',
           component: 'MAP',
           messageType: 'APPEXITED',
@@ -291,7 +291,7 @@ describe('message', function () {
 
       const response = await requestSender.getMessages({
         queryParams: {
-          sessionId: 22342,
+          sessionId: '22342',
           severity: 'ERROR',
           component: 'MAP',
           messageType: 'APPEXITED',

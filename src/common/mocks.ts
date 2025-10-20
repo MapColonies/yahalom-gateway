@@ -4,7 +4,7 @@ import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from './interface
 export type IMessageModel = components['schemas']['ILogObject'];
 
 export const getResponseMessage: IMessageModel = {
-  sessionId: 2234234,
+  sessionId: '2234234',
   severity: SeverityLevels.ERROR,
   timeStamp: '2025-09-11T13:45:00.000Z',
   message: 'Failed to authenticate user.',
