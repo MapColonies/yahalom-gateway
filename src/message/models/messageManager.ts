@@ -1,10 +1,14 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
+import { SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
-import { SERVICES, NOT_FOUND } from '@common/constants';
-import { localMessagesStore } from '../../common/mocks';
+import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
+import { localMessagesStore } from '../../common/localMocks';
+import { Message } from '../../DAL/entities/message';
+import { ConnectionManager } from '../../DAL/connectionManager';
 import { IQueryModel } from './../../common/interfaces';
+import { mapMessageToILogObject } from './../../utils/helpers';
 
 export type ILogObject = components['schemas']['ILogObject'];
 
@@ -25,22 +29,28 @@ export class MessageManager {
     return newMessage;
   }
 
-  public getMessages(params: IQueryModel): ILogObject[] {
+  public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
+
+    const connection = ConnectionManager.getInstance().getConnection();
+
+    if (Object.keys(params).length === 0) {
+      const rawMessages = await connection.getRepository(Message).find();
+      return rawMessages.map(mapMessageToILogObject); // doing the right conversions
+    }
 
     const { sessionId, severity, component, messageType } = params;
 
-    const allMessages: ILogObject[] = localMessagesStore;
+    const queryBuilder = connection.getRepository(Message).createQueryBuilder(QUERY_BUILDER_NAME);
 
-    const filteredMessages = allMessages.filter((instance) => {
-      if (severity != null && instance.severity !== severity) return false;
-      if (component != null && instance.component !== component) return false;
-      if (messageType != null && instance.messageType !== messageType) return false;
-      if (sessionId != null && instance.sessionId !== sessionId) return false;
-      return true;
-    });
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
 
-    return filteredMessages;
+    const resultMessages = await queryBuilder.getMany();
+
+    return resultMessages.map(mapMessageToILogObject);
   }
 
   public getMessageById(id: string): ILogObject | undefined {
@@ -76,5 +86,12 @@ export class MessageManager {
     }
 
     return undefined;
+  }
+
+  private andWhere(this: void, queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
+    if (value != null) {
+      const paramName = field.split('.').pop() ?? field;
+      queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });
+    }
   }
 }

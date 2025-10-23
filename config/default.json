@@ -29,5 +29,12 @@
         "options": null
       }
     }
+  },
+  "db": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "Libot4allnonprod",
+    "name": "message"
   }
 }
