@@ -3,6 +3,7 @@ import { trace } from '@opentelemetry/api';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { Repository } from 'typeorm';
+import { Registry } from 'prom-client';
 import { paths, operations } from '@openapi';
 import { Message } from '@src/DAL/entities/message';
 import { getApp } from '@src/app';
@@ -12,7 +13,6 @@ import { localMessagesStore } from '@src/common/localMocks';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { MessageManager } from '@src/message/models/messageManager';
 import { fullMessageInstance } from '../../mocks';
-import { Registry } from 'prom-client';
 
 const mockRepository: Partial<Repository<Message>> = {
   find: jest.fn().mockResolvedValue([fullMessageInstance as unknown as Message]),

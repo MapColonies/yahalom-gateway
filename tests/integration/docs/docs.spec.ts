@@ -4,8 +4,8 @@ import httpStatusCodes from 'http-status-codes';
 import { getApp } from '@src/app';
 import { SERVICES } from '@src/common/constants';
 import { initConfig } from '@src/common/config';
-import { DocsRequestSender } from './helpers/docsRequestSender';
 import { ConnectionManager } from '@src/DAL/connectionManager';
+import { DocsRequestSender } from './helpers/docsRequestSender';
 
 const mockRepository = {
   find: jest.fn(),
