@@ -1,3 +1,5 @@
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+
 export enum AnalyticsMessageTypes {
   APPSTARTED = 'APPSTARTED',
   APPEXITED = 'APPEXITED',
@@ -63,10 +65,16 @@ export interface IQueryModel {
   sessionId?: string;
 }
 
-export interface DbConfig {
+export interface DbConfig extends PostgresConnectionOptions {
   host: string;
   port: number;
   user: string;
-  password: string;
+  password?: string;
   name: string;
+  enableSslAuth?: boolean;
+  sslPaths?: {
+    ca: string;
+    cert: string;
+    key: string;
+  };
 }

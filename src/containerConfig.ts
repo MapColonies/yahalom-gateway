@@ -7,7 +7,9 @@ import { InjectionObject, registerDependencies } from '@common/dependencyRegistr
 import { SERVICES, SERVICE_NAME } from '@common/constants';
 import { getTracing } from '@common/tracing';
 import { messageRouterFactory, MESSAGE_ROUTER_SYMBOL } from './message/routes/messageRouter';
+import { ConnectionManager } from './DAL/connectionManager';
 import { getConfig } from './common/config';
+import { Message } from './DAL/entities/message';
 
 export interface RegisterOptions {
   override?: InjectionObject<unknown>[];
@@ -25,12 +27,19 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   const metricsRegistry = new Registry();
   configInstance.initializeMetrics(metricsRegistry);
 
+  const database = ConnectionManager.getInstance();
+  await database.initializeConnection();
+  const connection = database.getConnection();
+  const repository = connection.getRepository(Message);
+
   const dependencies: InjectionObject<unknown>[] = [
     { token: SERVICES.CONFIG, provider: { useValue: configInstance } },
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
     { token: MESSAGE_ROUTER_SYMBOL, provider: { useFactory: messageRouterFactory } },
+    { token: SERVICES.HEALTH_CHECK, provider: { useValue: database.healthCheck } },
+    { token: SERVICES.MESSAGE_REPOSITORY, provider: { useValue: repository } },
     {
       token: 'onSignal',
       provider: {

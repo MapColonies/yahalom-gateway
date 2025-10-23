@@ -5,8 +5,8 @@ import { SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/localMocks';
-import { messageLogsDataSource } from '../../DAL/messageLogsSource';
 import { Message } from '../../DAL/entities/message';
+import { ConnectionManager } from '../../DAL/connectionManager';
 import { IQueryModel } from './../../common/interfaces';
 import { mapMessageToILogObject } from './../../utils/helpers';
 
@@ -32,14 +32,16 @@ export class MessageManager {
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
+    const connection = ConnectionManager.getInstance().getConnection();
+
     if (Object.keys(params).length === 0) {
-      const rawMessages = await messageLogsDataSource.getRepository(Message).find();
+      const rawMessages = await connection.getRepository(Message).find();
       return rawMessages.map(mapMessageToILogObject); // doing the right conversions
     }
 
     const { sessionId, severity, component, messageType } = params;
 
-    const queryBuilder = messageLogsDataSource.getRepository(Message).createQueryBuilder(QUERY_BUILDER_NAME);
+    const queryBuilder = connection.getRepository(Message).createQueryBuilder(QUERY_BUILDER_NAME);
 
     this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
     this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
@@ -86,7 +88,7 @@ export class MessageManager {
     return undefined;
   }
 
-  private andWhere(queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
+  private andWhere(this: void, queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
     if (value != null) {
       const paramName = field.split('.').pop() ?? field;
       queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });

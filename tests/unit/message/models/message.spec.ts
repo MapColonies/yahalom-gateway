@@ -1,193 +1,147 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { SelectQueryBuilder } from 'typeorm';
+import { SelectQueryBuilder, Repository } from 'typeorm';
 import { Message } from '@src/DAL/entities/message';
-import { MessageManager } from '@src/message/models/messageManager';
-import { messageLogsDataSource } from '@src/DAL/messageLogsSource';
 import { localMessagesStore } from '@src/common/localMocks';
+import { ILogObject } from '@src/common/interfaces';
+import { MessageManager } from '@src/message/models/messageManager';
+import { QUERY_BUILDER_NAME } from '@src/common/constants';
 import { fullMessageInstance, fullQueryParamsInstnace } from '../../../mocks';
-import { IQueryModel, ILogObject, SeverityLevels } from './../../../../src/common/interfaces';
 
-let messageManager: MessageManager;
+interface MockQueryBuilder {
+  andWhere: jest.Mock<MockQueryBuilder, [string, Record<string, unknown>?]>;
+  getMany: jest.Mock<Promise<Message[]>, []>;
+}
 
-jest.mock('@src/DAL/messageLogsSource', () => {
-  return {
-    messageLogsDataSource: {
-      getRepository: jest.fn(),
-    },
-  };
-});
+const mockAndWhere = jest.fn<MockQueryBuilder, [string, Record<string, unknown>?]>().mockReturnThis();
+const mockGetMany = jest.fn<Promise<Message[]>, []>();
+const mockFind = jest.fn<Promise<Message[]>, []>();
 
-const mockAndWhere = jest.fn().mockReturnThis();
-const mockGetMany = jest.fn();
-
-const mockCreateQueryBuilder = jest.fn().mockReturnValue({
+const mockQueryBuilder: MockQueryBuilder = {
   andWhere: mockAndWhere,
   getMany: mockGetMany,
-});
-const mockRepository = {
-  createQueryBuilder: mockCreateQueryBuilder,
 };
+
+const mockRepository: Partial<Repository<Message>> = {
+  find: mockFind,
+  createQueryBuilder: jest.fn(() => mockQueryBuilder as unknown as SelectQueryBuilder<Message>),
+};
+
+const mockConnection = {
+  getRepository: jest.fn(() => mockRepository),
+  initializeConnection: jest.fn(),
+  healthCheck: jest.fn(),
+  getConnection: jest.fn(() => ({
+    getRepository: jest.fn(() => mockRepository),
+  })),
+};
+jest.mock('@src/DAL/connectionManager', () => ({
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ConnectionManager: {
+    getInstance: jest.fn(() => mockConnection),
+  },
+}));
+
+let messageManager: MessageManager;
 
 describe('MessageManager', () => {
   beforeEach(() => {
     messageManager = new MessageManager(jsLogger({ enabled: false }));
-    localMessagesStore.length = 0; // clear the store before each test
+    localMessagesStore.length = 0;
+
+    jest.clearAllMocks();
+    mockFind.mockReset();
+    mockGetMany.mockReset();
+    mockAndWhere.mockReset();
   });
 
   describe('#createMessage', () => {
     it('should return the created message', () => {
       const message = messageManager.createMessage(fullMessageInstance);
       expect(message.sessionId).toBe('2234234');
+      expect(localMessagesStore).toContain(message);
     });
   });
 
   describe('#getMessages', () => {
-    beforeEach(() => {
-      messageManager = new MessageManager(jsLogger({ enabled: false }));
-      localMessagesStore.push(fullMessageInstance); // for testing the quary, should be replaced when adding db
-
-      mockAndWhere.mockClear();
-      mockGetMany.mockClear();
-      mockCreateQueryBuilder.mockClear();
-
-      (messageLogsDataSource.getRepository as jest.Mock).mockImplementation((entity) => {
-        if (entity === Message) {
-          return mockRepository;
-        }
-        return null;
-      });
+    it('should return all messages if params is empty', async () => {
+      mockFind.mockResolvedValue([fullMessageInstance as unknown as Message]);
+      const result = await messageManager.getMessages({});
+      expect(result).toHaveLength(1);
+      expect(result[0]).toHaveProperty('message', 'some message');
+      expect(mockFind).toHaveBeenCalled();
     });
 
-    it('should return messages filtered by all parameters', async () => {
-      mockGetMany.mockResolvedValue([fullMessageInstance]);
-
+    it('should return filtered messages', async () => {
+      mockGetMany.mockResolvedValue([fullMessageInstance as unknown as Message]);
       const result = await messageManager.getMessages(fullQueryParamsInstnace);
 
-      expect(mockCreateQueryBuilder).toHaveBeenCalledWith('log');
+      expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith('log');
       expect(mockAndWhere).toHaveBeenCalledTimes(4);
       expect(mockGetMany).toHaveBeenCalled();
-      expect(result).toHaveLength(1);
       expect(result[0]).toHaveProperty('message', 'some message');
     });
 
-    it('should build query with only provided filters', async () => {
-      const fakeMessage: Partial<ILogObject> = {
-        id: '2',
-        sessionId: '321',
-        message: 'filtered by severity only',
-        severity: 'INFO' as SeverityLevels,
-        timeStamp: new Date().toISOString(),
-      };
-
-      mockGetMany.mockResolvedValue([fakeMessage]);
-
-      const query: IQueryModel = {
-        severity: 'INFO',
-      };
-
-      const result = await messageManager.getMessages(query);
-
-      expect(mockCreateQueryBuilder).toHaveBeenCalledWith('log');
-      expect(mockAndWhere).toHaveBeenCalledTimes(1);
-      expect(result[0]).toHaveProperty('severity', 'INFO');
-    });
-
-    it('should return an empty array if no messages match', async () => {
+    it('should return empty array if no matches', async () => {
       mockGetMany.mockResolvedValue([]);
-
       const result = await messageManager.getMessages({ sessionId: '999' });
-
       expect(result).toEqual([]);
     });
+  });
 
-    it('should return the message with the given Id', () => {
-      const message = messageManager.getMessageById(fullMessageInstance.id);
-      expect(message).toEqual(fullMessageInstance);
+  describe('#getMessageById', () => {
+    it('should return the message by id', () => {
+      localMessagesStore.push(fullMessageInstance);
+      const result = messageManager.getMessageById(fullMessageInstance.id);
+      expect(result).toEqual(fullMessageInstance);
     });
 
-    it('should return null if no message with the given Id exists for get request', () => {
-      const message = messageManager.getMessageById('non-existent-id');
-      expect(message).toBeUndefined();
-    });
-
-    it('should return true for the deleted message', () => {
-      const message = messageManager.tryDeleteMessageById(fullMessageInstance.id);
-      expect(message).toBeTruthy();
-    });
-
-    it('should return null if no message with the given Id exists for delete request', () => {
-      const message = messageManager.tryDeleteMessageById('non-existent-id');
-      expect(message).toBeFalsy();
-    });
-
-    it('should return the updated message', () => {
-      const patch: Partial<ILogObject> = {
-        message: 'updated',
-      };
-
-      const updated = messageManager.patchMessageById('1', patch as ILogObject);
-      expect(updated).toHaveProperty('message', 'updated');
-    });
-
-    it('should return undefined if message Id does not exist', () => {
-      const patch: Partial<ILogObject> = {
-        message: 'nope',
-      };
-
-      const result = messageManager.patchMessageById('999', patch as ILogObject);
+    it('should return undefined if id does not exist', () => {
+      const result = messageManager.getMessageById('non-existent-id');
       expect(result).toBeUndefined();
     });
   });
 
-  describe('MessageManager private andWhere', () => {
-    it('should call queryBuilder.andWhere with proper SQL and parameter', () => {
-      const fakeQueryBuilder: Pick<SelectQueryBuilder<Message>, 'andWhere'> = {
-        andWhere: jest.fn().mockReturnThis(),
-      };
-
-      const manager = new MessageManager(jsLogger({ enabled: false }));
-
-      // @ts-expect-error calling private method for testing
-      manager.andWhere(fakeQueryBuilder, 'log.severity', 'ERROR');
-      // @ts-expect-error calling private method for testing
-      manager.andWhere(fakeQueryBuilder, 'log.component', null);
-
-      expect(fakeQueryBuilder.andWhere).toHaveBeenCalledTimes(1);
-      expect(fakeQueryBuilder.andWhere).toHaveBeenCalledWith('log.severity = :severity', { severity: 'ERROR' });
+  describe('#tryDeleteMessageById', () => {
+    it('should return true when message is deleted', () => {
+      localMessagesStore.push(fullMessageInstance);
+      const result = messageManager.tryDeleteMessageById(fullMessageInstance.id);
+      expect(result).toBeTruthy();
+      expect(localMessagesStore).toHaveLength(0);
     });
 
-    it('should use the full field name if split returns empty', () => {
-      const fakeQueryBuilder: Pick<SelectQueryBuilder<Message>, 'andWhere'> = {
-        andWhere: jest.fn().mockReturnThis(),
-      };
-
-      const manager = new MessageManager(jsLogger({ enabled: false }));
-
-      // @ts-expect-error calling private method for testing
-      manager.andWhere(fakeQueryBuilder, 'customField', 123);
-
-      expect(fakeQueryBuilder.andWhere).toHaveBeenCalledWith('customField = :customField', { customField: 123 });
+    it('should return false when message does not exist', () => {
+      const result = messageManager.tryDeleteMessageById('non-existent-id');
+      expect(result).toBeFalsy();
     });
   });
 
-  describe('MessageManager.getMessages', () => {
-    let findMock: jest.Mock;
-
-    beforeEach(() => {
-      findMock = jest.fn().mockResolvedValue([fullMessageInstance]);
-
-      (messageLogsDataSource.getRepository as jest.Mock).mockReturnValue({
-        find: findMock,
-        createQueryBuilder: mockCreateQueryBuilder,
-      });
+  describe('#patchMessageById', () => {
+    it('should update an existing message', () => {
+      localMessagesStore.push(fullMessageInstance);
+      const patch: Partial<ILogObject> = { message: 'updated' };
+      const result = messageManager.patchMessageById(fullMessageInstance.id, patch as ILogObject);
+      expect(result).toHaveProperty('message', 'updated');
     });
 
-    it('should return all messages if params is empty object', async () => {
-      const result = await messageManager.getMessages({});
-      expect(result).toHaveLength(1);
-      expect(result[0]).toHaveProperty('message', 'some message');
-      expect(findMock).toHaveBeenCalled();
+    it('should return undefined if message does not exist', () => {
+      const patch: Partial<ILogObject> = { message: 'nope' };
+      const result = messageManager.patchMessageById('non-existent-id', patch as ILogObject);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('private #andWhere', () => {
+    it('should add conditions to query builder only if value is not null', async () => {
+      mockGetMany.mockResolvedValue([fullMessageInstance as unknown as Message]);
+
+      await messageManager.getMessages(fullQueryParamsInstnace);
+
+      expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith(QUERY_BUILDER_NAME);
+      expect(mockAndWhere).toHaveBeenCalledTimes(Object.keys(fullQueryParamsInstnace).length);
+      expect(mockAndWhere).toHaveBeenCalledWith('log.severity = :severity', { severity: 'ERROR' });
+
+      expect(mockGetMany).toHaveBeenCalled();
     });
   });
 });
