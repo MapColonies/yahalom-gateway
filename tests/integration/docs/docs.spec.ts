@@ -33,7 +33,7 @@ describe('docs', function () {
       override: [
         { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
         { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-        { token: SERVICES.HEALTH_CHECK, provider: { useValue: async () => true } },
+        { token: SERVICES.HEALTH_CHECK, provider: { useValue: true } },
       ],
       useChild: true,
     });
