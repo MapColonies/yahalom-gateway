@@ -9,10 +9,10 @@ import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { localMessagesStore } from '@src/common/localMocks';
-import { fullMessageInstance } from '../../mocks';
 import { ConnectionManager } from '@src/DAL/connectionManager';
-import { Registry } from 'prom-client';
 import { MessageManager } from '@src/message/models/messageManager';
+import { fullMessageInstance } from '../../mocks';
+import { Registry } from 'prom-client';
 
 const mockRepository: Partial<Repository<Message>> = {
   find: jest.fn().mockResolvedValue([fullMessageInstance as unknown as Message]),
