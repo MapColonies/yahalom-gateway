@@ -160,9 +160,7 @@ describe('Message Integration Tests - Sad Path', () => {
   afterEach(() => jest.restoreAllMocks());
 
   it('should return 500 if createMessage throws', async () => {
-    jest.spyOn(MessageManager.prototype, 'createMessage').mockImplementation(() => {
-      throw new Error('Simulated error');
-    });
+    forceMockInternalServerError('createMessage');
     const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -170,9 +168,7 @@ describe('Message Integration Tests - Sad Path', () => {
   });
 
   it('should return 500 if getMessages throws', async () => {
-    jest.spyOn(MessageManager.prototype, 'getMessages').mockImplementation(() => {
-      throw new Error('Simulated error');
-    });
+    forceMockInternalServerError('getMessages');
     const response = await requestSender.getMessages({
       queryParams: { sessionId: '22342', severity: 'ERROR', component: 'MAP', messageType: 'APPEXITED' },
     });
@@ -182,9 +178,7 @@ describe('Message Integration Tests - Sad Path', () => {
   });
 
   it('should return 500 if getMessageById throws', async () => {
-    jest.spyOn(MessageManager.prototype, 'getMessageById').mockImplementation(() => {
-      throw new Error('Simulated error');
-    });
+    forceMockInternalServerError('getMessageById');
     const response = await requestSender.getMessageById({ pathParams: { id: fullMessageInstance.id } });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -192,9 +186,7 @@ describe('Message Integration Tests - Sad Path', () => {
   });
 
   it('should return 500 if tryDeleteMessageById throws', async () => {
-    jest.spyOn(MessageManager.prototype, 'tryDeleteMessageById').mockImplementation(() => {
-      throw new Error('Simulated error');
-    });
+    forceMockInternalServerError('tryDeleteMessageById');
     const response = await requestSender.tryDeleteMessageById({ pathParams: { id: fullMessageInstance.id } });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -202,12 +194,16 @@ describe('Message Integration Tests - Sad Path', () => {
   });
 
   it('should return 500 if patchMessageById throws', async () => {
-    jest.spyOn(MessageManager.prototype, 'patchMessageById').mockImplementation(() => {
-      throw new Error('Simulated error');
-    });
+    forceMockInternalServerError('patchMessageById');
     const response = await requestSender.patchMessageById({ pathParams: { id: fullMessageInstance.id }, requestBody: { severity: 'WARNING' } });
 
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to patch message' });
   });
 });
+
+const forceMockInternalServerError = (methodName: string): void => {
+  jest.spyOn(MessageManager.prototype, methodName as never).mockImplementation(() => {
+    throw new Error('Simulated error');
+  });
+};
