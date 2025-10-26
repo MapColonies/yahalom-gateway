@@ -12,7 +12,7 @@ import { initConfig } from '@src/common/config';
 import { localMessagesStore } from '@src/common/localMocks';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { MessageManager } from '@src/message/models/messageManager';
-import { fullMessageInstance } from '../../mocks';
+import { fullMessageInstance } from '../../mocks/generalMocks';
 
 const mockRepository: Partial<Repository<Message>> = {
   find: jest.fn().mockResolvedValue([fullMessageInstance as unknown as Message]),
@@ -93,6 +93,7 @@ describe('Message Integration Tests - Happy Path', () => {
     });
     const response = await requestSender.getMessages({ queryParams: { sessionId: 'non-existent' } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.OK);
     expect(response.body).toEqual([]);
   });
@@ -101,6 +102,7 @@ describe('Message Integration Tests - Happy Path', () => {
     localMessagesStore.push(fullMessageInstance);
     const response = await requestSender.getMessageById({ pathParams: { id: fullMessageInstance.id } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.OK);
   });
 
@@ -108,6 +110,7 @@ describe('Message Integration Tests - Happy Path', () => {
     localMessagesStore.push(fullMessageInstance);
     const response = await requestSender.tryDeleteMessageById({ pathParams: { id: fullMessageInstance.id } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.OK);
   });
 
@@ -118,6 +121,7 @@ describe('Message Integration Tests - Happy Path', () => {
       requestBody: { message: 'Updated message' },
     });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.OK);
     expect(response.body.message).toBe('Updated message');
   });
@@ -128,6 +132,7 @@ describe('Message Integration Tests - Bad Path', () => {
   it('should return 404 for getMessageById with non-existent id', async () => {
     const response = await requestSender.getMessageById({ pathParams: { id: 'non-existent-id' } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
     expect(response.body).toEqual({ message: "No message found with id 'non-existent-id'" });
   });
@@ -135,6 +140,7 @@ describe('Message Integration Tests - Bad Path', () => {
   it('should return 404 for tryDeleteMessageById with non-existent id', async () => {
     const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'non-existent-id' } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
     expect(response.body).toEqual({ message: "No message found to delete with id 'non-existent-id'" });
   });
@@ -143,6 +149,7 @@ describe('Message Integration Tests - Bad Path', () => {
     localMessagesStore.push(fullMessageInstance);
     const response = await requestSender.patchMessageById({ pathParams: { id: fullMessageInstance.id }, requestBody: {} });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
     expect(response.body).toEqual({ message: `No params found to patch with id '${fullMessageInstance.id}'` });
   });
@@ -150,6 +157,7 @@ describe('Message Integration Tests - Bad Path', () => {
   it('should return 404 for patch with non-existent id', async () => {
     const response = await requestSender.patchMessageById({ pathParams: { id: 'non-existent-id' }, requestBody: { severity: 'WARNING' } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
     expect(response.body).toEqual({ message: "No message found with id 'non-existent-id'" });
   });
@@ -163,6 +171,7 @@ describe('Message Integration Tests - Sad Path', () => {
     forceMockInternalServerError('createMessage');
     const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to create message' });
   });
@@ -173,6 +182,7 @@ describe('Message Integration Tests - Sad Path', () => {
       queryParams: { sessionId: '22342', severity: 'ERROR', component: 'MAP', messageType: 'APPEXITED' },
     });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to get messages' });
   });
@@ -181,6 +191,7 @@ describe('Message Integration Tests - Sad Path', () => {
     forceMockInternalServerError('getMessageById');
     const response = await requestSender.getMessageById({ pathParams: { id: fullMessageInstance.id } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to get message by id' });
   });
@@ -189,6 +200,7 @@ describe('Message Integration Tests - Sad Path', () => {
     forceMockInternalServerError('tryDeleteMessageById');
     const response = await requestSender.tryDeleteMessageById({ pathParams: { id: fullMessageInstance.id } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to delete message' });
   });
@@ -197,6 +209,7 @@ describe('Message Integration Tests - Sad Path', () => {
     forceMockInternalServerError('patchMessageById');
     const response = await requestSender.patchMessageById({ pathParams: { id: fullMessageInstance.id }, requestBody: { severity: 'WARNING' } });
 
+    expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
     expect(response.body).toEqual({ message: 'Failed to patch message' });
   });

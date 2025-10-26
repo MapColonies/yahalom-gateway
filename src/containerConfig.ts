@@ -27,7 +27,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   const metricsRegistry = new Registry();
   configInstance.initializeMetrics(metricsRegistry);
 
-  const database = ConnectionManager.getInstance();
+  const database = ConnectionManager.getInstance(logger);
   await database.initializeConnection();
   const connection = database.getConnection();
   const repository = connection.getRepository(Message);

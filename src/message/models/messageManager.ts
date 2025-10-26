@@ -32,7 +32,7 @@ export class MessageManager {
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
-    const connection = ConnectionManager.getInstance().getConnection();
+    const connection = ConnectionManager.getInstance(this.logger).getConnection();
 
     if (Object.keys(params).length === 0) {
       const rawMessages = await connection.getRepository(Message).find();

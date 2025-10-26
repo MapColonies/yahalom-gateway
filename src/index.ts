@@ -1,17 +1,28 @@
+import 'reflect-metadata';
 import { createServer } from 'http';
 import { createTerminus } from '@godaddy/terminus';
 import { Logger } from '@map-colonies/js-logger';
 import { SERVICES } from '@common/constants';
 import { ConfigType } from '@common/config';
 import { getApp } from './app';
+import { ConnectionManager } from './DAL/connectionManager';
 
 void getApp()
-  .then(([app, container]) => {
+  .then(async ([app, container]) => {
     const logger = container.resolve<Logger>(SERVICES.LOGGER);
     const config = container.resolve<ConfigType>(SERVICES.CONFIG);
     const port = config.get('server.port');
-    const stubHealthCheck = async (): Promise<void> => Promise.resolve();
-    const server = createTerminus(createServer(app), { healthChecks: { '/liveness': stubHealthCheck }, onSignal: container.resolve('onSignal') });
+
+    const database = ConnectionManager.getInstance();
+    await database.initializeConnection();
+
+    const healthCheckFn = database.healthCheck();
+    const onSignalFn: () => Promise<void> = container.resolve<{ useValue: () => Promise<void> }>('onSignal').useValue;
+
+    const server = createTerminus(createServer(app), {
+      healthChecks: { '/liveness': healthCheckFn },
+      onSignal: onSignalFn,
+    });
 
     server.listen(port, () => {
       logger.info(`app started on port ${port}`);

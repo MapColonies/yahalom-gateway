@@ -1,40 +1,13 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { SelectQueryBuilder, Repository } from 'typeorm';
+import { mockAndWhere, mockGetMany, mockFind, mockRepository, mockConnection } from '@tests/mocks/unitMocks';
 import { Message } from '@src/DAL/entities/message';
 import { localMessagesStore } from '@src/common/localMocks';
 import { ILogObject } from '@src/common/interfaces';
 import { MessageManager } from '@src/message/models/messageManager';
 import { QUERY_BUILDER_NAME } from '@src/common/constants';
-import { fullMessageInstance, fullQueryParamsInstnace } from '../../../mocks';
+import { fullMessageInstance, fullQueryParamsInstnace } from '../../../mocks/generalMocks';
 
-interface MockQueryBuilder {
-  andWhere: jest.Mock<MockQueryBuilder, [string, Record<string, unknown>?]>;
-  getMany: jest.Mock<Promise<Message[]>, []>;
-}
-
-const mockAndWhere = jest.fn<MockQueryBuilder, [string, Record<string, unknown>?]>().mockReturnThis();
-const mockGetMany = jest.fn<Promise<Message[]>, []>();
-const mockFind = jest.fn<Promise<Message[]>, []>();
-
-const mockQueryBuilder: MockQueryBuilder = {
-  andWhere: mockAndWhere,
-  getMany: mockGetMany,
-};
-
-const mockRepository: Partial<Repository<Message>> = {
-  find: mockFind,
-  createQueryBuilder: jest.fn(() => mockQueryBuilder as unknown as SelectQueryBuilder<Message>),
-};
-
-const mockConnection = {
-  getRepository: jest.fn(() => mockRepository),
-  initializeConnection: jest.fn(),
-  healthCheck: jest.fn(),
-  getConnection: jest.fn(() => ({
-    getRepository: jest.fn(() => mockRepository),
-  })),
-};
 jest.mock('@src/DAL/connectionManager', () => ({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   ConnectionManager: {
