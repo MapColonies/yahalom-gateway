@@ -8,7 +8,9 @@ import { DB_TIMEOUT } from '../common/constants';
 import { AppError } from '../common/appError';
 import { DbConfig } from '../common/interfaces';
 import { createConnectionOptions } from './createConnectionOptions';
+import { singleton } from 'tsyringe';
 
+@singleton()
 export class ConnectionManager {
   private static instance: ConnectionManager | undefined;
   private dataSource: DataSource | null = null;
