@@ -3,22 +3,20 @@ import config from 'config';
 import { DataSource } from 'typeorm';
 import httpStatusCodes from 'http-status-codes';
 import type { Logger } from '@map-colonies/js-logger';
-import { singleton } from 'tsyringe';
+import { inject, singleton } from 'tsyringe';
 import { promiseTimeout } from '@src/utils/promiseTimeout';
-import { DB_TIMEOUT } from '../common/constants';
+import { DB_TIMEOUT, MAX_CONNECT_RETRIES, SERVICES } from '../common/constants';
 import { AppError } from '../common/appError';
 import { DbConfig } from '../common/interfaces';
 import { createConnectionOptions } from './createConnectionOptions';
 
-//@singleton()
+@singleton()
 export class ConnectionManager {
   private static instance: ConnectionManager | undefined;
   private dataSource: DataSource | null = null;
   private readonly connectionConfig: DbConfig;
-  private readonly logger: Logger;
 
-  private constructor(logger: Logger) {
-    this.logger = logger;
+  public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {
     this.connectionConfig = config.get<DbConfig>('db');
   }
 
@@ -32,20 +30,23 @@ export class ConnectionManager {
     return ConnectionManager.instance;
   }
 
-  public async initializeConnection(): Promise<void> {
+  public async init(): Promise<void> {
     if (this.dataSource && !this.dataSource.isInitialized) {
       this.logger.info({ msg: 'Data Source already initialized' });
       return;
     }
 
-    try {
-      this.logger.info({ msg: 'Initializing Data Source...' });
-      this.dataSource = new DataSource(createConnectionOptions(this.connectionConfig));
-      await this.dataSource.initialize();
-      this.logger.info({ msg: 'Data Source successfully initialized' });
-    } catch (error) {
-      this.logger.error({ msg: 'Failed to initialize Data Source', error });
-      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to initialize database connection', false);
+    let retries = 0;
+    while (retries < MAX_CONNECT_RETRIES) {
+      try {
+        this.dataSource = new DataSource(createConnectionOptions(this.connectionConfig));
+        await this.dataSource.initialize();
+        this.logger.info({ msg: 'Data Source successfully initialized' });
+      } catch (error) {
+        retries++;
+        this.logger.warn({ msg: `DB connection failed, retrying ${retries}/${MAX_CONNECT_RETRIES}` });
+        await new Promise((res) => setTimeout(res, DB_TIMEOUT));
+      }
     }
   }
 

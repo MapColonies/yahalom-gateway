@@ -25,7 +25,7 @@ export const mockRepository: Partial<Repository<Message>> = {
 
 export const mockConnection = {
   getRepository: jest.fn(() => mockRepository),
-  initializeConnection: jest.fn(),
+  init: jest.fn(),
   healthCheck: jest.fn(),
   getConnection: jest.fn(() => ({
     getRepository: jest.fn(() => mockRepository),

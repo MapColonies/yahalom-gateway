@@ -28,7 +28,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   configInstance.initializeMetrics(metricsRegistry);
 
   const database = ConnectionManager.getInstance(logger);
-  await database.initializeConnection();
+  await database.init();
   const connection = database.getConnection();
   const repository = connection.getRepository(Message);
 
@@ -40,6 +40,16 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: MESSAGE_ROUTER_SYMBOL, provider: { useFactory: messageRouterFactory } },
     { token: SERVICES.HEALTH_CHECK, provider: { useValue: database.healthCheck } },
     { token: SERVICES.MESSAGE_REPOSITORY, provider: { useValue: repository } },
+    {
+      token: SERVICES.CONNECTION_MANAGER,
+      provider: {
+        useFactory: async (dependencyContainer: DependencyContainer) => {
+          const connectionManager = dependencyContainer.resolve(ConnectionManager);
+          await connectionManager.init();
+          return connectionManager;
+        },
+      },
+    },
     {
       token: 'onSignal',
       provider: {

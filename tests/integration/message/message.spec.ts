@@ -14,7 +14,7 @@ import { mockRepository, mockConnection } from '@tests/mocks/integrationMocks';
 import { fullMessageInstance } from '../../mocks/generalMocks';
 
 jest.spyOn(ConnectionManager, 'getInstance').mockReturnValue({
-  initializeConnection: jest.fn().mockResolvedValue(undefined),
+  init: jest.fn().mockResolvedValue(undefined),
   getConnection: jest.fn(() => mockConnection),
   getRepository: jest.fn(() => mockRepository),
   healthCheck: jest.fn().mockResolvedValue(true),

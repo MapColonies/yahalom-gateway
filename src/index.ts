@@ -14,7 +14,7 @@ void getApp()
     const port = config.get('server.port');
 
     const database = ConnectionManager.getInstance();
-    await database.initializeConnection();
+    await database.init();
 
     const healthCheckFn = database.healthCheck();
     const onSignalFn: () => Promise<void> = container.resolve<{ useValue: () => Promise<void> }>('onSignal').useValue;

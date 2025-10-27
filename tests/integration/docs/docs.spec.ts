@@ -15,7 +15,7 @@ const mockRepository = {
 const mockConnection = { getRepository: jest.fn(() => mockRepository) };
 
 jest.spyOn(ConnectionManager, 'getInstance').mockReturnValue({
-  initializeConnection: jest.fn().mockResolvedValue(undefined),
+  init: jest.fn().mockResolvedValue(undefined),
   getConnection: jest.fn(() => mockConnection),
   getRepository: jest.fn(() => mockRepository),
   healthCheck: jest.fn().mockResolvedValue(true),
