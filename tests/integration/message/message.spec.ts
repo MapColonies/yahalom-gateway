@@ -2,28 +2,16 @@ import jsLogger from '@map-colonies/js-logger';
 import { trace } from '@opentelemetry/api';
 import httpStatusCodes from 'http-status-codes';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
-import { Repository } from 'typeorm';
 import { Registry } from 'prom-client';
 import { paths, operations } from '@openapi';
-import { Message } from '@src/DAL/entities/message';
 import { getApp } from '@src/app';
 import { SERVICES } from '@common/constants';
 import { initConfig } from '@src/common/config';
 import { localMessagesStore } from '@src/common/localMocks';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { MessageManager } from '@src/message/models/messageManager';
+import { mockRepository, mockConnection } from '@tests/mocks/unitMocks';
 import { fullMessageInstance } from '../../mocks/generalMocks';
-
-const mockRepository: Partial<Repository<Message>> = {
-  find: jest.fn().mockResolvedValue([fullMessageInstance as unknown as Message]),
-  findOne: jest.fn().mockResolvedValue(fullMessageInstance as unknown as Message),
-  save: jest.fn(),
-  createQueryBuilder: jest.fn().mockReturnValue({
-    andWhere: jest.fn().mockReturnThis(),
-    getMany: jest.fn().mockResolvedValue([fullMessageInstance as unknown as Message]),
-  }),
-};
-const mockConnection = { getRepository: jest.fn(() => mockRepository) };
 
 jest.spyOn(ConnectionManager, 'getInstance').mockReturnValue({
   initializeConnection: jest.fn().mockResolvedValue(undefined),
