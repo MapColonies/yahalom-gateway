@@ -10,7 +10,7 @@ import { initConfig } from '@src/common/config';
 import { localMessagesStore } from '@src/common/localMocks';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { MessageManager } from '@src/message/models/messageManager';
-import { mockRepository, mockConnection } from '@tests/mocks/unitMocks';
+import { mockRepository, mockConnection } from '@tests/mocks/integrationMocks';
 import { fullMessageInstance } from '../../mocks/generalMocks';
 
 jest.spyOn(ConnectionManager, 'getInstance').mockReturnValue({
@@ -48,12 +48,14 @@ beforeEach(() => {
 describe('Message Integration Tests - Happy Path', () => {
   it('should return 201 when creating a message', async () => {
     const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
+
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.CREATED);
   });
 
   it('should return all messages if no query params', async () => {
     const response = await requestSender.getMessages();
+
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.OK);
     expect(response.body).toHaveLength(1);
