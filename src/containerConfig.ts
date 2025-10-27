@@ -43,7 +43,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     {
       token: SERVICES.CONNECTION_MANAGER,
       provider: {
-        useFactory: async (dependencyContainer: DependencyContainer) => {
+        useFactory: async (dependencyContainer: DependencyContainer): Promise<ConnectionManager> => {
           const connectionManager = dependencyContainer.resolve(ConnectionManager);
           await connectionManager.init();
           return connectionManager;
