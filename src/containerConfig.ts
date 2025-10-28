@@ -28,9 +28,6 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   configInstance.initializeMetrics(metricsRegistry);
 
   const database = ConnectionManager.getInstance(logger);
-  await database.init();
-  const connection = database.getConnection();
-  const repository = connection.getRepository(Message);
 
   const dependencies: InjectionObject<unknown>[] = [
     { token: SERVICES.CONFIG, provider: { useValue: configInstance } },
@@ -39,7 +36,6 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
     { token: MESSAGE_ROUTER_SYMBOL, provider: { useFactory: messageRouterFactory } },
     { token: SERVICES.HEALTH_CHECK, provider: { useValue: database.healthCheck } },
-    { token: SERVICES.MESSAGE_REPOSITORY, provider: { useValue: repository } },
     {
       token: SERVICES.CONNECTION_MANAGER,
       provider: {
@@ -51,12 +47,23 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
       },
     },
     {
+      token: SERVICES.MESSAGE_REPOSITORY,
+      provider: {
+        useFactory: (container: DependencyContainer) => {
+          const connectionManager = container.resolve(ConnectionManager);
+          const connection = connectionManager.getConnection();
+          return connection.getRepository(Message);
+        },
+      },
+    },
+    {
       token: 'onSignal',
       provider: {
-        useValue: {
-          useValue: async (): Promise<void> => {
-            await Promise.all([getTracing().stop()]);
-          },
+        useFactory: (dependencyContainer: DependencyContainer): (() => Promise<void>) => {
+          const connectionManager = dependencyContainer.resolve(ConnectionManager);
+          return async () => {
+            await Promise.all([Promise.resolve(getTracing().stop()), Promise.resolve(connectionManager.shutdown())]);
+          };
         },
       },
     },

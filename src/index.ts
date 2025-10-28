@@ -5,19 +5,15 @@ import { Logger } from '@map-colonies/js-logger';
 import { SERVICES } from '@common/constants';
 import { ConfigType } from '@common/config';
 import { getApp } from './app';
-import { ConnectionManager } from './DAL/connectionManager';
 
 void getApp()
-  .then(async ([app, container]) => {
+  .then(([app, container]) => {
     const logger = container.resolve<Logger>(SERVICES.LOGGER);
     const config = container.resolve<ConfigType>(SERVICES.CONFIG);
     const port = config.get('server.port');
 
-    const database = ConnectionManager.getInstance();
-    await database.init();
-
-    const healthCheckFn = database.healthCheck();
-    const onSignalFn: () => Promise<void> = container.resolve<{ useValue: () => Promise<void> }>('onSignal').useValue;
+    const healthCheckFn = container.resolve<() => Promise<void>>(SERVICES.HEALTH_CHECK);
+    const onSignalFn = container.resolve<() => Promise<void>>('onSignal');
 
     const server = createTerminus(createServer(app), {
       healthChecks: { '/liveness': healthCheckFn },

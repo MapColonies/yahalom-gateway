@@ -14,7 +14,7 @@ export const SERVICES = {
   METRICS: Symbol('METRICS'),
   MESSAGE_REPOSITORY: Symbol('MessageRepository'),
   HEALTH_CHECK: Symbol('HealthCheck'),
-  CONNECTION_MANAGER: Symbol('connectionManager'),
+  CONNECTION_MANAGER: Symbol('ConnectionManager'),
 } satisfies Record<string, symbol>;
 /* eslint-enable @typescript-eslint/naming-convention */
 

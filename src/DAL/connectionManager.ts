@@ -31,7 +31,7 @@ export class ConnectionManager {
   }
 
   public async init(): Promise<void> {
-    if (this.dataSource && !this.dataSource.isInitialized) {
+    if (this.dataSource?.isInitialized === true) {
       this.logger.info({ msg: 'Data Source already initialized' });
       return;
     }
