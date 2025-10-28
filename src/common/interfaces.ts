@@ -68,7 +68,7 @@ export interface IQueryModel {
 export interface DbConfig extends PostgresConnectionOptions {
   host: string;
   port: number;
-  user: string;
+  username: string;
   password?: string;
   name: string;
   enableSslAuth?: boolean;
