@@ -3,39 +3,35 @@ import { Repository } from 'typeorm';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { initConfig } from '@src/common/config';
 import { AppDataSource } from '@src/DAL/dataSource';
 import { Message } from '@src/DAL/entities/message';
-import { fullMessageInstance } from '../../mocks/generalMocks';
+import { MessageManager } from '@src/message/models/messageManager';
+import jsLogger from '@map-colonies/js-logger';
+import { ConnectionManager } from '@src/DAL/connectionManager';
+import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
 
 beforeAll(async () => {
-  await initConfig(true);
+  jest.setTimeout(30000);
 
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize().catch((err) => {
-      console.error('❌ DB initialization failed:', err);
-      throw err;
-    });
-  }
+  const logger = jsLogger({ level: 'info', prettyPrint: true });
+  const connectionManager = ConnectionManager.getInstance(logger);
 
-  console.log('✅ DB connection established.');
+  await connectionManager.init();
+  console.log('✅ ConnectionManager DataSource initialized.');
 
-  await AppDataSource.getRepository(Message).clear();
+  const connection = connectionManager.getConnection();
+  await connection.getRepository(Message).clear();
 
   const [app] = await getApp({ useChild: true });
-  requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
+  requestSender = await createRequestSender('openapi3.yaml', app);
 });
 
 afterAll(async () => {
-  if (AppDataSource.isInitialized) {
-    await AppDataSource.destroy();
-  }
-});
-
-beforeEach(async () => {
-  await AppDataSource.getRepository(Message).clear();
+  const logger = jsLogger({ level: 'info' });
+  const connectionManager = ConnectionManager.getInstance(logger);
+  await connectionManager.shutdown()();
 });
 
 // -------------------- Happy Path --------------------
@@ -61,12 +57,7 @@ describe('Message Integration Tests - Happy Path', () => {
     await requestSender.createMessage({ requestBody: fullMessageInstance });
 
     const response = await requestSender.getMessages({
-      queryParams: {
-        sessionId: fullMessageInstance.sessionId,
-        severity: fullMessageInstance.severity,
-        component: fullMessageInstance.component,
-        messageType: fullMessageInstance.messageType,
-      },
+      queryParams: fullQueryParamsInstnace,
     });
 
     expect(response).toSatisfyApiSpec();
@@ -159,29 +150,17 @@ describe('Message Integration Tests - Bad Path', () => {
 describe('Message Integration Tests - Sad Path', () => {
   let repo: Repository<Message>;
 
-  beforeEach(() => {
+  beforeAll(() => {
     repo = AppDataSource.getRepository(Message);
-
-    jest.spyOn(repo, 'save').mockImplementation(() => {
-      throw new Error('Simulated DB error');
-    });
-    jest.spyOn(repo, 'find').mockImplementation(() => {
-      throw new Error('Simulated DB error');
-    });
-    jest.spyOn(repo, 'findOneBy').mockImplementation(() => {
-      throw new Error('Simulated DB error');
-    });
-    jest.spyOn(repo, 'delete').mockImplementation(() => {
-      throw new Error('Simulated DB error');
-    });
-    jest.spyOn(repo, 'update').mockImplementation(() => {
-      throw new Error('Simulated DB error');
-    });
   });
 
   afterEach(() => jest.restoreAllMocks());
 
   it('should return 500 if createMessage throws', async () => {
+    jest.spyOn(MessageManager.prototype, 'createMessage').mockImplementation(() => {
+      throw new Error('Simulated DB error');
+    });
+
     const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
     expect(response).toSatisfyApiSpec();
@@ -190,6 +169,10 @@ describe('Message Integration Tests - Sad Path', () => {
   });
 
   it('should return 500 if getMessages throws', async () => {
+    jest.spyOn(MessageManager.prototype, 'getMessages').mockImplementation(() => {
+      throw new Error('Simulated DB error');
+    });
+
     const response = await requestSender.getMessages({
       queryParams: { sessionId: '22342', severity: 'ERROR', component: 'MAP', messageType: 'APPEXITED' },
     });
@@ -200,10 +183,11 @@ describe('Message Integration Tests - Sad Path', () => {
   });
 
   it('should return 500 if getMessageById throws', async () => {
-    const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
-    const { id } = created.body as { id: string };
+    jest.spyOn(MessageManager.prototype, 'getMessageById').mockImplementation(() => {
+      throw new Error('Simulated DB error');
+    });
 
-    const response = await requestSender.getMessageById({ pathParams: { id } });
+    const response = await requestSender.getMessageById({ pathParams: { id: 'any-id' } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -211,10 +195,11 @@ describe('Message Integration Tests - Sad Path', () => {
   });
 
   it('should return 500 if tryDeleteMessageById throws', async () => {
-    const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
-    const { id } = created.body as { id: string };
+    jest.spyOn(MessageManager.prototype, 'tryDeleteMessageById').mockImplementation(() => {
+      throw new Error('Simulated DB error');
+    });
 
-    const response = await requestSender.tryDeleteMessageById({ pathParams: { id } });
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'any-id' } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -222,10 +207,14 @@ describe('Message Integration Tests - Sad Path', () => {
   });
 
   it('should return 500 if patchMessageById throws', async () => {
-    const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
-    const { id } = created.body as { id: string };
+    jest.spyOn(MessageManager.prototype, 'patchMessageById').mockImplementation(() => {
+      throw new Error('Simulated DB error');
+    });
 
-    const response = await requestSender.patchMessageById({ pathParams: { id }, requestBody: { severity: 'WARNING' } });
+    const response = await requestSender.patchMessageById({
+      pathParams: { id: 'any-id' },
+      requestBody: { severity: 'WARNING' },
+    });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);

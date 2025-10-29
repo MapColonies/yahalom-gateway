@@ -13,9 +13,9 @@ export const fullMessageInstance: IMessageModel = {
   timeStamp: new Date().toISOString(),
 };
 
-export const fullQueryParamsInstnace: IQueryModel = {
+export const fullQueryParamsInstnace = {
   sessionId: '2234234',
-  severity: 'ERROR',
-  component: 'MAP',
-  messageType: 'APPEXITED',
+  severity: 'ERROR' as SeverityLevels,
+  component: 'MAP' as LogComponent,
+  messageType: 'APPEXITED' as AnalyticsMessageTypes,
 };

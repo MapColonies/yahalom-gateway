@@ -37,7 +37,12 @@ export class MessageController {
 
   public getMessages: TypedRequestHandlers['GET /message'] = async (req, res) => {
     try {
-      const params: IQueryModel = req.query ?? {};
+      const params: IQueryModel = {
+        sessionId: req.query?.sessionId as string | undefined,
+        component: req.query?.component as string | undefined,
+        messageType: req.query?.messageType as string | undefined,
+        severity: req.query?.severity as string | undefined,
+      };
 
       const resultMessages: ILogObject[] = await this.manager.getMessages(params);
 

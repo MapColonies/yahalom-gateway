@@ -42,6 +42,7 @@ export class ConnectionManager {
         this.dataSource = new DataSource(createConnectionOptions(this.connectionConfig));
         await this.dataSource.initialize();
         this.logger.info({ msg: 'Data Source successfully initialized' });
+        return;
       } catch (error) {
         retries++;
         this.logger.warn({ msg: `DB connection failed, retrying ${retries}/${MAX_CONNECT_RETRIES}`, error });
