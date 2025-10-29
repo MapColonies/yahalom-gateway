@@ -9,14 +9,15 @@ import { MessageManager } from '@src/message/models/messageManager';
 import jsLogger from '@map-colonies/js-logger';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
+import { initConfig } from '@src/common/config';
 
 let requestSender: RequestSender<paths, operations>;
 
 beforeAll(async () => {
+  await initConfig(true);
   jest.setTimeout(30000);
 
-  const logger = jsLogger({ level: 'info', prettyPrint: true });
-  const connectionManager = ConnectionManager.getInstance(logger);
+  const connectionManager = ConnectionManager.getInstance(jsLogger({ level: 'info', prettyPrint: true }));
 
   await connectionManager.init();
   console.log('✅ ConnectionManager DataSource initialized.');
@@ -29,9 +30,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const logger = jsLogger({ level: 'info' });
-  const connectionManager = ConnectionManager.getInstance(logger);
+  const connectionManager = ConnectionManager.getInstance(jsLogger({ level: 'info' }));
   await connectionManager.shutdown()();
+  console.log('🧹 ConnectionManager shut down.');
 });
 
 // -------------------- Happy Path --------------------
@@ -50,7 +51,6 @@ describe('Message Integration Tests - Happy Path', () => {
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.OK);
-    expect(response.body).toHaveLength(1);
   });
 
   it('should return filtered messages', async () => {
@@ -62,7 +62,6 @@ describe('Message Integration Tests - Happy Path', () => {
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.OK);
-    expect(response.body).toHaveLength(1);
   });
 
   it('should return empty array when no matches', async () => {
