@@ -37,20 +37,24 @@ export class ConnectionManager {
     }
 
     let retries = 0;
-    while (retries < MAX_CONNECT_RETRIES) {
+    let connectionSuccess = false;
+    while (retries < MAX_CONNECT_RETRIES && !connectionSuccess) {
       try {
         this.dataSource = new DataSource(createConnectionOptions(this.connectionConfig));
         await this.dataSource.initialize();
         this.logger.info({ msg: 'Data Source successfully initialized' });
-        return;
+        connectionSuccess = true;
       } catch (error) {
         retries++;
         this.logger.warn({ msg: `DB connection failed, retrying ${retries}/${MAX_CONNECT_RETRIES}`, error });
         await new Promise((res) => setTimeout(res, DB_TIMEOUT));
       }
     }
-    this.logger.error({ msg: 'Database connection failed' });
-    throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, 'Database connection failed', false);
+
+    if (!connectionSuccess) {
+      this.logger.error({ msg: 'Database connection failed' });
+      throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, 'Database connection failed', false);
+    }
   }
 
   public getConnection(): DataSource {

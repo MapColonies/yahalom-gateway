@@ -1,5 +1,6 @@
 import { SelectQueryBuilder, Repository } from 'typeorm';
 import { Message } from '@src/DAL/entities/message';
+import { ConnectionManager } from '@src/DAL/connectionManager';
 
 interface MockQueryBuilder {
   andWhere: jest.Mock<MockQueryBuilder, [string, Record<string, unknown>?]>;
@@ -31,3 +32,7 @@ export const mockConnection = {
     getRepository: jest.fn(() => mockRepository),
   })),
 };
+
+export const mockConnectionManager = {
+  getConnection: jest.fn(() => mockConnection),
+} as unknown as ConnectionManager;

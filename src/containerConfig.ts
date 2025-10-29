@@ -28,15 +28,23 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   const metricsRegistry = new Registry();
   configInstance.initializeMetrics(metricsRegistry);
 
-  const database = ConnectionManager.getInstance(logger);
-
   const dependencies: InjectionObject<unknown>[] = [
     { token: SERVICES.CONFIG, provider: { useValue: configInstance } },
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
     { token: MESSAGE_ROUTER_SYMBOL, provider: { useFactory: messageRouterFactory } },
-    { token: SERVICES.HEALTH_CHECK, provider: { useValue: database.healthCheck } },
+    {
+      token: SERVICES.HEALTH_CHECK,
+      provider: {
+        useFactory: (dependencyContainer: DependencyContainer): (() => Promise<void>) => {
+          const connectionManager = dependencyContainer.resolve(ConnectionManager);
+          return async () => {
+            await Promise.resolve(connectionManager.healthCheck());
+          };
+        },
+      },
+    },
     {
       token: SERVICES.CONNECTION_MANAGER,
       provider: {

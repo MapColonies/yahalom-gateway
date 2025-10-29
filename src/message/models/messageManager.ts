@@ -14,7 +14,10 @@ export type ILogObject = components['schemas']['ILogObject'];
 
 @injectable()
 export class MessageManager {
-  public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {}
+  public constructor(
+    @inject(SERVICES.LOGGER) private readonly logger: Logger,
+    @inject(SERVICES.CONNECTION_MANAGER) private readonly connectionManager: ConnectionManager
+  ) {}
 
   public createMessage(message: Omit<ILogObject, 'id'>): ILogObject {
     this.logger.info({ msg: 'creating message' });
@@ -32,24 +35,23 @@ export class MessageManager {
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
-    const connection = ConnectionManager.getInstance(this.logger).getConnection();
+    const connection = this.connectionManager.getConnection();
+    const repo = connection.getRepository(Message);
 
     if (Object.keys(params).length === 0) {
-      const rawMessages = await connection.getRepository(Message).find();
-      return rawMessages.map(mapMessageToILogObject); // doing the right conversions
+      const rawMessages = await repo.find();
+      return rawMessages.map(mapMessageToILogObject);
     }
 
     const { sessionId, severity, component, messageType } = params;
 
-    const queryBuilder = connection.getRepository(Message).createQueryBuilder(QUERY_BUILDER_NAME);
-
+    const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
     this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
     this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
     this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
     this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
 
     const resultMessages = await queryBuilder.getMany();
-
     return resultMessages.map(mapMessageToILogObject);
   }
 
@@ -88,7 +90,7 @@ export class MessageManager {
     return undefined;
   }
 
-  private andWhere(this: void, queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
+  private andWhere(queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
     if (value != null) {
       const paramName = field.split('.').pop() ?? field;
       queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });

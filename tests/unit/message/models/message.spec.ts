@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { mockAndWhere, mockGetMany, mockFind, mockRepository, mockConnection } from '@tests/mocks/unitMocks';
+import { mockAndWhere, mockGetMany, mockFind, mockRepository, mockConnection, mockConnectionManager } from '@tests/mocks/unitMocks';
 import { Message } from '@src/DAL/entities/message';
 import { localMessagesStore } from '@src/common/localMocks';
 import { ILogObject } from '@src/common/interfaces';
@@ -19,7 +19,7 @@ let messageManager: MessageManager;
 
 describe('MessageManager', () => {
   beforeEach(() => {
-    messageManager = new MessageManager(jsLogger({ enabled: false }));
+    messageManager = new MessageManager(jsLogger({ enabled: false }), mockConnectionManager);
     localMessagesStore.length = 0;
 
     jest.clearAllMocks();

@@ -1,3 +1,4 @@
+// Notice: The following file is used only for running loacl migration from CLI
 /* istanbul ignore file */
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
@@ -9,7 +10,7 @@ const dbConfig = config.get<DbConfig>('db');
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const AppDataSource = new DataSource({
-  type: 'postgres',
+  type: dbConfig.type,
   host: dbConfig.host,
   port: dbConfig.port,
   username: dbConfig.username,

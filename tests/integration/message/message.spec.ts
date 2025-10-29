@@ -1,22 +1,25 @@
 import httpStatusCodes from 'http-status-codes';
+import { DependencyContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
-import jsLogger from '@map-colonies/js-logger';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { Message } from '@src/DAL/entities/message';
 import { MessageManager } from '@src/message/models/messageManager';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { initConfig } from '@src/common/config';
+import { registerExternalValues } from '@src/containerConfig';
 import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
+let dependencyContainer: DependencyContainer;
 
 beforeAll(async () => {
   await initConfig(true);
   jest.setTimeout(30000);
 
-  const connectionManager = ConnectionManager.getInstance(jsLogger({ level: 'info', prettyPrint: true }));
+  dependencyContainer = await registerExternalValues({ useChild: true });
 
+  const connectionManager = dependencyContainer.resolve<ConnectionManager>(ConnectionManager);
   await connectionManager.init();
   console.log('✅ ConnectionManager DataSource initialized.');
 
@@ -28,7 +31,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const connectionManager = ConnectionManager.getInstance(jsLogger({ level: 'info' }));
+  const connectionManager = dependencyContainer.resolve<ConnectionManager>(ConnectionManager);
   await connectionManager.shutdown()();
   console.log('🧹 ConnectionManager shut down.');
 });
