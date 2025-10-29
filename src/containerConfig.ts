@@ -2,6 +2,7 @@ import { getOtelMixin } from '@map-colonies/telemetry';
 import { trace } from '@opentelemetry/api';
 import { Registry } from 'prom-client';
 import { DependencyContainer } from 'tsyringe/dist/typings/types';
+import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';
 import { InjectionObject, registerDependencies } from '@common/dependencyRegistration';
 import { SERVICES, SERVICE_NAME } from '@common/constants';
@@ -49,7 +50,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     {
       token: SERVICES.MESSAGE_REPOSITORY,
       provider: {
-        useFactory: (container: DependencyContainer) => {
+        useFactory: (container: DependencyContainer): Repository<Message> => {
           const connectionManager = container.resolve(ConnectionManager);
           const connection = connectionManager.getConnection();
           return connection.getRepository(Message);

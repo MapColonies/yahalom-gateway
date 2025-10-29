@@ -7,6 +7,7 @@ import { Message } from './entities/message';
 
 const dbConfig = config.get<DbConfig>('db');
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: dbConfig.host,

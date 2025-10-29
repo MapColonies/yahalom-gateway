@@ -38,7 +38,7 @@ export class MessageController {
   public getMessages: TypedRequestHandlers['GET /message'] = async (req, res) => {
     try {
       const params: IQueryModel = {
-        sessionId: req.query?.sessionId as string | undefined,
+        sessionId: req.query?.sessionId,
         component: req.query?.component as string | undefined,
         messageType: req.query?.messageType as string | undefined,
         severity: req.query?.severity as string | undefined,

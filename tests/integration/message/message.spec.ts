@@ -1,15 +1,13 @@
 import httpStatusCodes from 'http-status-codes';
-import { Repository } from 'typeorm';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
+import jsLogger from '@map-colonies/js-logger';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { AppDataSource } from '@src/DAL/dataSource';
 import { Message } from '@src/DAL/entities/message';
 import { MessageManager } from '@src/message/models/messageManager';
-import jsLogger from '@map-colonies/js-logger';
 import { ConnectionManager } from '@src/DAL/connectionManager';
-import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
 import { initConfig } from '@src/common/config';
+import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
 
@@ -147,12 +145,6 @@ describe('Message Integration Tests - Bad Path', () => {
 
 // -------------------- Sad Path --------------------
 describe('Message Integration Tests - Sad Path', () => {
-  let repo: Repository<Message>;
-
-  beforeAll(() => {
-    repo = AppDataSource.getRepository(Message);
-  });
-
   afterEach(() => jest.restoreAllMocks());
 
   it('should return 500 if createMessage throws', async () => {
