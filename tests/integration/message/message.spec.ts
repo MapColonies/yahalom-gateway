@@ -1,5 +1,5 @@
 import httpStatusCodes from 'http-status-codes';
-import { DependencyContainer } from 'tsyringe';
+import { container, DependencyContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
@@ -19,92 +19,102 @@ beforeAll(async () => {
 
   dependencyContainer = await registerExternalValues({ useChild: true });
 
-  const connectionManager = dependencyContainer.resolve<ConnectionManager>(ConnectionManager);
+  const connectionManager = dependencyContainer.resolve(ConnectionManager);
   await connectionManager.init();
   console.log('✅ ConnectionManager DataSource initialized.');
 
+  const [app] = await getApp({ useChild: true });
+
+  requestSender = await createRequestSender('openapi3.yaml', app);
+
   const connection = connectionManager.getConnection();
   await connection.getRepository(Message).clear();
-
-  const [app] = await getApp({ useChild: true });
-  requestSender = await createRequestSender('openapi3.yaml', app);
 });
 
 afterAll(async () => {
-  const connectionManager = dependencyContainer.resolve<ConnectionManager>(ConnectionManager);
+  const connectionManager = dependencyContainer.resolve(ConnectionManager);
   await connectionManager.shutdown()();
   console.log('🧹 ConnectionManager shut down.');
 });
 
 // -------------------- Happy Path --------------------
 describe('Message Integration Tests - Happy Path', () => {
-  it('should return 201 when creating a message', async () => {
-    const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
+  describe('#createMessage', () => {
+    it('should return 201 when creating a message', async () => {
+      const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
-    expect(response).toSatisfyApiSpec();
-    expect(response.status).toBe(httpStatusCodes.CREATED);
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.CREATED);
+    });
   });
 
-  it('should return all messages if no query params', async () => {
-    await requestSender.createMessage({ requestBody: fullMessageInstance });
+  describe('#getMessages', () => {
+    it('should return all messages if no query params', async () => {
+      await requestSender.createMessage({ requestBody: fullMessageInstance });
+      const response = await requestSender.getMessages();
 
-    const response = await requestSender.getMessages();
-
-    expect(response).toSatisfyApiSpec();
-    expect(response.status).toBe(httpStatusCodes.OK);
-  });
-
-  it('should return filtered messages', async () => {
-    await requestSender.createMessage({ requestBody: fullMessageInstance });
-
-    const response = await requestSender.getMessages({
-      queryParams: fullQueryParamsInstnace,
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
 
-    expect(response).toSatisfyApiSpec();
-    expect(response.status).toBe(httpStatusCodes.OK);
-  });
+    it('should return filtered messages', async () => {
+      await requestSender.createMessage({ requestBody: fullMessageInstance });
 
-  it('should return empty array when no matches', async () => {
-    const response = await requestSender.getMessages({ queryParams: { sessionId: 'non-existent' } });
+      const response = await requestSender.getMessages({
+        queryParams: fullQueryParamsInstnace,
+      });
 
-    expect(response).toSatisfyApiSpec();
-    expect(response.status).toBe(httpStatusCodes.OK);
-    expect(response.body).toEqual([]);
-  });
-
-  it('should return a message by valid Id', async () => {
-    const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
-    const { id } = created.body as { id: string };
-
-    const response = await requestSender.getMessageById({ pathParams: { id } });
-
-    expect(response).toSatisfyApiSpec();
-    expect(response.status).toBe(httpStatusCodes.OK);
-  });
-
-  it('should delete a message successfully', async () => {
-    const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
-    const { id } = created.body as { id: string };
-
-    const response = await requestSender.tryDeleteMessageById({ pathParams: { id } });
-
-    expect(response).toSatisfyApiSpec();
-    expect(response.status).toBe(httpStatusCodes.OK);
-  });
-
-  it('should patch a message successfully', async () => {
-    const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
-    const { id } = created.body as { id: string };
-
-    const response = await requestSender.patchMessageById({
-      pathParams: { id },
-      requestBody: { message: 'Updated message' },
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
 
-    expect(response).toSatisfyApiSpec();
-    expect(response.status).toBe(httpStatusCodes.OK);
-    expect(response.body.message).toBe('Updated message');
+    it('should return empty array when no matches', async () => {
+      const response = await requestSender.getMessages({ queryParams: { sessionId: 'non-existent' } });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual([]);
+    });
+  });
+
+  describe('#getMessageById', () => {
+    it('should return a message by valid Id', async () => {
+      const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
+      const { id } = created.body as { id: string };
+
+      const response = await requestSender.getMessageById({ pathParams: { id } });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+    });
+  });
+
+  describe('#tryDeleteMessageById', () => {
+    it('should delete a message successfully', async () => {
+      const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
+      const { id } = created.body as { id: string };
+
+      const response = await requestSender.tryDeleteMessageById({ pathParams: { id } });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+    });
+  });
+
+  describe('#patchMessageById', () => {
+    it('should patch a message successfully', async () => {
+      const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
+      const { id } = created.body as { id: string };
+
+      const response = await requestSender.patchMessageById({
+        pathParams: { id },
+        requestBody: { message: 'Updated message' },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body.message).toBe('Updated message');
+    });
   });
 });
 

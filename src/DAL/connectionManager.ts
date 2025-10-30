@@ -62,6 +62,7 @@ export class ConnectionManager {
       this.logger.error({ msg: 'Data Source not available or lost' });
       throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, 'Database connection not initialized', false);
     }
+    console.log(this.dataSource);
     return this.dataSource;
   }
 

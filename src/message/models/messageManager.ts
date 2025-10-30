@@ -1,7 +1,7 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
-import { SelectQueryBuilder } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/localMocks';
@@ -35,8 +35,16 @@ export class MessageManager {
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
-    const connection = this.connectionManager.getConnection();
-    const repo = connection.getRepository(Message);
+    let connection;
+    let repo: Repository<Message>;
+    try {
+      connection = this.connectionManager.getConnection();
+      repo = connection.getRepository(Message);
+    } catch (error) {
+      console.log('Error: ', error);
+      this.logger.error({ msg: 'Error in getting the DB connection:', error });
+      throw new Error('Cannot get repository because the DB connection is unavailable');
+    }
 
     if (Object.keys(params).length === 0) {
       const rawMessages = await repo.find();
