@@ -48,6 +48,7 @@ describe('Message Integration Tests - Happy Path', () => {
     });
   });
 
+  // TODO: Extend those three tests later on
   describe('#getMessages', () => {
     it('should return all messages if no query params', async () => {
       await requestSender.createMessage({ requestBody: fullMessageInstance });

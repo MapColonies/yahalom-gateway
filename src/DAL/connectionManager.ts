@@ -20,16 +20,6 @@ export class ConnectionManager {
     this.connectionConfig = config.get<DbConfig>('db');
   }
 
-  public static getInstance(logger?: Logger): ConnectionManager {
-    if (ConnectionManager.instance == null) {
-      if (logger == null) {
-        throw new Error('Logger must be provided for the first ConnectionManager instance');
-      }
-      ConnectionManager.instance = new ConnectionManager(logger);
-    }
-    return ConnectionManager.instance;
-  }
-
   public async init(): Promise<void> {
     if (this.dataSource?.isInitialized === true) {
       this.logger.info({ msg: 'Data Source already initialized' });
@@ -62,7 +52,6 @@ export class ConnectionManager {
       this.logger.error({ msg: 'Data Source not available or lost' });
       throw new AppError('DB', httpStatusCodes.INTERNAL_SERVER_ERROR, 'Database connection not initialized', false);
     }
-    console.log(this.dataSource);
     return this.dataSource;
   }
 

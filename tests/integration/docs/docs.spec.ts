@@ -12,14 +12,13 @@ const mockRepository = {
   findOne: jest.fn(),
   save: jest.fn(),
 };
-const mockConnection = { getRepository: jest.fn(() => mockRepository) };
 
-jest.spyOn(ConnectionManager, 'getInstance').mockReturnValue({
+const mockConnectionManager = {
   init: jest.fn().mockResolvedValue(undefined),
-  getConnection: jest.fn(() => mockConnection),
+  getConnection: jest.fn(() => ({ getRepository: () => mockRepository })),
   getRepository: jest.fn(() => mockRepository),
   healthCheck: jest.fn().mockResolvedValue(true),
-} as unknown as ConnectionManager);
+} as unknown as ConnectionManager;
 
 describe('docs', function () {
   let requestSender: DocsRequestSender;
@@ -34,9 +33,11 @@ describe('docs', function () {
         { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
         { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
         { token: SERVICES.HEALTH_CHECK, provider: { useValue: true } },
+        { token: SERVICES.CONNECTION_MANAGER, provider: { useValue: mockConnectionManager } },
       ],
       useChild: true,
     });
+
     requestSender = new DocsRequestSender(app);
   });
 

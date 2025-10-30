@@ -8,13 +8,6 @@ import { MessageManager } from '@src/message/models/messageManager';
 import { QUERY_BUILDER_NAME } from '@src/common/constants';
 import { fullMessageInstance, fullQueryParamsInstnace } from '../../../mocks/generalMocks';
 
-jest.mock('@src/DAL/connectionManager', () => ({
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  ConnectionManager: {
-    getInstance: jest.fn(() => mockConnection),
-  },
-}));
-
 let messageManager: MessageManager;
 
 describe('MessageManager', () => {
