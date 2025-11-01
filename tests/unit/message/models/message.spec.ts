@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { mockAndWhere, mockGetMany, mockFind, mockRepository, mockConnection, mockConnectionManager } from '@tests/mocks/unitMocks';
+import { mockAndWhere, mockGetMany, mockFind, mockRepository, mockConnectionManager } from '@tests/mocks/unitMocks';
 import { Message } from '@src/DAL/entities/message';
 import { localMessagesStore } from '@src/common/localMocks';
 import { ILogObject } from '@src/common/interfaces';

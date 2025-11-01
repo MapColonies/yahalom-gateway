@@ -28,6 +28,9 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   const metricsRegistry = new Registry();
   configInstance.initializeMetrics(metricsRegistry);
 
+  const connectionManager = new ConnectionManager(logger);
+  await connectionManager.init();
+
   const dependencies: InjectionObject<unknown>[] = [
     { token: SERVICES.CONFIG, provider: { useValue: configInstance } },
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
@@ -45,16 +48,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
         },
       },
     },
-    {
-      token: SERVICES.CONNECTION_MANAGER,
-      provider: {
-        useFactory: async (dependencyContainer: DependencyContainer): Promise<ConnectionManager> => {
-          const connectionManager = dependencyContainer.resolve(ConnectionManager);
-          await connectionManager.init();
-          return connectionManager;
-        },
-      },
-    },
+    { token: SERVICES.CONNECTION_MANAGER, provider: { useValue: connectionManager } },
     {
       token: SERVICES.MESSAGE_REPOSITORY,
       provider: {

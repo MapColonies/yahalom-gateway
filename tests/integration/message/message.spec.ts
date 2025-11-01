@@ -1,5 +1,5 @@
 import httpStatusCodes from 'http-status-codes';
-import { container, DependencyContainer } from 'tsyringe';
+import { DependencyContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
@@ -8,6 +8,7 @@ import { MessageManager } from '@src/message/models/messageManager';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { initConfig } from '@src/common/config';
 import { registerExternalValues } from '@src/containerConfig';
+import { SERVICES } from '@common/constants';
 import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
@@ -15,15 +16,13 @@ let dependencyContainer: DependencyContainer;
 
 beforeAll(async () => {
   await initConfig(true);
-  jest.setTimeout(30000);
 
   dependencyContainer = await registerExternalValues({ useChild: true });
 
-  const connectionManager = dependencyContainer.resolve(ConnectionManager);
-  await connectionManager.init();
+  const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
   console.log('✅ ConnectionManager DataSource initialized.');
 
-  const [app] = await getApp({ useChild: true });
+  const [app] = await getApp({ useChild: false });
 
   requestSender = await createRequestSender('openapi3.yaml', app);
 
@@ -33,7 +32,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   const connectionManager = dependencyContainer.resolve(ConnectionManager);
-  await connectionManager.shutdown()();
+  await connectionManager.shutdown();
   console.log('🧹 ConnectionManager shut down.');
 });
 
