@@ -30,9 +30,9 @@ beforeAll(async () => {
   await connection.getRepository(Message).clear();
 });
 
-afterAll(async () => {
+afterAll(() => {
   const connectionManager = dependencyContainer.resolve(ConnectionManager);
-  await connectionManager.shutdown();
+  connectionManager.shutdown();
   console.log('🧹 ConnectionManager shut down.');
 });
 
