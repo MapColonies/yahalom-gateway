@@ -1,7 +1,7 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/localMocks';
@@ -33,61 +33,40 @@ export class MessageManager {
   }
 
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
-    this.logger.info({ msg: 'getting filtered messages with query params: ', params });
+    this.logger.info({ msg: 'Getting filtered messages with query params: ', params });
 
-    let connection;
-    let repo: Repository<Message>;
-    try {
-      connection = this.connectionManager.getConnection();
-      repo = connection.getRepository(Message);
-    } catch (error) {
-      this.logger.error({ msg: 'Error in getting the DB connection:', error });
-      throw new Error('Cannot get repository because the DB connection is unavailable');
-    }
+    return this.withRepository(Message, async (repo) => {
+      if (Object.keys(params).length === 0) {
+        const rawMessages = await repo.find();
+        return rawMessages.map(mapMessageToILogObject);
+      }
 
-    if (Object.keys(params).length === 0) {
-      const rawMessages = await repo.find();
-      return rawMessages.map(mapMessageToILogObject);
-    }
+      const { sessionId, severity, component, messageType } = params;
+      const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
 
-    const { sessionId, severity, component, messageType } = params;
+      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
+      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
+      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
+      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
 
-    const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
-    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
-    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
-    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
-    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
-
-    const resultMessages = await queryBuilder.getMany();
-    return resultMessages.map(mapMessageToILogObject);
+      const resultMessages = await queryBuilder.getMany();
+      return resultMessages.map(mapMessageToILogObject);
+    });
   }
 
   public async getMessageById(id: string): Promise<ILogObject | undefined> {
     this.logger.info({ msg: `Getting message by ID - ${id}`, id });
 
-    let connection;
-    let repo: Repository<Message>;
-
-    try {
-      connection = this.connectionManager.getConnection();
-      repo = connection.getRepository(Message);
-    } catch (error) {
-      this.logger.error({ msg: 'Error in getting the DB connection:', error });
-      throw new Error('Cannot get repository because the DB connection is unavailable');
-    }
-
-    try {
+    return this.withRepository(Message, async (repo) => {
       const message = await repo.findOne({ where: { id } });
+
       if (!message) {
         this.logger.warn({ msg: `No message found with ID: ${id}`, id });
         return undefined;
       }
 
       return mapMessageToILogObject(message);
-    } catch (error) {
-      this.logger.error({ msg: `Error while fetching message by ID: ${id}`, error });
-      throw new Error(`Failed to fetch message with ID: ${id}`);
-    }
+    });
   }
 
   public tryDeleteMessageById(id: string): boolean {
@@ -122,6 +101,26 @@ export class MessageManager {
     if (value != null) {
       const paramName = field.split('.').pop() ?? field;
       queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });
+    }
+  }
+
+  private async withRepository<T extends ObjectLiteral, R>(entity: { new (): T }, action: (repo: Repository<T>) => Promise<R>): Promise<R> {
+    let connection;
+    let repo: Repository<T>;
+
+    try {
+      connection = this.connectionManager.getConnection();
+      repo = connection.getRepository(entity);
+    } catch (error) {
+      this.logger.error({ msg: 'Error getting DB connection:', error });
+      throw new Error('Cannot get repository because the DB connection is unavailable');
+    }
+
+    try {
+      return await action(repo);
+    } catch (error) {
+      this.logger.error({ msg: 'Error while executing repository action:', error });
+      throw error;
     }
   }
 }

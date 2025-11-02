@@ -22,17 +22,23 @@ beforeAll(async () => {
   const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
   console.log('✅ ConnectionManager DataSource initialized.');
 
+  const connection = connectionManager.getConnection();
+  if (process.env.NODE_ENV === 'test') {
+    await connection.dropDatabase();
+    await connection.synchronize();
+    console.log('🔄 Test database dropped and re-synchronized');
+  }
+
   const [app] = await getApp({ useChild: false });
 
   requestSender = await createRequestSender('openapi3.yaml', app);
 
-  const connection = connectionManager.getConnection();
   await connection.getRepository(Message).clear();
 });
 
-afterAll(() => {
+afterAll(async () => {
   const connectionManager = dependencyContainer.resolve(ConnectionManager);
-  connectionManager.shutdown();
+  await connectionManager.shutdown()();
   console.log('🧹 ConnectionManager shut down.');
 });
 

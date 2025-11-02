@@ -17,7 +17,8 @@ export const AppDataSource = new DataSource({
   password: dbConfig.password,
   database: dbConfig.database,
   entities: [Message],
-  migrations: ['./src/DAL/migrations/*.ts'],
-  synchronize: dbConfig.synchronize ?? false,
+  migrations: ['./src/DAL/migration/*.ts'],
+  synchronize: process.env.NODE_ENV === 'test' ? true : dbConfig.synchronize,
   logging: dbConfig.logging ?? false,
+  dropSchema: process.env.NODE_ENV === 'test',
 });
