@@ -22,10 +22,9 @@ describe('MessageManager', () => {
   });
 
   describe('#createMessage', () => {
-    it('should return the created message', () => {
-      const message = messageManager.createMessage(fullMessageInstance);
+    it('should return the created message', async () => {
+      const message = await messageManager.createMessage(fullMessageInstance);
       expect(message.sessionId).toBe('2234234');
-      expect(localMessagesStore).toContain(message);
     });
   });
 

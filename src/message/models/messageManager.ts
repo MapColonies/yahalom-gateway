@@ -1,7 +1,7 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
-import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
+import { DeepPartial, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/localMocks';
@@ -19,17 +19,18 @@ export class MessageManager {
     @inject(SERVICES.CONNECTION_MANAGER) private readonly connectionManager: ConnectionManager
   ) {}
 
-  public createMessage(message: Omit<ILogObject, 'id'>): ILogObject {
+  public async createMessage(message: Omit<ILogObject, 'id'>): Promise<ILogObject> {
     this.logger.info({ msg: 'creating message' });
     this.logger.debug({ msg: 'message recieved details', message });
 
     const id = uuidv4();
+    const newMessage = { ...message, id };
 
-    const newMessage: ILogObject = { ...message, id };
-
-    localMessagesStore.push(newMessage);
-
-    return newMessage;
+    return this.withRepository(Message, async (repo) => {
+      const entity = repo.create(newMessage as DeepPartial<Message>);
+      await repo.save(entity);
+      return mapMessageToILogObject(entity);
+    });
   }
 
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
