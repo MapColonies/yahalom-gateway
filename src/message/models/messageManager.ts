@@ -41,7 +41,6 @@ export class MessageManager {
       connection = this.connectionManager.getConnection();
       repo = connection.getRepository(Message);
     } catch (error) {
-      console.log('Error: ', error);
       this.logger.error({ msg: 'Error in getting the DB connection:', error });
       throw new Error('Cannot get repository because the DB connection is unavailable');
     }
@@ -63,11 +62,32 @@ export class MessageManager {
     return resultMessages.map(mapMessageToILogObject);
   }
 
-  public getMessageById(id: string): ILogObject | undefined {
+  public async getMessageById(id: string): Promise<ILogObject | undefined> {
     this.logger.info({ msg: `Getting message by ID - ${id}`, id });
 
-    const message = localMessagesStore.find((message) => message.id === id);
-    return message;
+    let connection;
+    let repo: Repository<Message>;
+
+    try {
+      connection = this.connectionManager.getConnection();
+      repo = connection.getRepository(Message);
+    } catch (error) {
+      this.logger.error({ msg: 'Error in getting the DB connection:', error });
+      throw new Error('Cannot get repository because the DB connection is unavailable');
+    }
+
+    try {
+      const message = await repo.findOne({ where: { id } });
+      if (!message) {
+        this.logger.warn({ msg: `No message found with ID: ${id}`, id });
+        return undefined;
+      }
+
+      return mapMessageToILogObject(message);
+    } catch (error) {
+      this.logger.error({ msg: `Error while fetching message by ID: ${id}`, error });
+      throw new Error(`Failed to fetch message with ID: ${id}`);
+    }
   }
 
   public tryDeleteMessageById(id: string): boolean {
