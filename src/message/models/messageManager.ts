@@ -1,16 +1,23 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
-import { SERVICES, NOT_FOUND } from '@common/constants';
-import { localMessagesStore } from '../../common/mocks';
+import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
+import { localMessagesStore } from '../../common/localMocks';
+import { Message } from '../../DAL/entities/message';
+import { ConnectionManager } from '../../DAL/connectionManager';
 import { IQueryModel } from './../../common/interfaces';
+import { mapMessageToILogObject } from './../../utils/helpers';
 
 export type ILogObject = components['schemas']['ILogObject'];
 
 @injectable()
 export class MessageManager {
-  public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {}
+  public constructor(
+    @inject(SERVICES.LOGGER) private readonly logger: Logger,
+    @inject(SERVICES.CONNECTION_MANAGER) private readonly connectionManager: ConnectionManager
+  ) {}
 
   public createMessage(message: Omit<ILogObject, 'id'>): ILogObject {
     this.logger.info({ msg: 'creating message' });
@@ -25,22 +32,35 @@ export class MessageManager {
     return newMessage;
   }
 
-  public getMessages(params: IQueryModel): ILogObject[] {
+  public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
+
+    let connection;
+    let repo: Repository<Message>;
+    try {
+      connection = this.connectionManager.getConnection();
+      repo = connection.getRepository(Message);
+    } catch (error) {
+      console.log('Error: ', error);
+      this.logger.error({ msg: 'Error in getting the DB connection:', error });
+      throw new Error('Cannot get repository because the DB connection is unavailable');
+    }
+
+    if (Object.keys(params).length === 0) {
+      const rawMessages = await repo.find();
+      return rawMessages.map(mapMessageToILogObject);
+    }
 
     const { sessionId, severity, component, messageType } = params;
 
-    const allMessages: ILogObject[] = localMessagesStore;
+    const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
 
-    const filteredMessages = allMessages.filter((instance) => {
-      if (severity != null && instance.severity !== severity) return false;
-      if (component != null && instance.component !== component) return false;
-      if (messageType != null && instance.messageType !== messageType) return false;
-      if (sessionId != null && instance.sessionId !== sessionId) return false;
-      return true;
-    });
-
-    return filteredMessages;
+    const resultMessages = await queryBuilder.getMany();
+    return resultMessages.map(mapMessageToILogObject);
   }
 
   public getMessageById(id: string): ILogObject | undefined {
@@ -76,5 +96,12 @@ export class MessageManager {
     }
 
     return undefined;
+  }
+
+  private andWhere(queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
+    if (value != null) {
+      const paramName = field.split('.').pop() ?? field;
+      queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });
+    }
   }
 }

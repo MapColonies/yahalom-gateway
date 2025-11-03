@@ -42,9 +42,11 @@ export type paths = {
 export type webhooks = Record<string, never>;
 export type components = {
   schemas: {
-    /** @example {
+    /**
+     * @example {
      *       "message": "Invalid message ID provided."
-     *     } */
+     *     }
+     */
     error: {
       /** @description A human-readable error message */
       message: string;
@@ -77,11 +79,8 @@ export type components = {
       | 'CONSUMPTIONSTATUS'
       | 'APPLICATIONDATA';
     CreateLogObject: {
-      /**
-       * Format: int64
-       * @description Unique session identifier
-       */
-      sessionId: number;
+      /** @description Unique session identifier */
+      sessionId: string;
       severity: components['schemas']['SeverityEnum'];
       /**
        * Format: date-time
@@ -99,11 +98,8 @@ export type components = {
     };
     /** @description Partial update for log object (id not allowed) */
     PatchBodyFields: {
-      /**
-       * Format: int64
-       * @description Unique session identifier
-       */
-      sessionId?: number;
+      /** @description Unique session identifier */
+      sessionId?: string;
       severity?: components['schemas']['SeverityEnum'];
       /**
        * Format: date-time
@@ -129,7 +125,7 @@ export type components = {
   };
   responses: never;
   parameters: {
-    SessionId: number;
+    SessionId: string;
     Severity: components['schemas']['SeverityEnum'];
     Component: components['schemas']['ComponentEnum'];
     MessageType: components['schemas']['MessageTypeEnum'];

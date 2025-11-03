@@ -7,7 +7,10 @@
       "@tests/*": ["tests/*"],
       "@common/*": ["src/common/*"],
       "@openapi": ["src/openapi"]
-    }
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
   "include": ["src", "tests"],
   "exclude": ["node_modules", "dist"]

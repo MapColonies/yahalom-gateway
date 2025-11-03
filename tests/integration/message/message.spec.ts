@@ -1,257 +1,227 @@
-import jsLogger from '@map-colonies/js-logger';
-import { trace } from '@opentelemetry/api';
 import httpStatusCodes from 'http-status-codes';
+import { DependencyContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
-import { SERVICES } from '@common/constants';
+import { Message } from '@src/DAL/entities/message';
+import { MessageManager } from '@src/message/models/messageManager';
+import { ConnectionManager } from '@src/DAL/connectionManager';
 import { initConfig } from '@src/common/config';
-import { getResponseMessage, localMessagesStore } from '../../../src/common/mocks';
-import { MessageManager } from './../../../src/message/models/messageManager';
+import { registerExternalValues } from '@src/containerConfig';
+import { SERVICES } from '@common/constants';
+import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
 
-describe('message', function () {
-  let requestSender: RequestSender<paths, operations>;
+let requestSender: RequestSender<paths, operations>;
+let dependencyContainer: DependencyContainer;
 
-  beforeAll(async function () {
-    await initConfig(true);
-  });
+beforeAll(async () => {
+  await initConfig(true);
 
-  beforeEach(async function () {
-    const [app] = await getApp({
-      override: [
-        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-      ],
-      useChild: true,
-    });
-    requestSender = await createRequestSender<paths, operations>('openapi3.yaml', app);
-    localMessagesStore.length = 0; // ensure 'store' list is empty, TODO: change test when connecting db
-  });
+  dependencyContainer = await registerExternalValues({ useChild: true });
 
-  describe('Happy Path', function () {
-    it('should return 201 status code and the internal id', async function () {
-      const response = await requestSender.createMessage({
-        requestBody: getResponseMessage,
-      });
+  const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
+  console.log('✅ ConnectionManager DataSource initialized.');
+
+  const [app] = await getApp({ useChild: false });
+
+  requestSender = await createRequestSender('openapi3.yaml', app);
+
+  const connection = connectionManager.getConnection();
+  await connection.getRepository(Message).clear();
+});
+
+afterAll(() => {
+  const connectionManager = dependencyContainer.resolve(ConnectionManager);
+  connectionManager.shutdown();
+  console.log('🧹 ConnectionManager shut down.');
+});
+
+// -------------------- Happy Path --------------------
+describe('Message Integration Tests - Happy Path', () => {
+  describe('#createMessage', () => {
+    it('should return 201 when creating a message', async () => {
+      const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.CREATED);
     });
+  });
 
-    it('should return 200 status code and appropriate message when no messages match filters', async function () {
-      const response = await requestSender.getMessages({
-        queryParams: {
-          sessionId: 22342,
-          severity: 'ERROR',
-          component: 'MAP',
-          messageType: 'APPEXITED',
-        },
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-    });
-
-    it('should return 200 status code and hadnling if no query params provided', async function () {
+  // TODO: Extend those three tests later on
+  describe('#getMessages', () => {
+    it('should return all messages if no query params', async () => {
+      await requestSender.createMessage({ requestBody: fullMessageInstance });
       const response = await requestSender.getMessages();
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
     });
 
-    it('should return 200 and empty array when query params explicitly set to undefined', async () => {
+    it('should return filtered messages', async () => {
+      await requestSender.createMessage({ requestBody: fullMessageInstance });
+
       const response = await requestSender.getMessages({
-        queryParams: undefined,
+        queryParams: fullQueryParamsInstnace,
       });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+    });
+
+    it('should return empty array when no matches', async () => {
+      const response = await requestSender.getMessages({ queryParams: { sessionId: 'non-existent' } });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
       expect(response.body).toEqual([]);
     });
+  });
 
-    it('should return 200 status code and filtered messages', async function () {
-      await requestSender.createMessage({
-        requestBody: getResponseMessage,
-      });
+  describe('#getMessageById', () => {
+    it('should return a message by valid Id', async () => {
+      const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
+      const { id } = created.body as { id: string };
 
-      const response = await requestSender.getMessages();
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-    });
-
-    it('should return 200 and the correct message for a valid Id', async () => {
-      localMessagesStore.push(getResponseMessage);
-
-      const response = await requestSender.getMessageById({
-        pathParams: { id: getResponseMessage.id },
-      });
+      const response = await requestSender.getMessageById({ pathParams: { id } });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
-    });
-
-    it('should return 200 for successful deleted message request', async () => {
-      localMessagesStore.push(getResponseMessage);
-
-      const response = await requestSender.tryDeleteMessageById({
-        pathParams: { id: getResponseMessage.id },
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-    });
-
-    it('should return 200 and patched message when valid id and body are provided', async () => {
-      localMessagesStore.push(getResponseMessage);
-
-      const response = await requestSender.patchMessageById({
-        pathParams: { id: getResponseMessage.id },
-        requestBody: { message: 'message was updated' },
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response.body.message).toBe('message was updated');
     });
   });
 
-  describe('Bad Path', function () {
-    it('should return 400 status code for exceeding the time', async function () {
-      const response = await requestSender.createMessage({
-        requestBody: getResponseMessage,
-      });
+  describe('#tryDeleteMessageById', () => {
+    it('should delete a message successfully', async () => {
+      const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
+      const { id } = created.body as { id: string };
 
-      expect(Date.now() + 1000).toBeGreaterThan(new Date(getResponseMessage.timeStamp).getTime());
-      expect(response.status).not.toBe(httpStatusCodes.BAD_REQUEST);
-    });
-
-    it('should return 404 when the message Id does not exist for get request', async () => {
-      const response = await requestSender.getMessageById({
-        pathParams: { id: 'non-existent-id' },
-      });
+      const response = await requestSender.tryDeleteMessageById({ pathParams: { id } });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-      expect(response.body).toEqual({
-        message: "No message found with id 'non-existent-id'",
-      });
-    });
-
-    it('should return 404 when the message Id does not exist for delete request', async () => {
-      const response = await requestSender.tryDeleteMessageById({
-        pathParams: { id: 'non-existent-id' },
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-      expect(response.body).toEqual({
-        message: "No message found to delete with id 'non-existent-id'",
-      });
-    });
-
-    it('should return 400 when patch body is empty', async () => {
-      localMessagesStore.push(getResponseMessage);
-
-      const response = await requestSender.patchMessageById({
-        pathParams: { id: getResponseMessage.id },
-        requestBody: {},
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-      expect(response.body).toEqual({
-        message: `No params found to patch with id '${getResponseMessage.id}'`,
-      });
-    });
-
-    it('should return 404 when patching non-existent id', async () => {
-      const response = await requestSender.patchMessageById({
-        pathParams: { id: 'non-existent-id' },
-        requestBody: { severity: 'WARNING' },
-      });
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-      expect(response.body).toEqual({
-        message: "No message found with id 'non-existent-id'",
-      });
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
   });
 
-  describe('Sad Path', function () {
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
+  describe('#patchMessageById', () => {
+    it('should patch a message successfully', async () => {
+      const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
+      const { id } = created.body as { id: string };
 
-    it('should return 500 status code when createMessage throws an error', async () => {
-      jest.spyOn(MessageManager.prototype, 'createMessage').mockImplementation(() => {
-        throw new Error('Simulated error');
-      });
-
-      const response = await requestSender.createMessage({ requestBody: getResponseMessage });
-
-      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to create message' });
-    });
-
-    it('should return 500 status code when getMessages throws an error -  gets params', async function () {
-      jest.spyOn(MessageManager.prototype, 'getMessages').mockImplementation(() => {
-        throw new Error('Simulated error');
-      });
-
-      const response = await requestSender.getMessages({
-        queryParams: {
-          sessionId: 22342,
-          severity: 'ERROR',
-          component: 'MAP',
-          messageType: 'APPEXITED',
-        },
+      const response = await requestSender.patchMessageById({
+        pathParams: { id },
+        requestBody: { message: 'Updated message' },
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to get messages' });
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body.message).toBe('Updated message');
+    });
+  });
+});
+
+// -------------------- Bad Path --------------------
+describe('Message Integration Tests - Bad Path', () => {
+  it('should return 404 for getMessageById with non-existent id', async () => {
+    const response = await requestSender.getMessageById({ pathParams: { id: 'non-existent-id' } });
+
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+    expect(response.body).toEqual({ message: "No message found with id 'non-existent-id'" });
+  });
+
+  it('should return 404 for tryDeleteMessageById with non-existent id', async () => {
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'non-existent-id' } });
+
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+    expect(response.body).toEqual({ message: "No message found to delete with id 'non-existent-id'" });
+  });
+
+  it('should return 400 for patch with empty body', async () => {
+    const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
+    const messageBody = created.body as { id: string };
+
+    const response = await requestSender.patchMessageById({ pathParams: { id: messageBody.id }, requestBody: {} });
+
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+    expect(response.body).toEqual({ message: `No params found to patch with id '${messageBody.id}'` });
+  });
+
+  it('should return 404 for patch with non-existent id', async () => {
+    const response = await requestSender.patchMessageById({ pathParams: { id: 'non-existent-id' }, requestBody: { severity: 'WARNING' } });
+
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
+    expect(response.body).toEqual({ message: "No message found with id 'non-existent-id'" });
+  });
+});
+
+// -------------------- Sad Path --------------------
+describe('Message Integration Tests - Sad Path', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it('should return 500 if createMessage throws', async () => {
+    jest.spyOn(MessageManager.prototype, 'createMessage').mockImplementation(() => {
+      throw new Error('Simulated DB error');
     });
 
-    it('should return 500 status code when getMessageById throws an error', async () => {
-      jest.spyOn(MessageManager.prototype, 'getMessageById').mockImplementation(() => {
-        throw new Error('Simulated error');
-      });
+    const response = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
-      const response = await requestSender.getMessageById({
-        pathParams: { id: getResponseMessage.id },
-      });
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toEqual({ message: 'Failed to create message' });
+  });
 
-      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to get message by id' });
+  it('should return 500 if getMessages throws', async () => {
+    jest.spyOn(MessageManager.prototype, 'getMessages').mockImplementation(() => {
+      throw new Error('Simulated DB error');
     });
 
-    it('should return 500 status code when tryDeleteMessageById throws an error', async () => {
-      jest.spyOn(MessageManager.prototype, 'tryDeleteMessageById').mockImplementation(() => {
-        throw new Error('Simulated error');
-      });
-
-      const response = await requestSender.tryDeleteMessageById({
-        pathParams: { id: getResponseMessage.id },
-      });
-
-      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to delete message' });
+    const response = await requestSender.getMessages({
+      queryParams: { sessionId: '22342', severity: 'ERROR', component: 'MAP', messageType: 'APPEXITED' },
     });
 
-    it('should return 500 status code when patchMessageById throws an error', async () => {
-      jest.spyOn(MessageManager.prototype, 'patchMessageById').mockImplementation(() => {
-        throw new Error('Simulated error');
-      });
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toEqual({ message: 'Failed to get messages' });
+  });
 
-      const response = await requestSender.patchMessageById({
-        pathParams: { id: getResponseMessage.id },
-        requestBody: { severity: 'WARNING' },
-      });
-
-      expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-      expect(response.body).toEqual({ message: 'Failed to patch message' });
+  it('should return 500 if getMessageById throws', async () => {
+    jest.spyOn(MessageManager.prototype, 'getMessageById').mockImplementation(() => {
+      throw new Error('Simulated DB error');
     });
+
+    const response = await requestSender.getMessageById({ pathParams: { id: 'any-id' } });
+
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toEqual({ message: 'Failed to get message by id' });
+  });
+
+  it('should return 500 if tryDeleteMessageById throws', async () => {
+    jest.spyOn(MessageManager.prototype, 'tryDeleteMessageById').mockImplementation(() => {
+      throw new Error('Simulated DB error');
+    });
+
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'any-id' } });
+
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toEqual({ message: 'Failed to delete message' });
+  });
+
+  it('should return 500 if patchMessageById throws', async () => {
+    jest.spyOn(MessageManager.prototype, 'patchMessageById').mockImplementation(() => {
+      throw new Error('Simulated DB error');
+    });
+
+    const response = await requestSender.patchMessageById({
+      pathParams: { id: 'any-id' },
+      requestBody: { severity: 'WARNING' },
+    });
+
+    expect(response).toSatisfyApiSpec();
+    expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(response.body).toEqual({ message: 'Failed to patch message' });
   });
 });

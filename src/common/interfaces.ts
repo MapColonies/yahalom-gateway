@@ -1,3 +1,5 @@
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+
 export enum AnalyticsMessageTypes {
   APPSTARTED = 'APPSTARTED',
   APPEXITED = 'APPEXITED',
@@ -46,19 +48,33 @@ export interface IConfig {
 }
 
 export interface ILogObject {
-  sessionId: bigint;
+  sessionId: string;
   severity: SeverityLevels;
-  timeStamp: Date;
+  timeStamp: string;
   message: string;
-  messageParameters?: object;
+  messageParameters?: { [key: string]: unknown } | undefined;
   component: LogComponent;
   messageType: AnalyticsMessageTypes;
-  id?: string;
+  id: string;
 }
 
 export interface IQueryModel {
   severity?: string;
   component?: string;
   messageType?: string;
-  sessionId?: number;
+  sessionId?: string;
+}
+
+export interface DbConfig extends PostgresConnectionOptions {
+  host: string;
+  port: number;
+  username: string;
+  password?: string;
+  name: string;
+  enableSslAuth?: boolean;
+  sslPaths?: {
+    ca: string;
+    cert: string;
+    key: string;
+  };
 }

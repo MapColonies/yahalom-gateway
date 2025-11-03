@@ -1,146 +1,113 @@
+import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
-import { ILogObject, MessageManager } from '@src/message/models/messageManager';
-import { getResponseMessage, localMessagesStore } from '../../../../src/common/mocks';
-import { IQueryModel } from './../../../../src/common/interfaces';
+import { mockAndWhere, mockGetMany, mockFind, mockRepository, mockConnectionManager } from '@tests/mocks/unitMocks';
+import { Message } from '@src/DAL/entities/message';
+import { localMessagesStore } from '@src/common/localMocks';
+import { ILogObject } from '@src/common/interfaces';
+import { MessageManager } from '@src/message/models/messageManager';
+import { QUERY_BUILDER_NAME } from '@src/common/constants';
+import { fullMessageInstance, fullQueryParamsInstnace } from '../../../mocks/generalMocks';
 
 let messageManager: MessageManager;
 
 describe('MessageManager', () => {
   beforeEach(() => {
-    messageManager = new MessageManager(jsLogger({ enabled: false }));
-    localMessagesStore.length = 0; // clear the store before each test
+    messageManager = new MessageManager(jsLogger({ enabled: false }), mockConnectionManager);
+    localMessagesStore.length = 0;
+
+    jest.clearAllMocks();
+    mockFind.mockReset();
+    mockGetMany.mockReset();
+    mockAndWhere.mockReset();
   });
 
   describe('#createMessage', () => {
     it('should return the created message', () => {
-      const message = messageManager.createMessage(getResponseMessage);
-      expect(message.sessionId).toBe(2234234);
+      const message = messageManager.createMessage(fullMessageInstance);
+      expect(message.sessionId).toBe('2234234');
+      expect(localMessagesStore).toContain(message);
     });
   });
 
   describe('#getMessages', () => {
-    beforeEach(() => {
-      localMessagesStore.push(getResponseMessage); // for testing the quary, should be replaced when adding db
+    it('should return all messages if params is empty', async () => {
+      mockFind.mockResolvedValue([fullMessageInstance as unknown as Message]);
+      const result = await messageManager.getMessages({});
+      expect(result).toHaveLength(1);
+      expect(result[0]).toHaveProperty('message', 'some message');
+      expect(mockFind).toHaveBeenCalled();
     });
 
-    it('should return matching message with all filters', () => {
-      const query: IQueryModel = {
-        sessionId: 2234234,
-        severity: 'ERROR',
-        component: 'MAP',
-        messageType: 'APPEXITED',
-      };
+    it('should return filtered messages', async () => {
+      mockGetMany.mockResolvedValue([fullMessageInstance as unknown as Message]);
+      const result = await messageManager.getMessages(fullQueryParamsInstnace);
 
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
-      expect(messages[0]).toEqual(getResponseMessage);
+      expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith('log');
+      expect(mockAndWhere).toHaveBeenCalledTimes(4);
+      expect(mockGetMany).toHaveBeenCalled();
+      expect(result[0]).toHaveProperty('message', 'some message');
     });
 
-    it('should return message if filters are empty', () => {
-      const messages = messageManager.getMessages({});
-      expect(messages).toHaveLength(1);
+    it('should return empty array if no matches', async () => {
+      mockGetMany.mockResolvedValue([]);
+      const result = await messageManager.getMessages({ sessionId: '999' });
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('#getMessageById', () => {
+    it('should return the message by id', () => {
+      localMessagesStore.push(fullMessageInstance);
+      const result = messageManager.getMessageById(fullMessageInstance.id);
+      expect(result).toEqual(fullMessageInstance);
     });
 
-    it('should return no message if severity does not match', () => {
-      const query: IQueryModel = {
-        severity: 'WARNING',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(0);
-    });
-
-    it('should return no message if component does not match', () => {
-      const query: IQueryModel = {
-        component: 'NOT-MAP',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(0);
-    });
-
-    it('should return no message if messageType does not match', () => {
-      const query: IQueryModel = {
-        messageType: 'UNKNOWN',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(0);
-    });
-
-    it('should return no message if sessionId does not match', () => {
-      const query: IQueryModel = {
-        sessionId: 999999,
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(0);
-    });
-
-    it('should return message if only severity matches', () => {
-      const query: IQueryModel = {
-        severity: 'ERROR',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
-    });
-
-    it('should return message if only component matches', () => {
-      const query: IQueryModel = {
-        component: 'MAP',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
-    });
-
-    it('should return message if only messageType matches', () => {
-      const query: IQueryModel = {
-        messageType: 'APPEXITED',
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
-    });
-
-    it('should return message if only sessionId matches', () => {
-      const query: IQueryModel = {
-        sessionId: 2234234,
-      };
-      const messages = messageManager.getMessages(query);
-      expect(messages).toHaveLength(1);
-    });
-
-    it('should return the message with the given Id', () => {
-      const message = messageManager.getMessageById(getResponseMessage.id);
-      expect(message).toEqual(getResponseMessage);
-    });
-
-    it('should return null if no message with the given Id exists for get request', () => {
-      const message = messageManager.getMessageById('non-existent-id');
-      expect(message).toBeUndefined();
-    });
-
-    it('should return true for the deleted message', () => {
-      const message = messageManager.tryDeleteMessageById(getResponseMessage.id);
-      expect(message).toBeTruthy();
-    });
-
-    it('should return null if no message with the given Id exists for delete request', () => {
-      const message = messageManager.tryDeleteMessageById('non-existent-id');
-      expect(message).toBeFalsy();
-    });
-
-    it('should return the updated message', () => {
-      const patch: Partial<ILogObject> = {
-        message: 'updated',
-      };
-
-      const updated = messageManager.patchMessageById('1', patch as ILogObject);
-      expect(updated).toHaveProperty('message', 'updated');
-    });
-
-    it('should return undefined if message Id does not exist', () => {
-      const patch: Partial<ILogObject> = {
-        message: 'nope',
-      };
-
-      const result = messageManager.patchMessageById('999', patch as ILogObject);
+    it('should return undefined if id does not exist', () => {
+      const result = messageManager.getMessageById('non-existent-id');
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('#tryDeleteMessageById', () => {
+    it('should return true when message is deleted', () => {
+      localMessagesStore.push(fullMessageInstance);
+      const result = messageManager.tryDeleteMessageById(fullMessageInstance.id);
+      expect(result).toBeTruthy();
+      expect(localMessagesStore).toHaveLength(0);
+    });
+
+    it('should return false when message does not exist', () => {
+      const result = messageManager.tryDeleteMessageById('non-existent-id');
+      expect(result).toBeFalsy();
+    });
+  });
+
+  describe('#patchMessageById', () => {
+    it('should update an existing message', () => {
+      localMessagesStore.push(fullMessageInstance);
+      const patch: Partial<ILogObject> = { message: 'updated' };
+      const result = messageManager.patchMessageById(fullMessageInstance.id, patch as ILogObject);
+      expect(result).toHaveProperty('message', 'updated');
+    });
+
+    it('should return undefined if message does not exist', () => {
+      const patch: Partial<ILogObject> = { message: 'nope' };
+      const result = messageManager.patchMessageById('non-existent-id', patch as ILogObject);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('private #andWhere', () => {
+    it('should add conditions to query builder only if value is not null', async () => {
+      mockGetMany.mockResolvedValue([fullMessageInstance as unknown as Message]);
+
+      await messageManager.getMessages(fullQueryParamsInstnace);
+
+      expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith(QUERY_BUILDER_NAME);
+      expect(mockAndWhere).toHaveBeenCalledTimes(Object.keys(fullQueryParamsInstnace).length);
+      expect(mockAndWhere).toHaveBeenCalledWith('log.severity = :severity', { severity: 'ERROR' });
+
+      expect(mockGetMany).toHaveBeenCalled();
     });
   });
 });

@@ -202,8 +202,7 @@ components:
       in: query
       required: false
       schema:
-        type: integer
-        format: int64
+        type: string
     Severity:
       name: severity
       in: query
@@ -291,8 +290,7 @@ components:
         - messageType
       properties:
         sessionId:
-          type: integer
-          format: int64
+          type: string
           description: Unique session identifier
         severity:
           $ref: '#/components/schemas/SeverityEnum'
@@ -318,8 +316,7 @@ components:
       description: Partial update for log object (id not allowed)
       properties:
         sessionId:
-          type: integer
-          format: int64
+          type: string
           description: Unique session identifier
         severity:
           $ref: '#/components/schemas/SeverityEnum'

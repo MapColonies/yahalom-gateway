@@ -2,12 +2,15 @@ import { getOtelMixin } from '@map-colonies/telemetry';
 import { trace } from '@opentelemetry/api';
 import { Registry } from 'prom-client';
 import { DependencyContainer } from 'tsyringe/dist/typings/types';
+import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';
 import { InjectionObject, registerDependencies } from '@common/dependencyRegistration';
 import { SERVICES, SERVICE_NAME } from '@common/constants';
 import { getTracing } from '@common/tracing';
 import { messageRouterFactory, MESSAGE_ROUTER_SYMBOL } from './message/routes/messageRouter';
+import { ConnectionManager } from './DAL/connectionManager';
 import { getConfig } from './common/config';
+import { Message } from './DAL/entities/message';
 
 export interface RegisterOptions {
   override?: InjectionObject<unknown>[];
@@ -25,6 +28,9 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   const metricsRegistry = new Registry();
   configInstance.initializeMetrics(metricsRegistry);
 
+  const connectionManager = new ConnectionManager(logger);
+  await connectionManager.init();
+
   const dependencies: InjectionObject<unknown>[] = [
     { token: SERVICES.CONFIG, provider: { useValue: configInstance } },
     { token: SERVICES.LOGGER, provider: { useValue: logger } },
@@ -32,12 +38,35 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
     { token: MESSAGE_ROUTER_SYMBOL, provider: { useFactory: messageRouterFactory } },
     {
+      token: SERVICES.HEALTH_CHECK,
+      provider: {
+        useFactory: (dependencyContainer: DependencyContainer): (() => Promise<void>) => {
+          const connectionManager = dependencyContainer.resolve(ConnectionManager);
+          return async () => {
+            await Promise.resolve(connectionManager.healthCheck());
+          };
+        },
+      },
+    },
+    { token: SERVICES.CONNECTION_MANAGER, provider: { useValue: connectionManager } },
+    {
+      token: SERVICES.MESSAGE_REPOSITORY,
+      provider: {
+        useFactory: (container: DependencyContainer): Repository<Message> => {
+          const connectionManager = container.resolve(ConnectionManager);
+          const connection = connectionManager.getConnection();
+          return connection.getRepository(Message);
+        },
+      },
+    },
+    {
       token: 'onSignal',
       provider: {
-        useValue: {
-          useValue: async (): Promise<void> => {
-            await Promise.all([getTracing().stop()]);
-          },
+        useFactory: (dependencyContainer: DependencyContainer): (() => Promise<void>) => {
+          const connectionManager = dependencyContainer.resolve(ConnectionManager);
+          return async () => {
+            await Promise.all([Promise.resolve(getTracing().stop()), Promise.resolve(connectionManager.shutdown())]);
+          };
         },
       },
     },
