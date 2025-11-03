@@ -37,30 +37,24 @@ export class MessageManager {
 
     let connection;
     let repo: Repository<Message>;
-    try {
-      connection = this.connectionManager.getConnection();
-      repo = connection.getRepository(Message);
-    } catch (error) {
-      console.log('Error: ', error);
-      this.logger.error({ msg: 'Error in getting the DB connection:', error });
-      throw new Error('Cannot get repository because the DB connection is unavailable');
-    }
 
-    if (Object.keys(params).length === 0) {
-      const rawMessages = await repo.find();
-      return rawMessages.map(mapMessageToILogObject);
-    }
+    return this.withRepository(Message, async (repo) => {
+      if (Object.keys(params).length === 0) {
+        const rawMessages = await repo.find();
+        return rawMessages.map(mapMessageToILogObject);
+      }
 
-    const { sessionId, severity, component, messageType } = params;
+      const { sessionId, severity, component, messageType } = params;
 
-    const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
-    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
-    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
-    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
-    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
+      const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
+      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
+      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
+      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
+      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
 
-    const resultMessages = await queryBuilder.getMany();
-    return resultMessages.map(mapMessageToILogObject);
+      const resultMessages = await queryBuilder.getMany();
+      return resultMessages.map(mapMessageToILogObject);
+    });
   }
 
   public async getMessageById(id: string): Promise<ILogObject | undefined> {
