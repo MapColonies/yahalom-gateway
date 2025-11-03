@@ -35,7 +35,7 @@ export class MessageManager {
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
-    const repo = await this.getRepo(Message);
+    const repo = this.getRepo(Message);
 
     if (Object.keys(params).length === 0) {
       const rawMessages = await repo.find();
@@ -61,7 +61,7 @@ export class MessageManager {
   public async getMessageById(id: string): Promise<ILogObject | undefined> {
     this.logger.info({ msg: `Getting message by ID - ${id}`, id });
 
-    const repo = await this.getRepo(Message);
+    const repo = this.getRepo(Message);
 
     const message = await repo.findOne({ where: { id } });
 
@@ -110,7 +110,7 @@ export class MessageManager {
     }
   }
 
-  private getRepo<T extends ObjectLiteral>(entity: { new (): T }): Promise<Repository<T>> {
+  private getRepo<T extends ObjectLiteral>(entity: { new (): T }): Repository<T> {
     let connection;
     let repo: Repository<T>;
 
