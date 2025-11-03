@@ -23,11 +23,6 @@ beforeAll(async () => {
   console.log('✅ ConnectionManager DataSource initialized.');
 
   const connection = connectionManager.getConnection();
-  if (process.env.NODE_ENV === 'test') {
-    await connection.dropDatabase();
-    await connection.synchronize();
-    console.log('🔄 Test database dropped and re-synchronized');
-  }
 
   const [app] = await getApp({ useChild: false });
 

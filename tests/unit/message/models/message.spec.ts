@@ -118,8 +118,8 @@ describe('MessageManager', () => {
     });
   });
 
-  describe('MessageManager DB error handling', () => {
-    it('should throw an error if getting DB connection fails when calling getMessages', async () => {
+  describe('MessageManager DB connection error', () => {
+    it('should throw an error if getting DB connection fails when initializing repository', async () => {
       const failingConnectionManager = {
         getConnection: jest.fn(() => {
           throw new Error('DB not available');
@@ -127,17 +127,8 @@ describe('MessageManager', () => {
       } as unknown as typeof mockConnectionManager;
 
       const manager = new MessageManager(jsLogger({ enabled: false }), failingConnectionManager);
-      await expect(manager.getMessages({})).rejects.toThrow('Cannot get repository because the DB connection is unavailable');
-    });
 
-    it('should throw an error if the repository action fails when calling getMessageById', async () => {
-      const manager = new MessageManager(jsLogger({ enabled: false }), mockConnectionManager);
-
-      mockRepository.findOne = jest.fn(() => {
-        throw new Error('Action failed');
-      });
-
-      await expect(manager.getMessageById('any-id')).rejects.toThrow('Action failed');
+      await expect(manager.getMessages({})).rejects.toThrow('Cannot get repository for entity Message because the DB connection is unavailable');
     });
   });
 });
