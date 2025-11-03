@@ -110,7 +110,7 @@ export class MessageManager {
     }
   }
 
-  private async getRepo<T extends ObjectLiteral>(entity: { new (): T }): Promise<Repository<T>> {
+  private getRepo<T extends ObjectLiteral>(entity: { new (): T }): Promise<Repository<T>> {
     let connection;
     let repo: Repository<T>;
 
