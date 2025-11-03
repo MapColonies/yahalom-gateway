@@ -33,25 +33,34 @@ export class MessageManager {
   }
 
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
-    this.logger.info({ msg: 'Getting filtered messages with query params: ', params });
+    this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
-    return this.withRepository(Message, async (repo) => {
-      if (Object.keys(params).length === 0) {
-        const rawMessages = await repo.find();
-        return rawMessages.map(mapMessageToILogObject);
-      }
+    let connection;
+    let repo: Repository<Message>;
+    try {
+      connection = this.connectionManager.getConnection();
+      repo = connection.getRepository(Message);
+    } catch (error) {
+      console.log('Error: ', error);
+      this.logger.error({ msg: 'Error in getting the DB connection:', error });
+      throw new Error('Cannot get repository because the DB connection is unavailable');
+    }
 
-      const { sessionId, severity, component, messageType } = params;
-      const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
+    if (Object.keys(params).length === 0) {
+      const rawMessages = await repo.find();
+      return rawMessages.map(mapMessageToILogObject);
+    }
 
-      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
-      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
-      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
-      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
+    const { sessionId, severity, component, messageType } = params;
 
-      const resultMessages = await queryBuilder.getMany();
-      return resultMessages.map(mapMessageToILogObject);
-    });
+    const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
+
+    const resultMessages = await queryBuilder.getMany();
+    return resultMessages.map(mapMessageToILogObject);
   }
 
   public async getMessageById(id: string): Promise<ILogObject | undefined> {

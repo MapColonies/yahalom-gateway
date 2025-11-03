@@ -89,9 +89,7 @@ describe('Message Integration Tests - Happy Path', () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
       const { id } = created.body as { id: string };
 
-      const response = await requestSender.getMessageById({
-        pathParams: { id },
-      });
+      const response = await requestSender.getMessageById({ pathParams: { id } });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).not.toBe(httpStatusCodes.OK);
