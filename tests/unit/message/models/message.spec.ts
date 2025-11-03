@@ -90,16 +90,33 @@ describe('MessageManager', () => {
   });
 
   describe('#patchMessageById', () => {
-    it('should update an existing message', () => {
-      localMessagesStore.push(fullMessageInstance);
+    it('should update an existing message', async () => {
+      mockRepository.findOne = jest.fn().mockResolvedValue(fullMessageInstance as unknown as Message);
+      mockRepository.merge = jest.fn().mockImplementation((existing, changes) => ({
+        ...existing,
+        ...changes,
+      }));
+      mockRepository.save = jest.fn().mockResolvedValue({
+        ...fullMessageInstance,
+        message: 'updated',
+      });
+
       const patch: Partial<ILogObject> = { message: 'updated' };
-      const result = messageManager.patchMessageById(fullMessageInstance.id, patch as ILogObject);
+      const result = await messageManager.patchMessageById(fullMessageInstance.id, patch);
+
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: fullMessageInstance.id } });
+      expect(mockRepository.merge).toHaveBeenCalled();
+      expect(mockRepository.save).toHaveBeenCalled();
       expect(result).toHaveProperty('message', 'updated');
     });
 
-    it('should return undefined if message does not exist', () => {
+    it('should return undefined if message does not exist', async () => {
+      mockRepository.findOne = jest.fn().mockResolvedValue(null);
+
       const patch: Partial<ILogObject> = { message: 'nope' };
-      const result = messageManager.patchMessageById('non-existent-id', patch as ILogObject);
+      const result = await messageManager.patchMessageById('non-existent-id', patch);
+
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: 'non-existent-id' } });
       expect(result).toBeUndefined();
     });
   });

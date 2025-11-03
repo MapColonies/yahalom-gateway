@@ -1,7 +1,7 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
-import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
+import { DeepPartial, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/localMocks';
@@ -69,6 +69,26 @@ export class MessageManager {
     });
   }
 
+  public async patchMessageById(id: string, messageChanges: Partial<ILogObject>): Promise<ILogObject | undefined> {
+    this.logger.info({ msg: `Patching message by ID - ${id}`, id, messageChanges });
+
+    return this.withRepository(Message, async (repo) => {
+      const existingMessage = await repo.findOne({ where: { id } });
+
+      if (!existingMessage) {
+        this.logger.warn({ msg: `No message found with ID: ${id}`, id });
+        return undefined;
+      }
+
+      const updatedMessageEntity = repo.merge(existingMessage, messageChanges as DeepPartial<Message>);
+      const savedMessage = await repo.save(updatedMessageEntity);
+
+      this.logger.info({ msg: `Message with ID ${id} updated successfully`, id });
+
+      return mapMessageToILogObject(savedMessage);
+    });
+  }
+
   public tryDeleteMessageById(id: string): boolean {
     this.logger.info({ msg: `Deleting message by ID - ${id}`, id });
 
@@ -80,21 +100,6 @@ export class MessageManager {
     }
 
     return false;
-  }
-
-  public patchMessageById(id: string, messageChanges: ILogObject): ILogObject | undefined {
-    this.logger.info({ msg: `Pathcing message by ID - ${id}`, id });
-
-    const index = localMessagesStore.findIndex((message) => message.id === id);
-
-    if (index !== NOT_FOUND) {
-      localMessagesStore[index] = { ...localMessagesStore[index], ...messageChanges };
-
-      const updatedMessage = localMessagesStore[index];
-      return updatedMessage;
-    }
-
-    return undefined;
   }
 
   private andWhere(queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
