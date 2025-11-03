@@ -10,7 +10,6 @@ import { AppError } from '../common/appError';
 import { DbConfig } from '../common/interfaces';
 import { createConnectionOptions } from './createConnectionOptions';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 @singleton()
 export class ConnectionManager {
   private dataSource: DataSource | null = null;

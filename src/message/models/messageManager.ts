@@ -35,9 +35,6 @@ export class MessageManager {
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
-    let connection;
-    let repo: Repository<Message>;
-
     return this.withRepository(Message, async (repo) => {
       if (Object.keys(params).length === 0) {
         const rawMessages = await repo.find();
