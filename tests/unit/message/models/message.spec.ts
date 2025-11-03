@@ -92,10 +92,12 @@ describe('MessageManager', () => {
   describe('#patchMessageById', () => {
     it('should update an existing message', async () => {
       mockRepository.findOne = jest.fn().mockResolvedValue(fullMessageInstance as unknown as Message);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       mockRepository.merge = jest.fn().mockImplementation((existing, changes) => ({
         ...existing,
         ...changes,
       }));
+
       mockRepository.save = jest.fn().mockResolvedValue({
         ...fullMessageInstance,
         message: 'updated',
