@@ -1,7 +1,7 @@
 import type { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/localMocks';
@@ -35,20 +35,13 @@ export class MessageManager {
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
     this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
-    let connection;
-    let repo: Repository<Message>;
-    try {
-      connection = this.connectionManager.getConnection();
-      repo = connection.getRepository(Message);
-    } catch (error) {
-      console.log('Error: ', error);
-      this.logger.error({ msg: 'Error in getting the DB connection:', error });
-      throw new Error('Cannot get repository because the DB connection is unavailable');
-    }
+    const repo = this.getRepo(Message);
 
     if (Object.keys(params).length === 0) {
       const rawMessages = await repo.find();
-      return rawMessages.map(mapMessageToILogObject);
+      const formatedResultMessages: ILogObject[] = rawMessages.map(mapMessageToILogObject);
+
+      return formatedResultMessages;
     }
 
     const { sessionId, severity, component, messageType } = params;
@@ -60,14 +53,26 @@ export class MessageManager {
     this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
 
     const resultMessages = await queryBuilder.getMany();
-    return resultMessages.map(mapMessageToILogObject);
+    const formatedResultMessages: ILogObject[] = resultMessages.map(mapMessageToILogObject);
+
+    return formatedResultMessages;
   }
 
-  public getMessageById(id: string): ILogObject | undefined {
+  public async getMessageById(id: string): Promise<ILogObject | undefined> {
     this.logger.info({ msg: `Getting message by ID - ${id}`, id });
 
-    const message = localMessagesStore.find((message) => message.id === id);
-    return message;
+    const repo = this.getRepo(Message);
+
+    const message = await repo.findOne({ where: { id } });
+
+    if (!message) {
+      this.logger.debug({ msg: `No message found with ID: ${id}`, id });
+      return undefined;
+    }
+
+    const foundMessage: ILogObject = mapMessageToILogObject(message);
+
+    return foundMessage;
   }
 
   public tryDeleteMessageById(id: string): boolean {
@@ -102,6 +107,20 @@ export class MessageManager {
     if (value != null) {
       const paramName = field.split('.').pop() ?? field;
       queryBuilder.andWhere(`${field} = :${paramName}`, { [paramName]: value });
+    }
+  }
+
+  private getRepo<T extends ObjectLiteral>(entity: { new (): T }): Repository<T> {
+    let connection;
+    let repo: Repository<T>;
+
+    try {
+      connection = this.connectionManager.getConnection();
+      repo = connection.getRepository(entity);
+      return repo;
+    } catch (error) {
+      this.logger.error({ msg: `Error getting DB connection for entity ${entity.name}:`, error });
+      throw new Error(`Cannot get repository for entity ${entity.name} because the DB connection is unavailable`);
     }
   }
 }

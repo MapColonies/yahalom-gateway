@@ -56,14 +56,21 @@ describe('MessageManager', () => {
   });
 
   describe('#getMessageById', () => {
-    it('should return the message by id', () => {
-      localMessagesStore.push(fullMessageInstance);
-      const result = messageManager.getMessageById(fullMessageInstance.id);
-      expect(result).toEqual(fullMessageInstance);
+    it('should return the message by id', async () => {
+      mockRepository.findOne = jest.fn().mockResolvedValue(fullMessageInstance as unknown as Message);
+      const result = await messageManager.getMessageById(fullMessageInstance.id);
+      const spy = jest.spyOn(mockConnectionManager, 'getConnection');
+
+      expect(spy).toHaveBeenCalled();
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: fullMessageInstance.id } });
+      expect(result).toEqual(expect.objectContaining({ id: fullMessageInstance.id }));
     });
 
-    it('should return undefined if id does not exist', () => {
-      const result = messageManager.getMessageById('non-existent-id');
+    it('should return undefined if id does not exist', async () => {
+      mockRepository.findOne = jest.fn().mockResolvedValue(null);
+      const result = await messageManager.getMessageById('non-existent-id');
+
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: 'non-existent-id' } });
       expect(result).toBeUndefined();
     });
   });
@@ -108,6 +115,20 @@ describe('MessageManager', () => {
       expect(mockAndWhere).toHaveBeenCalledWith('log.severity = :severity', { severity: 'ERROR' });
 
       expect(mockGetMany).toHaveBeenCalled();
+    });
+  });
+
+  describe('MessageManager DB connection error', () => {
+    it('should throw an error if getting DB connection fails when initializing repository', async () => {
+      const failingConnectionManager = {
+        getConnection: jest.fn(() => {
+          throw new Error('DB not available');
+        }),
+      } as unknown as typeof mockConnectionManager;
+
+      const manager = new MessageManager(jsLogger({ enabled: false }), failingConnectionManager);
+
+      await expect(manager.getMessages({})).rejects.toThrow('Cannot get repository for entity Message because the DB connection is unavailable');
     });
   });
 });

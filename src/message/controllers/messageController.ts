@@ -53,11 +53,11 @@ export class MessageController {
     }
   };
 
-  public getMessageById: TypedRequestHandlers['GET /message/{id}'] = (req, res) => {
+  public getMessageById: TypedRequestHandlers['GET /message/{id}'] = async (req, res) => {
     try {
       const id = req.params.id;
 
-      const message = this.manager.getMessageById(id);
+      const message = await this.manager.getMessageById(id);
 
       if (!message) {
         return res.status(httpStatus.NOT_FOUND).json({ message: `No message found with id '${id}'` });

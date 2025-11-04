@@ -18,9 +18,15 @@ const mockQueryBuilder: MockQueryBuilder = {
 };
 
 export const mockFind = jest.fn<Promise<Message[]>, []>();
+export const mockFindOne = jest.fn<Promise<Message | null>, [object?]>();
+export const mockSave = jest.fn();
+export const mockDelete = jest.fn();
 
 export const mockRepository: Partial<Repository<Message>> = {
   find: mockFind,
+  findOne: mockFindOne,
+  save: mockSave,
+  delete: mockDelete,
   createQueryBuilder: jest.fn(() => mockQueryBuilder as unknown as SelectQueryBuilder<Message>),
 };
 
