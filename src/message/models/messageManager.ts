@@ -24,50 +24,58 @@ export class MessageManager {
     this.logger.debug({ msg: 'message recieved details', message });
 
     const id = uuidv4();
-    const newMessage = { ...message, id };
+    const newMessage: ILogObject = { ...message, id };
 
-    return this.withRepository(Message, async (repo) => {
-      const entity = repo.create(newMessage as DeepPartial<Message>);
-      await repo.save(entity);
-      return mapMessageToILogObject(entity);
-    });
+    const repo = this.getRepo(Message);
+
+    const entity = repo.create(newMessage as DeepPartial<Message>);
+    await repo.save(entity);
+    const formatedNewMessage = mapMessageToILogObject(entity);
+
+    return formatedNewMessage;
   }
 
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
-    this.logger.info({ msg: 'Getting filtered messages with query params: ', params });
+    this.logger.info({ msg: 'getting filtered messages with query params: ', params });
 
-    return this.withRepository(Message, async (repo) => {
-      if (Object.keys(params).length === 0) {
-        const rawMessages = await repo.find();
-        return rawMessages.map(mapMessageToILogObject);
-      }
+    const repo = this.getRepo(Message);
 
-      const { sessionId, severity, component, messageType } = params;
-      const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
+    if (Object.keys(params).length === 0) {
+      const rawMessages = await repo.find();
+      const formatedResultMessages: ILogObject[] = rawMessages.map(mapMessageToILogObject);
 
-      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
-      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
-      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
-      this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
+      return formatedResultMessages;
+    }
 
-      const resultMessages = await queryBuilder.getMany();
-      return resultMessages.map(mapMessageToILogObject);
-    });
+    const { sessionId, severity, component, messageType } = params;
+
+    const queryBuilder = repo.createQueryBuilder(QUERY_BUILDER_NAME);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.severity`, severity);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.component`, component);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.messageType`, messageType);
+    this.andWhere(queryBuilder, `${QUERY_BUILDER_NAME}.sessionId`, sessionId);
+
+    const resultMessages = await queryBuilder.getMany();
+    const formatedResultMessages: ILogObject[] = resultMessages.map(mapMessageToILogObject);
+
+    return formatedResultMessages;
   }
 
   public async getMessageById(id: string): Promise<ILogObject | undefined> {
     this.logger.info({ msg: `Getting message by ID - ${id}`, id });
 
-    return this.withRepository(Message, async (repo) => {
-      const message = await repo.findOne({ where: { id } });
+    const repo = this.getRepo(Message);
 
-      if (!message) {
-        this.logger.warn({ msg: `No message found with ID: ${id}`, id });
-        return undefined;
-      }
+    const message = await repo.findOne({ where: { id } });
 
-      return mapMessageToILogObject(message);
-    });
+    if (!message) {
+      this.logger.debug({ msg: `No message found with ID: ${id}`, id });
+      return undefined;
+    }
+
+    const foundMessage: ILogObject = mapMessageToILogObject(message);
+
+    return foundMessage;
   }
 
   public tryDeleteMessageById(id: string): boolean {
@@ -105,23 +113,17 @@ export class MessageManager {
     }
   }
 
-  private async withRepository<T extends ObjectLiteral, R>(entity: { new (): T }, action: (repo: Repository<T>) => Promise<R>): Promise<R> {
+  private getRepo<T extends ObjectLiteral>(entity: { new (): T }): Repository<T> {
     let connection;
     let repo: Repository<T>;
 
     try {
       connection = this.connectionManager.getConnection();
       repo = connection.getRepository(entity);
+      return repo;
     } catch (error) {
-      this.logger.error({ msg: 'Error getting DB connection:', error });
-      throw new Error('Cannot get repository because the DB connection is unavailable');
-    }
-
-    try {
-      return await action(repo);
-    } catch (error) {
-      this.logger.error({ msg: 'Error while executing repository action:', error });
-      throw error;
+      this.logger.error({ msg: `Error getting DB connection for entity ${entity.name}:`, error });
+      throw new Error(`Cannot get repository because the DB connection is unavailable`);
     }
   }
 }

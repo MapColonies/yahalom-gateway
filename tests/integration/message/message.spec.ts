@@ -9,7 +9,7 @@ import { ConnectionManager } from '@src/DAL/connectionManager';
 import { initConfig } from '@src/common/config';
 import { registerExternalValues } from '@src/containerConfig';
 import { SERVICES } from '@common/constants';
-import { fullMessageInstance } from '../../mocks/generalMocks';
+import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
 let dependencyContainer: DependencyContainer;
@@ -23,11 +23,6 @@ beforeAll(async () => {
   console.log('✅ ConnectionManager DataSource initialized.');
 
   const connection = connectionManager.getConnection();
-  if (process.env.NODE_ENV === 'test') {
-    await connection.dropDatabase();
-    await connection.synchronize();
-    console.log('🔄 Test database dropped and re-synchronized');
-  }
 
   const [app] = await getApp({ useChild: false });
 
@@ -53,35 +48,33 @@ describe('Message Integration Tests - Happy Path', () => {
     });
   });
 
-  // TODO: Fix default.json and test.json paths and structure to ensure proper test mode initialization.
   describe('#getMessages', () => {
-    it('should return empty array if no messages exist', async () => {
+    it('should return all messages if no query params', async () => {
+      await requestSender.createMessage({ requestBody: fullMessageInstance });
       const response = await requestSender.getMessages();
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
-      //expect(response.body).toEqual([]);
-    });
-
-    it('should return 2 messages after inserting them', async () => {
-      await requestSender.createMessage({ requestBody: fullMessageInstance });
-      await requestSender.createMessage({ requestBody: fullMessageInstance });
-
-      const response = await requestSender.getMessages();
-
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).not.toEqual([]);
     });
 
     it('should return filtered messages', async () => {
       await requestSender.createMessage({ requestBody: fullMessageInstance });
 
       const response = await requestSender.getMessages({
-        queryParams: { sessionId: fullMessageInstance.sessionId },
+        queryParams: fullQueryParamsInstnace,
       });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
+    });
+
+    it('should return empty array when no matches', async () => {
+      const response = await requestSender.getMessages({ queryParams: { sessionId: 'non-existent' } });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body).toEqual([]);
     });
   });
 
@@ -90,16 +83,14 @@ describe('Message Integration Tests - Happy Path', () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
       const { id } = created.body as { id: string };
 
-      const response = await requestSender.getMessageById({
-        pathParams: { id },
-      });
+      const response = await requestSender.getMessageById({ pathParams: { id } });
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).toBe(httpStatusCodes.OK);
     });
   });
 
-  // TODO: When adding create request to db, change this test to be OK
+  // TODO: When adding tryDeleteMessageById request to db, change this test to be OK
   describe('#tryDeleteMessageById', () => {
     it('should delete a message successfully', async () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
@@ -112,7 +103,7 @@ describe('Message Integration Tests - Happy Path', () => {
     });
   });
 
-  // TODO: When adding create request to db, change this test to be OK
+  // TODO: When adding patchMessageById request to db, change this test to be OK
   describe('#patchMessageById', () => {
     it('should patch a message successfully', async () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
@@ -125,6 +116,7 @@ describe('Message Integration Tests - Happy Path', () => {
 
       expect(response).toSatisfyApiSpec();
       expect(response.status).not.toBe(httpStatusCodes.OK);
+      //expect(response.body.message).toBe('Updated message');
     });
   });
 });
