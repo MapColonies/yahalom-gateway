@@ -20,7 +20,6 @@ export class MessageManager {
   ) {}
 
   public async createMessage(message: Omit<ILogObject, 'id'>): Promise<ILogObject> {
-    this.logger.info({ msg: 'creating message' });
     this.logger.debug({ msg: 'message recieved details', message });
 
     const id = uuidv4();
