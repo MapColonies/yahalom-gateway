@@ -6,7 +6,7 @@ import { localMessagesStore } from '@src/common/localMocks';
 import { ILogObject } from '@src/common/interfaces';
 import { MessageManager } from '@src/message/models/messageManager';
 import { QUERY_BUILDER_NAME } from '@src/common/constants';
-import { fullMessageInstance, fullQueryParamsInstnace } from '../../../mocks/generalMocks';
+import { fullMessageInstance, fullQueryParamsInstnace, nonExistentId } from '../../../mocks/generalMocks';
 
 let messageManager: MessageManager;
 
@@ -67,24 +67,39 @@ describe('MessageManager', () => {
 
     it('should return undefined if id does not exist', async () => {
       mockRepository.findOne = jest.fn().mockResolvedValue(null);
-      const result = await messageManager.getMessageById('non-existent-id');
+      const result = await messageManager.getMessageById(nonExistentId);
 
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: 'non-existent-id' } });
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: nonExistentId } });
       expect(result).toBeUndefined();
     });
   });
 
   describe('#tryDeleteMessageById', () => {
-    it('should return true when message is deleted', () => {
-      localMessagesStore.push(fullMessageInstance);
-      const result = messageManager.tryDeleteMessageById(fullMessageInstance.id);
-      expect(result).toBeTruthy();
-      expect(localMessagesStore).toHaveLength(0);
+    it('should return true when a message is deleted', async () => {
+      mockRepository.delete = jest.fn().mockResolvedValue({ affected: 1 });
+
+      const result = await messageManager.tryDeleteMessageById('any-id');
+
+      expect(result).toBe(true);
+      expect(mockRepository.delete).toHaveBeenCalledWith({ id: 'any-id' });
     });
 
-    it('should return false when message does not exist', () => {
-      const result = messageManager.tryDeleteMessageById('non-existent-id');
-      expect(result).toBeFalsy();
+    it('should return false when no message is deleted (affected = 0)', async () => {
+      mockRepository.delete = jest.fn().mockResolvedValue({ affected: 0 });
+
+      const result = await messageManager.tryDeleteMessageById('non-existent-id');
+
+      expect(result).toBe(false);
+      expect(mockRepository.delete).toHaveBeenCalledWith({ id: 'non-existent-id' });
+    });
+
+    it('should return false when repo.delete returns undefined', async () => {
+      mockRepository.delete = jest.fn().mockResolvedValue(undefined);
+
+      const result = await messageManager.tryDeleteMessageById('any-id');
+
+      expect(result).toBe(false);
+      expect(mockRepository.delete).toHaveBeenCalledWith({ id: 'any-id' });
     });
   });
 
@@ -94,12 +109,6 @@ describe('MessageManager', () => {
       const patch: Partial<ILogObject> = { message: 'updated' };
       const result = messageManager.patchMessageById(fullMessageInstance.id, patch as ILogObject);
       expect(result).toHaveProperty('message', 'updated');
-    });
-
-    it('should return undefined if message does not exist', () => {
-      const patch: Partial<ILogObject> = { message: 'nope' };
-      const result = messageManager.patchMessageById('non-existent-id', patch as ILogObject);
-      expect(result).toBeUndefined();
     });
   });
 

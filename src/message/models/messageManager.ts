@@ -62,7 +62,7 @@ export class MessageManager {
   }
 
   public async getMessageById(id: string): Promise<ILogObject | undefined> {
-    this.logger.info({ msg: `Getting message by ID - ${id}`, id });
+    this.logger.info({ msg: `getting message by ID - ${id}`, id });
 
     const repo = this.getRepo(Message);
 
@@ -78,21 +78,27 @@ export class MessageManager {
     return foundMessage;
   }
 
-  public tryDeleteMessageById(id: string): boolean {
+  public async tryDeleteMessageById(id: string): Promise<boolean> {
     this.logger.info({ msg: `Deleting message by ID - ${id}`, id });
 
-    const index = localMessagesStore.findIndex((message) => message.id === id);
+    const repo = this.getRepo(Message);
 
-    if (index !== NOT_FOUND) {
-      localMessagesStore.splice(index, 1);
+    const result = await repo.delete({ id });
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const affected = result?.affected ?? 0;
+
+    if (affected > 0) {
+      this.logger.debug({ msg: `Message with ID ${id} deleted successfully.` });
       return true;
+    } else {
+      this.logger.debug({ msg: `No message found to delete with ID ${id}.` });
+      return false;
     }
-
-    return false;
   }
 
   public patchMessageById(id: string, messageChanges: ILogObject): ILogObject | undefined {
-    this.logger.info({ msg: `Pathcing message by ID - ${id}`, id });
+    this.logger.info({ msg: `pathcing message by ID - ${id}`, id });
 
     const index = localMessagesStore.findIndex((message) => message.id === id);
 

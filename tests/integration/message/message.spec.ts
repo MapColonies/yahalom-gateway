@@ -9,7 +9,7 @@ import { ConnectionManager } from '@src/DAL/connectionManager';
 import { initConfig } from '@src/common/config';
 import { registerExternalValues } from '@src/containerConfig';
 import { SERVICES } from '@common/constants';
-import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
+import { fullQueryParamsInstnace, fullMessageInstance, nonExistentId } from '../../mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
 let dependencyContainer: DependencyContainer;
@@ -90,7 +90,6 @@ describe('Message Integration Tests - Happy Path', () => {
     });
   });
 
-  // TODO: When adding tryDeleteMessageById request to db, change this test to be OK
   describe('#tryDeleteMessageById', () => {
     it('should delete a message successfully', async () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
@@ -99,7 +98,7 @@ describe('Message Integration Tests - Happy Path', () => {
       const response = await requestSender.tryDeleteMessageById({ pathParams: { id } });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).not.toBe(httpStatusCodes.OK);
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
   });
 
@@ -124,7 +123,6 @@ describe('Message Integration Tests - Happy Path', () => {
 // -------------------- Bad Path --------------------
 describe('Message Integration Tests - Bad Path', () => {
   it('should return 404 for getMessageById with non-existent id', async () => {
-    const nonExistentId = '123e4567-e89b-12d3-a456-426614174000';
     const response = await requestSender.getMessageById({ pathParams: { id: nonExistentId } });
 
     expect(response).toSatisfyApiSpec();
@@ -133,11 +131,11 @@ describe('Message Integration Tests - Bad Path', () => {
   });
 
   it('should return 404 for tryDeleteMessageById with non-existent id', async () => {
-    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'non-existent-id' } });
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: nonExistentId } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: "No message found to delete with id 'non-existent-id'" });
+    expect(response.body).toEqual({ message: `No message found to delete with id '${nonExistentId}'` });
   });
 
   it('should return 400 for patch with empty body', async () => {

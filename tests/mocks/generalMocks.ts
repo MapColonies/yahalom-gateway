@@ -19,3 +19,5 @@ export const fullQueryParamsInstnace = {
   component: 'MAP' as LogComponent,
   messageType: 'APPEXITED' as AnalyticsMessageTypes,
 };
+
+export const nonExistentId = '99999999-1111-9999-1111-999999999999';
