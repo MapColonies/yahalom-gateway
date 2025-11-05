@@ -123,7 +123,7 @@ export class MessageManager {
       return repo;
     } catch (error) {
       this.logger.error({ msg: `Error getting DB connection for entity ${entity.name}:`, error });
-      throw new Error(`Cannot get repository because the DB connection is unavailable`);
+      throw new Error(`Cannot get repository for entity ${entity.name} because the DB connection is unavailable`);
     }
   }
 }

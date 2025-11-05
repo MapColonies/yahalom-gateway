@@ -1,6 +1,7 @@
 import httpStatusCodes from 'http-status-codes';
 import { DependencyContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
+import { DeepPartial } from 'typeorm';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { Message } from '@src/DAL/entities/message';
@@ -19,15 +20,16 @@ beforeAll(async () => {
 
   dependencyContainer = await registerExternalValues({ useChild: true });
 
-  const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
   console.log('✅ ConnectionManager DataSource initialized.');
-
-  const connection = connectionManager.getConnection();
 
   const [app] = await getApp({ useChild: false });
 
   requestSender = await createRequestSender('openapi3.yaml', app);
+});
 
+beforeEach(async () => {
+  const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
+  const connection = connectionManager.getConnection();
   await connection.getRepository(Message).clear();
 });
 
@@ -59,14 +61,27 @@ describe('Message Integration Tests - Happy Path', () => {
     });
 
     it('should return filtered messages', async () => {
-      await requestSender.createMessage({ requestBody: fullMessageInstance });
-
-      const response = await requestSender.getMessages({
+      const emptyResponse = await requestSender.getMessages({
         queryParams: fullQueryParamsInstnace,
       });
 
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(emptyResponse).toSatisfyApiSpec();
+      expect(emptyResponse.status).toBe(httpStatusCodes.OK);
+      expect(emptyResponse.body).toEqual([]);
+
+      await requestSender.createMessage({ requestBody: fullMessageInstance });
+
+      const bodyResponse = await requestSender.getMessages({
+        queryParams: fullQueryParamsInstnace,
+      });
+
+      expect(bodyResponse).toSatisfyApiSpec();
+      expect(bodyResponse.status).toBe(httpStatusCodes.OK);
+      const messages = bodyResponse.body as DeepPartial<Message[]>;
+
+      expect(messages).toHaveLength(1);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      expect(messages[0]).toMatchObject({ ...fullMessageInstance, id: expect.any(String), timeStamp: expect.any(String) });
     });
 
     it('should return empty array when no matches', async () => {
@@ -79,14 +94,17 @@ describe('Message Integration Tests - Happy Path', () => {
   });
 
   describe('#getMessageById', () => {
-    it('should return a message by valid Id', async () => {
-      const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
-      const { id } = created.body as { id: string };
+    it('should return the same message that was created', async () => {
+      const createResponse = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
-      const response = await requestSender.getMessageById({ pathParams: { id } });
+      const createdMessage = createResponse.body as { id: string };
 
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
+      const getResponse = await requestSender.getMessageById({ pathParams: { id: createdMessage.id } });
+
+      expect(getResponse).toSatisfyApiSpec();
+      expect(getResponse.status).toBe(httpStatusCodes.OK);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      expect(getResponse.body).toMatchObject({ ...fullMessageInstance, id: createdMessage.id, timeStamp: expect.any(String) });
     });
   });
 
