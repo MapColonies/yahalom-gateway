@@ -9,8 +9,8 @@ import { MessageManager } from '@src/message/models/messageManager';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { initConfig } from '@src/common/config';
 import { registerExternalValues } from '@src/containerConfig';
-import { SERVICES } from '@common/constants';
-import { fullQueryParamsInstnace, fullMessageInstance } from '../../mocks/generalMocks';
+import { SERVICES } from '@src/common/constants';
+import { NON_EXISTENT_ID, fullQueryParamsInstnace, fullMessageInstance } from '@tests/mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
 let dependencyContainer: DependencyContainer;
@@ -121,7 +121,6 @@ describe('Message Integration Tests - Happy Path', () => {
     });
   });
 
-  // TODO: When adding patchMessageById request to db, change this test to be OK
   describe('#patchMessageById', () => {
     it('should patch a message successfully', async () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
@@ -133,8 +132,8 @@ describe('Message Integration Tests - Happy Path', () => {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).not.toBe(httpStatusCodes.OK);
-      //expect(response.body.message).toBe('Updated message');
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body.message).toBe('Updated message');
     });
   });
 });
@@ -142,12 +141,11 @@ describe('Message Integration Tests - Happy Path', () => {
 // -------------------- Bad Path --------------------
 describe('Message Integration Tests - Bad Path', () => {
   it('should return 404 for getMessageById with non-existent id', async () => {
-    const nonExistentId = '123e4567-e89b-12d3-a456-426614174000';
-    const response = await requestSender.getMessageById({ pathParams: { id: nonExistentId } });
+    const response = await requestSender.getMessageById({ pathParams: { id: NON_EXISTENT_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: `No message found with id '${nonExistentId}'` });
+    expect(response.body).toEqual({ message: `No message found with id '${NON_EXISTENT_ID}'` });
   });
 
   it('should return 404 for tryDeleteMessageById with non-existent id', async () => {
@@ -166,15 +164,17 @@ describe('Message Integration Tests - Bad Path', () => {
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-    expect(response.body).toEqual({ message: `No params found to patch with id '${messageBody.id}'` });
+    expect(response.body).toEqual({ message: `No params found to update with id '${messageBody.id}'` });
   });
 
   it('should return 404 for patch with non-existent id', async () => {
-    const response = await requestSender.patchMessageById({ pathParams: { id: 'non-existent-id' }, requestBody: { severity: 'WARNING' } });
+    await requestSender.createMessage({ requestBody: fullMessageInstance });
+
+    const response = await requestSender.patchMessageById({ pathParams: { id: NON_EXISTENT_ID }, requestBody: { severity: 'WARNING' } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: "No message found with id 'non-existent-id'" });
+    expect(response.body).toEqual({ message: `No message found with id '${NON_EXISTENT_ID}'` });
   });
 });
 
@@ -244,6 +244,6 @@ describe('Message Integration Tests - Sad Path', () => {
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-    expect(response.body).toEqual({ message: 'Failed to patch message' });
+    expect(response.body).toEqual({ message: 'Failed to update message' });
   });
 });
