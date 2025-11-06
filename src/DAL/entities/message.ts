@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Timestamp, Index } from 'typeorm';
 import { SeverityLevels, LogComponent, AnalyticsMessageTypes } from '../../common/interfaces';
 
 @Entity()
@@ -25,6 +25,7 @@ export class Message {
   @Column({ type: 'enum', enum: LogComponent, enumName: 'message_component_enum' })
   public component!: LogComponent;
 
+  @Index('IDX_message_type')
   @Column({ type: 'enum', enum: AnalyticsMessageTypes, enumName: 'message_type_enum' })
   public messageType!: AnalyticsMessageTypes;
 }
