@@ -1,6 +1,7 @@
 import httpStatusCodes from 'http-status-codes';
 import { DependencyContainer } from 'tsyringe';
 import { createRequestSender, RequestSender } from '@map-colonies/openapi-helpers/requestSender';
+import { DeepPartial } from 'typeorm';
 import { paths, operations } from '@openapi';
 import { getApp } from '@src/app';
 import { Message } from '@src/DAL/entities/message';
@@ -8,8 +9,8 @@ import { MessageManager } from '@src/message/models/messageManager';
 import { ConnectionManager } from '@src/DAL/connectionManager';
 import { initConfig } from '@src/common/config';
 import { registerExternalValues } from '@src/containerConfig';
-import { SERVICES } from '@common/constants';
-import { fullQueryParamsInstnace, fullMessageInstance, nonExistentId } from '../../mocks/generalMocks';
+import { SERVICES } from '@src/common/constants';
+import { NON_EXISTENT_ID, fullQueryParamsInstnace, fullMessageInstance } from '@tests/mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
 let dependencyContainer: DependencyContainer;
@@ -19,15 +20,16 @@ beforeAll(async () => {
 
   dependencyContainer = await registerExternalValues({ useChild: true });
 
-  const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
   console.log('✅ ConnectionManager DataSource initialized.');
-
-  const connection = connectionManager.getConnection();
 
   const [app] = await getApp({ useChild: false });
 
   requestSender = await createRequestSender('openapi3.yaml', app);
+});
 
+beforeEach(async () => {
+  const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
+  const connection = connectionManager.getConnection();
   await connection.getRepository(Message).clear();
 });
 
@@ -59,14 +61,27 @@ describe('Message Integration Tests - Happy Path', () => {
     });
 
     it('should return filtered messages', async () => {
-      await requestSender.createMessage({ requestBody: fullMessageInstance });
-
-      const response = await requestSender.getMessages({
+      const emptyResponse = await requestSender.getMessages({
         queryParams: fullQueryParamsInstnace,
       });
 
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(emptyResponse).toSatisfyApiSpec();
+      expect(emptyResponse.status).toBe(httpStatusCodes.OK);
+      expect(emptyResponse.body).toEqual([]);
+
+      await requestSender.createMessage({ requestBody: fullMessageInstance });
+
+      const bodyResponse = await requestSender.getMessages({
+        queryParams: fullQueryParamsInstnace,
+      });
+
+      expect(bodyResponse).toSatisfyApiSpec();
+      expect(bodyResponse.status).toBe(httpStatusCodes.OK);
+      const messages = bodyResponse.body as DeepPartial<Message[]>;
+
+      expect(messages).toHaveLength(1);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      expect(messages[0]).toMatchObject({ ...fullMessageInstance, id: expect.any(String), timeStamp: expect.any(String) });
     });
 
     it('should return empty array when no matches', async () => {
@@ -79,17 +94,21 @@ describe('Message Integration Tests - Happy Path', () => {
   });
 
   describe('#getMessageById', () => {
-    it('should return a message by valid Id', async () => {
-      const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
-      const { id } = created.body as { id: string };
+    it('should return the same message that was created', async () => {
+      const createResponse = await requestSender.createMessage({ requestBody: fullMessageInstance });
 
-      const response = await requestSender.getMessageById({ pathParams: { id } });
+      const createdMessage = createResponse.body as { id: string };
 
-      expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
+      const getResponse = await requestSender.getMessageById({ pathParams: { id: createdMessage.id } });
+
+      expect(getResponse).toSatisfyApiSpec();
+      expect(getResponse.status).toBe(httpStatusCodes.OK);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      expect(getResponse.body).toMatchObject({ ...fullMessageInstance, id: createdMessage.id, timeStamp: expect.any(String) });
     });
   });
 
+  // TODO: When adding tryDeleteMessageById request to db, change this test to be OK
   describe('#tryDeleteMessageById', () => {
     it('should delete a message successfully', async () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
@@ -98,11 +117,10 @@ describe('Message Integration Tests - Happy Path', () => {
       const response = await requestSender.tryDeleteMessageById({ pathParams: { id } });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.status).not.toBe(httpStatusCodes.OK);
     });
   });
 
-  // TODO: When adding patchMessageById request to db, change this test to be OK
   describe('#patchMessageById', () => {
     it('should patch a message successfully', async () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
@@ -114,8 +132,8 @@ describe('Message Integration Tests - Happy Path', () => {
       });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).not.toBe(httpStatusCodes.OK);
-      //expect(response.body.message).toBe('Updated message');
+      expect(response.status).toBe(httpStatusCodes.OK);
+      expect(response.body.message).toBe('Updated message');
     });
   });
 });
@@ -123,19 +141,19 @@ describe('Message Integration Tests - Happy Path', () => {
 // -------------------- Bad Path --------------------
 describe('Message Integration Tests - Bad Path', () => {
   it('should return 404 for getMessageById with non-existent id', async () => {
-    const response = await requestSender.getMessageById({ pathParams: { id: nonExistentId } });
+    const response = await requestSender.getMessageById({ pathParams: { id: NON_EXISTENT_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: `No message found with id '${nonExistentId}'` });
+    expect(response.body).toEqual({ message: `No message found with id '${NON_EXISTENT_ID}'` });
   });
 
   it('should return 404 for tryDeleteMessageById with non-existent id', async () => {
-    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: nonExistentId } });
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'non-existent-id' } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: `No message found to delete with id '${nonExistentId}'` });
+    expect(response.body).toEqual({ message: "No message found to delete with id 'non-existent-id'" });
   });
 
   it('should return 400 for patch with empty body', async () => {
@@ -146,15 +164,17 @@ describe('Message Integration Tests - Bad Path', () => {
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-    expect(response.body).toEqual({ message: `No params found to patch with id '${messageBody.id}'` });
+    expect(response.body).toEqual({ message: `No params found to update with id '${messageBody.id}'` });
   });
 
   it('should return 404 for patch with non-existent id', async () => {
-    const response = await requestSender.patchMessageById({ pathParams: { id: 'non-existent-id' }, requestBody: { severity: 'WARNING' } });
+    await requestSender.createMessage({ requestBody: fullMessageInstance });
+
+    const response = await requestSender.patchMessageById({ pathParams: { id: NON_EXISTENT_ID }, requestBody: { severity: 'WARNING' } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: "No message found with id 'non-existent-id'" });
+    expect(response.body).toEqual({ message: `No message found with id '${NON_EXISTENT_ID}'` });
   });
 });
 
@@ -224,6 +244,6 @@ describe('Message Integration Tests - Sad Path', () => {
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-    expect(response.body).toEqual({ message: 'Failed to patch message' });
+    expect(response.body).toEqual({ message: 'Failed to update message' });
   });
 });

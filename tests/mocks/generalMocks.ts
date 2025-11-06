@@ -20,4 +20,4 @@ export const fullQueryParamsInstnace = {
   messageType: 'APPEXITED' as AnalyticsMessageTypes,
 };
 
-export const nonExistentId = '99999999-1111-9999-1111-999999999999';
+export const NON_EXISTENT_ID = '00000000-0000-0000-0000-000000000001';

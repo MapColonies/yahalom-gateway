@@ -104,11 +104,36 @@ describe('MessageManager', () => {
   });
 
   describe('#patchMessageById', () => {
-    it('should update an existing message', () => {
-      localMessagesStore.push(fullMessageInstance);
+    it('should update an existing message', async () => {
+      mockRepository.findOne = jest.fn().mockResolvedValue(fullMessageInstance as unknown as Message);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      mockRepository.merge = jest.fn().mockImplementation((existing, changes) => ({
+        ...existing,
+        ...changes,
+      }));
+
+      mockRepository.save = jest.fn().mockResolvedValue({
+        ...fullMessageInstance,
+        message: 'updated',
+      });
+
       const patch: Partial<ILogObject> = { message: 'updated' };
-      const result = messageManager.patchMessageById(fullMessageInstance.id, patch as ILogObject);
+      const result = await messageManager.patchMessageById(fullMessageInstance.id, patch);
+
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: fullMessageInstance.id } });
+      expect(mockRepository.merge).toHaveBeenCalled();
+      expect(mockRepository.save).toHaveBeenCalled();
       expect(result).toHaveProperty('message', 'updated');
+    });
+
+    it('should return undefined if message does not exist', async () => {
+      mockRepository.findOne = jest.fn().mockResolvedValue(null);
+
+      const patch: Partial<ILogObject> = { message: 'nope' };
+      const result = await messageManager.patchMessageById('non-existent-id', patch);
+
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: 'non-existent-id' } });
+      expect(result).toBeUndefined();
     });
   });
 
@@ -136,6 +161,16 @@ describe('MessageManager', () => {
 
       const manager = new MessageManager(jsLogger({ enabled: false }), failingConnectionManager);
       await expect(manager.getMessages({})).rejects.toThrow('Cannot get repository because the DB connection is unavailable');
+    });
+
+    it('should throw an error if the repository action fails when calling getMessageById', async () => {
+      const manager = new MessageManager(jsLogger({ enabled: false }), mockConnectionManager);
+
+      mockRepository.findOne = jest.fn(() => {
+        throw new Error('Action failed');
+      });
+
+      await expect(manager.getMessageById('any-id')).rejects.toThrow('Action failed');
     });
 
     it('should throw an error if the repository action fails when calling getMessageById', async () => {
