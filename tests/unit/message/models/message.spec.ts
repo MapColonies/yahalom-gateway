@@ -22,10 +22,9 @@ describe('MessageManager', () => {
   });
 
   describe('#createMessage', () => {
-    it('should return the created message', () => {
-      const message = messageManager.createMessage(fullMessageInstance);
+    it('should return the created message', async () => {
+      const message = await messageManager.createMessage(fullMessageInstance);
       expect(message.sessionId).toBe('2234234');
-      expect(localMessagesStore).toContain(message);
     });
   });
 
@@ -146,7 +145,7 @@ describe('MessageManager', () => {
       } as unknown as typeof mockConnectionManager;
 
       const manager = new MessageManager(jsLogger({ enabled: false }), failingConnectionManager);
-      await expect(manager.getMessages({})).rejects.toThrow('Cannot get repository because the DB connection is unavailable');
+      await expect(manager.getMessages({})).rejects.toThrow('Cannot get repository for entity Message because the DB connection is unavailable');
     });
 
     it('should throw an error if the repository action fails when calling getMessageById', async () => {

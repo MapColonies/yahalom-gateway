@@ -23,9 +23,9 @@ export class MessageController {
     });
   }
 
-  public createMessage: TypedRequestHandlers['POST /message'] = (req, res) => {
+  public createMessage: TypedRequestHandlers['POST /message'] = async (req, res) => {
     try {
-      const newMessage = this.manager.createMessage(req.body);
+      const newMessage = await this.manager.createMessage(req.body);
 
       this.createdMessageCounter.inc(1);
       return res.status(httpStatus.CREATED).json({ id: newMessage.id });

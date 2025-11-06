@@ -19,12 +19,19 @@ const mockQueryBuilder: MockQueryBuilder = {
 
 export const mockFind = jest.fn<Promise<Message[]>, []>();
 export const mockFindOne = jest.fn<Promise<Message | null>, [object?]>();
+export const mockCreate: Repository<Message>['create'] = ((entityLike?: Partial<Message> | Partial<Message>[]) => {
+  if (Array.isArray(entityLike)) {
+    return entityLike.map((e) => ({ ...e }) as Message);
+  }
+  return { ...(entityLike ?? {}) } as Message;
+}) as Repository<Message>['create'];
 export const mockSave = jest.fn();
 export const mockDelete = jest.fn();
 
 export const mockRepository: Partial<Repository<Message>> = {
   find: mockFind,
   findOne: mockFindOne,
+  create: mockCreate,
   save: mockSave,
   delete: mockDelete,
   createQueryBuilder: jest.fn(() => mockQueryBuilder as unknown as SelectQueryBuilder<Message>),
