@@ -18,8 +18,6 @@ export const SERVICES = {
 } satisfies Record<string, symbol>;
 /* eslint-enable @typescript-eslint/naming-convention */
 
-export const NOT_FOUND = -1;
-
 export const QUERY_BUILDER_NAME = 'log';
 
 export const DB_TIMEOUT = 5000;

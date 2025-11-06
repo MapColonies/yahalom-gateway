@@ -108,7 +108,6 @@ describe('Message Integration Tests - Happy Path', () => {
     });
   });
 
-  // TODO: When adding tryDeleteMessageById request to db, change this test to be OK
   describe('#tryDeleteMessageById', () => {
     it('should delete a message successfully', async () => {
       const created = await requestSender.createMessage({ requestBody: fullMessageInstance });
@@ -117,7 +116,7 @@ describe('Message Integration Tests - Happy Path', () => {
       const response = await requestSender.tryDeleteMessageById({ pathParams: { id } });
 
       expect(response).toSatisfyApiSpec();
-      expect(response.status).not.toBe(httpStatusCodes.OK);
+      expect(response.status).toBe(httpStatusCodes.OK);
     });
   });
 
@@ -149,11 +148,11 @@ describe('Message Integration Tests - Bad Path', () => {
   });
 
   it('should return 404 for tryDeleteMessageById with non-existent id', async () => {
-    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'non-existent-id' } });
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: NON_EXISTENT_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: "No message found to delete with id 'non-existent-id'" });
+    expect(response.body).toEqual({ message: `No message found to delete with id '${NON_EXISTENT_ID}'` });
   });
 
   it('should return 400 for patch with empty body', async () => {

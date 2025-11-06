@@ -3,8 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
 import { DeepPartial, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
-import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
-import { localMessagesStore } from '../../common/localMocks';
+import { SERVICES, QUERY_BUILDER_NAME } from '@common/constants';
 import { Message } from '../../DAL/entities/message';
 import { ConnectionManager } from '../../DAL/connectionManager';
 import { IQueryModel, LogContext } from './../../common/interfaces';
@@ -107,7 +106,7 @@ export class MessageManager {
     return updatedMessage;
   }
 
-  public tryDeleteMessageById(id: string): boolean {
+  public async tryDeleteMessageById(id: string): Promise<boolean> {
     const logContext = { ...this.logContext, function: this.tryDeleteMessageById.name };
     this.logger.info({ msg: `Deleting message by ID - ${id}`, id, logContext });
 
