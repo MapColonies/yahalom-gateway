@@ -2,18 +2,16 @@ import 'reflect-metadata';
 import jsLogger from '@map-colonies/js-logger';
 import { mockAndWhere, mockGetMany, mockFind, mockRepository, mockConnectionManager } from '@tests/mocks/unitMocks';
 import { Message } from '@src/DAL/entities/message';
-import { localMessagesStore } from '@src/common/localMocks';
 import { ILogObject } from '@src/common/interfaces';
 import { MessageManager } from '@src/message/models/messageManager';
 import { QUERY_BUILDER_NAME } from '@src/common/constants';
-import { fullMessageInstance, fullQueryParamsInstnace } from '../../../mocks/generalMocks';
+import { fullMessageInstance, fullQueryParamsInstnace, NON_EXISTENT_ID } from '../../../mocks/generalMocks';
 
 let messageManager: MessageManager;
 
 describe('MessageManager', () => {
   beforeEach(() => {
     messageManager = new MessageManager(jsLogger({ enabled: false }), mockConnectionManager);
-    localMessagesStore.length = 0;
 
     jest.clearAllMocks();
     mockFind.mockReset();
@@ -67,24 +65,39 @@ describe('MessageManager', () => {
 
     it('should return undefined if id does not exist', async () => {
       mockRepository.findOne = jest.fn().mockResolvedValue(null);
-      const result = await messageManager.getMessageById('non-existent-id');
+      const result = await messageManager.getMessageById(NON_EXISTENT_ID);
 
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: 'non-existent-id' } });
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: NON_EXISTENT_ID } });
       expect(result).toBeUndefined();
     });
   });
 
   describe('#tryDeleteMessageById', () => {
-    it('should return true when message is deleted', () => {
-      localMessagesStore.push(fullMessageInstance);
-      const result = messageManager.tryDeleteMessageById(fullMessageInstance.id);
-      expect(result).toBeTruthy();
-      expect(localMessagesStore).toHaveLength(0);
+    it('should return true when a message is deleted', async () => {
+      mockRepository.delete = jest.fn().mockResolvedValue({ affected: 1 });
+
+      const result = await messageManager.tryDeleteMessageById('any-id');
+
+      expect(result).toBe(true);
+      expect(mockRepository.delete).toHaveBeenCalledWith({ id: 'any-id' });
     });
 
-    it('should return false when message does not exist', () => {
-      const result = messageManager.tryDeleteMessageById('non-existent-id');
-      expect(result).toBeFalsy();
+    it('should return false when no message is deleted (affected = 0)', async () => {
+      mockRepository.delete = jest.fn().mockResolvedValue({ affected: 0 });
+
+      const result = await messageManager.tryDeleteMessageById('non-existent-id');
+
+      expect(result).toBe(false);
+      expect(mockRepository.delete).toHaveBeenCalledWith({ id: 'non-existent-id' });
+    });
+
+    it('should return false when repo.delete returns undefined', async () => {
+      mockRepository.delete = jest.fn().mockResolvedValue(undefined);
+
+      const result = await messageManager.tryDeleteMessageById('any-id');
+
+      expect(result).toBe(false);
+      expect(mockRepository.delete).toHaveBeenCalledWith({ id: 'any-id' });
     });
   });
 

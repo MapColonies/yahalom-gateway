@@ -3,8 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
 import { DeepPartial, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
-import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
-import { localMessagesStore } from '../../common/localMocks';
+import { SERVICES, QUERY_BUILDER_NAME } from '@common/constants';
 import { Message } from '../../DAL/entities/message';
 import { ConnectionManager } from '../../DAL/connectionManager';
 import { IQueryModel, LogContext } from './../../common/interfaces';
@@ -107,18 +106,24 @@ export class MessageManager {
     return updatedMessage;
   }
 
-  public tryDeleteMessageById(id: string): boolean {
+  public async tryDeleteMessageById(id: string): Promise<boolean> {
     const logContext = { ...this.logContext, function: this.tryDeleteMessageById.name };
     this.logger.info({ msg: `Deleting message by ID - ${id}`, id, logContext });
 
-    const index = localMessagesStore.findIndex((message) => message.id === id);
+    const repo = this.getRepo(Message);
 
-    if (index !== NOT_FOUND) {
-      localMessagesStore.splice(index, 1);
+    const result = await repo.delete({ id });
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const affected = result?.affected ?? 0;
+
+    if (affected > 0) {
+      this.logger.info({ msg: `Message with ID ${id} deleted successfully.` });
       return true;
+    } else {
+      this.logger.info({ msg: `No message found to delete with ID ${id}.` });
+      return false;
     }
-
-    return false;
   }
 
   private andWhere(queryBuilder: SelectQueryBuilder<Message>, field: string, value: string | number | null | undefined): void {
