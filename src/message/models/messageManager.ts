@@ -118,10 +118,10 @@ export class MessageManager {
     const affected = result?.affected ?? 0;
 
     if (affected > 0) {
-      this.logger.debug({ msg: `Message with ID ${id} deleted successfully.` });
+      this.logger.info({ msg: `Message with ID ${id} deleted successfully.` });
       return true;
     } else {
-      this.logger.debug({ msg: `No message found to delete with ID ${id}.` });
+      this.logger.info({ msg: `No message found to delete with ID ${id}.` });
       return false;
     }
   }
@@ -143,7 +143,7 @@ export class MessageManager {
       return repo;
     } catch (error) {
       this.logger.error({ msg: `Error getting DB connection for entity ${entity.name}:`, error });
-      throw new Error(`Cannot get repository because the DB connection is unavailable`);
+      throw new Error(`Cannot get repository for entity ${entity.name} because the DB connection is unavailable`);
     }
   }
 }
