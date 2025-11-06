@@ -78,3 +78,9 @@ export interface DbConfig extends PostgresConnectionOptions {
     key: string;
   };
 }
+
+export interface LogContext {
+  fileName: string;
+  class: string;
+  function?: string;
+}

@@ -4,13 +4,13 @@ import { injectable, inject } from 'tsyringe';
 import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
+import { IQueryModel, LogContext } from '@common/interfaces';
 import { MessageManager, ILogObject } from '../models/messageManager';
-import { IQueryModel } from './../../common/interfaces';
 
 @injectable()
 export class MessageController {
   private readonly createdMessageCounter: Counter;
-  private readonly logContext: Record<string, string>;
+  private readonly logContext: LogContext;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
@@ -63,9 +63,8 @@ export class MessageController {
   public getMessageById: TypedRequestHandlers['GET /message/{id}'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.getMessageById.name };
 
+    const id = req.params.id;
     try {
-      const id = req.params.id;
-
       const message = await this.manager.getMessageById(id);
 
       if (!message) {
@@ -74,7 +73,7 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json(message);
     } catch (error) {
-      this.logger.error({ msg: 'Error retrieving message', logContext, error });
+      this.logger.error({ msg: `Error retrieving message with id: ${id}`, id, logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get message by id' });
     }
   };
@@ -82,12 +81,12 @@ export class MessageController {
   public patchMessageById: TypedRequestHandlers['PATCH /message/{id}'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.patchMessageById.name };
 
+    const id = req.params.id;
     try {
-      const id = req.params.id;
       const messageChanges = req.body as ILogObject | undefined;
 
       if (!messageChanges || Object.keys(messageChanges).length === 0) {
-        this.logger.warn({ msg: `No params were provided to update:` });
+        this.logger.warn({ msg: `No params were provided to update the log with the id: ${id}`, id, logContext });
         return res.status(httpStatus.BAD_REQUEST).json({ message: `No params found to update with id '${id}'` });
       }
 
@@ -99,7 +98,7 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json(updatedMessage);
     } catch (error) {
-      this.logger.error({ msg: 'Error retrieving message', logContext, error });
+      this.logger.error({ msg: `Error retrieving message, id: ${id}`, id, logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to update message' });
     }
   };
@@ -107,9 +106,8 @@ export class MessageController {
   public deleteMessageById: TypedRequestHandlers['DELETE /message/{id}'] = (req, res) => {
     const logContext = { ...this.logContext, function: this.deleteMessageById.name };
 
+    const id = req.params.id;
     try {
-      const id = req.params.id;
-
       const isDeleted = this.manager.tryDeleteMessageById(id);
 
       if (!isDeleted) {
@@ -118,7 +116,7 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json();
     } catch (error) {
-      this.logger.error({ msg: 'Error retrieving message', logContext, error });
+      this.logger.error({ msg: `Error retrieving message with id: ${id}`, id, logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete message' });
     }
   };
