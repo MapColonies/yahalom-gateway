@@ -10,6 +10,7 @@ import { IQueryModel } from './../../common/interfaces';
 @injectable()
 export class MessageController {
   private readonly createdMessageCounter: Counter;
+  private readonly logContext: Record<string, string>;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
@@ -21,21 +22,27 @@ export class MessageController {
       help: 'number of created message',
       registers: [this.metricsRegistry],
     });
+
+    this.logContext = { fileName: __filename, class: MessageController.name };
   }
 
   public createMessage: TypedRequestHandlers['POST /message'] = async (req, res) => {
+    const logContext = { ...this.logContext, function: this.createMessage.name };
+
     try {
       const newMessage = await this.manager.createMessage(req.body);
 
       this.createdMessageCounter.inc(1);
       return res.status(httpStatus.CREATED).json({ id: newMessage.id });
     } catch (error) {
-      this.logger.error({ msg: 'Error creating message', error });
+      this.logger.error({ msg: 'Error creating message', logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create message' });
     }
   };
 
   public getMessages: TypedRequestHandlers['GET /message'] = async (req, res) => {
+    const logContext = { ...this.logContext, function: this.getMessages.name };
+
     try {
       const params: IQueryModel = {
         sessionId: req.query?.sessionId,
@@ -48,12 +55,14 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {
-      this.logger.error({ msg: 'Error retrieving messages', error });
+      this.logger.error({ msg: 'Error retrieving messages', logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get messages' });
     }
   };
 
   public getMessageById: TypedRequestHandlers['GET /message/{id}'] = async (req, res) => {
+    const logContext = { ...this.logContext, function: this.getMessageById.name };
+
     try {
       const id = req.params.id;
 
@@ -65,18 +74,21 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json(message);
     } catch (error) {
-      this.logger.error({ msg: 'Error retrieving message', error });
+      this.logger.error({ msg: 'Error retrieving message', logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get message by id' });
     }
   };
 
   public patchMessageById: TypedRequestHandlers['PATCH /message/{id}'] = async (req, res) => {
+    const logContext = { ...this.logContext, function: this.patchMessageById.name };
+
     try {
       const id = req.params.id;
       const messageChanges = req.body as ILogObject | undefined;
 
       if (!messageChanges || Object.keys(messageChanges).length === 0) {
-        return res.status(httpStatus.BAD_REQUEST).json({ message: `No params found to patch with id '${id}'` });
+        this.logger.warn({ msg: `No params were provided to update:` });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: `No params found to update with id '${id}'` });
       }
 
       const updatedMessage = await this.manager.patchMessageById(id, messageChanges);
@@ -87,12 +99,14 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json(updatedMessage);
     } catch (error) {
-      this.logger.error({ msg: 'Error retrieving message', error });
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to patch message' });
+      this.logger.error({ msg: 'Error retrieving message', logContext, error });
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to update message' });
     }
   };
 
   public deleteMessageById: TypedRequestHandlers['DELETE /message/{id}'] = (req, res) => {
+    const logContext = { ...this.logContext, function: this.deleteMessageById.name };
+
     try {
       const id = req.params.id;
 
@@ -104,7 +118,7 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json();
     } catch (error) {
-      this.logger.error({ msg: 'Error retrieving message', error });
+      this.logger.error({ msg: 'Error retrieving message', logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete message' });
     }
   };
