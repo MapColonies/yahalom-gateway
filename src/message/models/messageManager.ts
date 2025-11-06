@@ -7,20 +7,25 @@ import { SERVICES, NOT_FOUND, QUERY_BUILDER_NAME } from '@common/constants';
 import { localMessagesStore } from '../../common/localMocks';
 import { Message } from '../../DAL/entities/message';
 import { ConnectionManager } from '../../DAL/connectionManager';
-import { IQueryModel } from './../../common/interfaces';
+import { IQueryModel, LogContext } from './../../common/interfaces';
 import { mapMessageToILogObject } from './../../utils/helpers';
 
 export type ILogObject = components['schemas']['ILogObject'];
 
 @injectable()
 export class MessageManager {
+  private readonly logContext: LogContext;
+
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(SERVICES.CONNECTION_MANAGER) private readonly connectionManager: ConnectionManager
-  ) {}
+  ) {
+    this.logContext = { fileName: __filename, class: MessageManager.name };
+  }
 
   public async createMessage(message: Omit<ILogObject, 'id'>): Promise<ILogObject> {
-    this.logger.debug({ msg: 'message recieved details', message });
+    const logContext = { ...this.logContext, function: this.createMessage.name };
+    this.logger.debug({ msg: 'message recieved details', message, logContext });
 
     const id = uuidv4();
     const newMessage: ILogObject = { ...message, id };
@@ -35,7 +40,8 @@ export class MessageManager {
   }
 
   public async getMessages(params: IQueryModel): Promise<ILogObject[]> {
-    this.logger.info({ msg: 'getting filtered messages with query params: ', params });
+    const logContext = { ...this.logContext, function: this.getMessages.name };
+    this.logger.info({ msg: 'getting filtered messages with query params: ', params, logContext });
 
     const repo = this.getRepo(Message);
 
@@ -61,14 +67,15 @@ export class MessageManager {
   }
 
   public async getMessageById(id: string): Promise<ILogObject | undefined> {
-    this.logger.info({ msg: `Getting message by ID - ${id}`, id });
+    const logContext = { ...this.logContext, function: this.getMessageById.name };
+    this.logger.info({ msg: `Getting message by ID - ${id}`, id, logContext });
 
     const repo = this.getRepo(Message);
 
     const message = await repo.findOne({ where: { id } });
 
     if (!message) {
-      this.logger.debug({ msg: `No message found with ID: ${id}`, id });
+      this.logger.debug({ msg: `No message found with ID: ${id}`, id, logContext });
       return undefined;
     }
 
@@ -78,21 +85,22 @@ export class MessageManager {
   }
 
   public async patchMessageById(id: string, messageChanges: Partial<ILogObject>): Promise<ILogObject | undefined> {
-    this.logger.info({ msg: `Patching message by ID - ${id}`, id, messageChanges });
+    const logContext = { ...this.logContext, function: this.patchMessageById.name };
+    this.logger.info({ msg: `Patching message by ID - ${id}`, id, messageChanges, logContext });
 
     const repo = this.getRepo(Message);
 
     const existingMessage = await repo.findOne({ where: { id } });
 
     if (!existingMessage) {
-      this.logger.warn({ msg: `No message found with ID: ${id}`, id });
+      this.logger.warn({ msg: `No message found with ID: ${id}`, id, logContext });
       return undefined;
     }
 
     const updatedMessageEntity = repo.merge(existingMessage, messageChanges as DeepPartial<Message>);
     const savedMessage = await repo.save(updatedMessageEntity);
 
-    this.logger.info({ msg: `Message with ID ${id} updated successfully`, id });
+    this.logger.info({ msg: `Message with ID ${id} updated successfully`, id, logContext });
 
     const updatedMessage: ILogObject = mapMessageToILogObject(savedMessage);
 
@@ -100,7 +108,8 @@ export class MessageManager {
   }
 
   public tryDeleteMessageById(id: string): boolean {
-    this.logger.info({ msg: `Deleting message by ID - ${id}`, id });
+    const logContext = { ...this.logContext, function: this.tryDeleteMessageById.name };
+    this.logger.info({ msg: `Deleting message by ID - ${id}`, id, logContext });
 
     const index = localMessagesStore.findIndex((message) => message.id === id);
 
