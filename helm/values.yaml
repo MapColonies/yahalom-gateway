@@ -1,11 +1,14 @@
 global:
-  cloudProvider: {}
+  cloudProvider:
+    flavor: minikube
+    dockerRegistryUrl: ""
+    imagePullSecretName: ""
   tracing: {}
   metrics: {}
 
 mcLabelsAndAnnotations:
   component: backend
-  partOf: boilerplates
+  partOf: yahalom
   owner: common
   prometheus:
     enabled: true
@@ -21,7 +24,7 @@ fullnameOverride: ""
 
 configManagement:
   offlineMode: false
-  name: 'service-name'
+  name: 'yahalom-gateway'
   version: 'latest'
   serverUrl: 'http://localhost:8080/api'
 
@@ -64,9 +67,9 @@ caPath: '/usr/local/share/ca-certificates'
 caKey: 'ca.crt'
 
 image:
-  repository: ts-server-boilerplate
+  repository: yahalom-gateway
   # If commented, appVersion will be taken. See: _helpers.tpl
-  # tag: 'latest'
+  tag: 'latest'
   pullPolicy: IfNotPresent
 
 env:
