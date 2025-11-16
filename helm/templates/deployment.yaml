@@ -5,7 +5,7 @@
 {{- $cloudProviderImagePullSecretName := include "yahalom-gateway.cloudProviderImagePullSecretName" . -}}
 {{- $imageTag := include "yahalom-gateway.tag" . -}}
 
-{{- if .Values.enabled -}}
+{{- if .Values.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,14 +22,14 @@ spec:
     matchLabels:
       app: {{ $chartName }}
       release: {{ $releaseName }}
-      run: {{ $releaseName }}-{{ $chartName }}
+      run: {{ printf "%s-%s" $releaseName $chartName }}
       {{- include "yahalom-gateway.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: {{ $chartName }}
         release: {{ $releaseName }}
-        run: {{ $releaseName }}-{{ $chartName }}
+        run: {{ printf "%s-%s" $releaseName $chartName }}
         {{- include "yahalom-gateway.labels" . | nindent 8 }}
       annotations:
         {{- if .Values.resetOnConfigChange }}
@@ -39,20 +39,20 @@ spec:
         {{- toYaml .Values.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
-    {{- if $cloudProviderImagePullSecretName }}
+      {{- if $cloudProviderImagePullSecretName }}
       imagePullSecrets:
         - name: {{ $cloudProviderImagePullSecretName | quote }}
-    {{- end }}
+      {{- end }}
       containers:
-        - name: {{ $releaseName }}-{{ $chartName }}
-          image: {{ $cloudProviderDockerRegistryUrl }}{{ .Values.image.repository }}:{{ $imageTag }}
+        - name: {{ printf "%s-%s" $releaseName $chartName }}
+          image: {{- if $cloudProviderDockerRegistryUrl }}{{ $cloudProviderDockerRegistryUrl }}/{{- end }}{{ .Values.image.repository }}:{{ $imageTag }}
           imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           {{- if .Values.command }}
           command:
-          {{- toYaml .Values.command | nindent 12 }}
+            {{- toYaml .Values.command | nindent 12 }}
           {{- if .Values.args }}
           args:
-          {{- toYaml .Values.args | nindent 12 }}
+            {{- toYaml .Values.args | nindent 12 }}
           {{- end }}
           {{- end }}
           volumeMounts:
@@ -109,9 +109,6 @@ spec:
         {{ tpl (toYaml .Values.sidecars) . | nindent 8 }}
         {{- end }}
       volumes:
-        - name: nginx-config
-          configMap:
-            name: 'nginx-extra-configmap'
         {{- if .Values.caSecretName }}
         - name: root-ca
           secret:
@@ -120,4 +117,4 @@ spec:
         {{- if .Values.extraVolumes }}
           {{ tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
         {{- end }}
-{{- end -}}
+{{- end }}

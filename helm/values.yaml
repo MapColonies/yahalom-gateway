@@ -1,8 +1,9 @@
 global:
   cloudProvider:
-    flavor: minikube
-    dockerRegistryUrl: ""
-    imagePullSecretName: ""
+    flavor: openshift
+    dockerRegistryUrl: "acrarolibotnonprod.azurecr.io"
+    imagePullSecretName: "acr-registry"
+
   tracing: {}
   metrics: {}
 
@@ -26,7 +27,7 @@ configManagement:
   offlineMode: false
   name: 'yahalom-gateway'
   version: 'latest'
-  serverUrl: 'http://localhost:8080/api'
+  serverUrl: 'http://localhost:8080/'
 
 livenessProbe:
   enabled: true
@@ -58,8 +59,8 @@ args: []
 sidecars: []
 
 cloudProvider:
-  dockerRegistryUrl: ''
-  imagePullSecretName: ''
+  dockerRegistryUrl: acrarolibotnonprod.azurecr.io
+  imagePullSecretName: acr-registry
   flavor: openshift
 
 caSecretName: ''
@@ -68,8 +69,7 @@ caKey: 'ca.crt'
 
 image:
   repository: yahalom-gateway
-  # If commented, appVersion will be taken. See: _helpers.tpl
-  tag: 'latest'
+  tag: "1.0.0"
   pullPolicy: IfNotPresent
 
 env:

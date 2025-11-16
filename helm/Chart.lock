@@ -1,0 +1,6 @@
+dependencies:
+- name: yahalom-gateway
+  repository: oci://acrarolibotnonprod.azurecr.io/helm
+  version: 1.0.0
+digest: sha256:39e136ef7b961591dd19aecccb1bc9c465a15108193fa659543a23cb1249bcf0
+generated: "2025-11-16T09:42:17.567050882+02:00"
