@@ -1,8 +1,8 @@
 global:
   cloudProvider:
     flavor: openshift
-    dockerRegistryUrl: "acrarolibotnonprod.azurecr.io"
-    imagePullSecretName: "acr-registry"
+    dockerRegistryUrl: acrarolibotnonprod.azurecr.io
+    imagePullSecretName: mapcolonies-secret
 
   tracing: {}
   metrics: {}
@@ -16,7 +16,7 @@ mcLabelsAndAnnotations:
 
 enabled: true
 replicaCount: 1
-revisionHistoryLimit: 5  # Amount of revisions we keep
+revisionHistoryLimit: 5
 nodePort: 30030  # for minikube deployment only
 resetOnConfigChange: false
 
@@ -24,10 +24,10 @@ nameOverride: ""
 fullnameOverride: ""
 
 configManagement:
-  offlineMode: false
+  offlineMode: true
   name: 'yahalom-gateway'
   version: 'latest'
-  serverUrl: 'http://localhost:8080/'
+  serverUrl: 'http://common-export-management-service.3d-dev.svc.cluster.local:8080/api'
 
 livenessProbe:
   enabled: true
@@ -46,21 +46,17 @@ readinessProbe:
 podAnnotations: {}
 
 extraVolumes: []
-
 extraVolumeMounts: []
-
 extraEnvVars: []
 
 command: []
 args: []
-# command: [ "/bin/sh", "-c", "--" ]
-# args: [ "while true; do sleep infinity; done;" ]
 
 sidecars: []
 
 cloudProvider:
   dockerRegistryUrl: acrarolibotnonprod.azurecr.io
-  imagePullSecretName: acr-registry
+  imagePullSecretName: mapcolonies-secret
   flavor: openshift
 
 caSecretName: ''
@@ -69,14 +65,14 @@ caKey: 'ca.crt'
 
 image:
   repository: yahalom-gateway
-  tag: "1.0.0"
+  tag: 1.0.0
   pullPolicy: IfNotPresent
 
 env:
   port: 8080
   targetPort: 8080
   protocol: TCP
-  logLevel: info
+  logLevel: debug
   logPrettyPrintEnabled: false
   responseCompressionEnabled: true
   requestPayloadLimit: 1mb
@@ -86,6 +82,13 @@ env:
   metrics:
     enabled: false
     url: http://localhost:55681/v1/metrics
+  db:
+    host: yahalom-db-postgresql
+    port: 5432
+    username: postgres
+    password: postgres
+    database: message_test
+    type: postgres
 
 resources:
   enabled: true
@@ -102,8 +105,8 @@ route:
   path: /
   host: ''
   timeout:
-    enabled: false  # defaults to 30s by openshift
-    duration: 60s  # supported units (us, ms, s, m, h, d)
+    enabled: false
+    duration: 60s
   rewriteTarget: ''
   tls:
     enabled: true

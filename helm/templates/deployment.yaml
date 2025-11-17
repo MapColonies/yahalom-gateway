@@ -16,7 +16,7 @@ metadata:
     release: {{ $releaseName }}
     {{- include "yahalom-gateway.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   selector:
     matchLabels:
@@ -33,10 +33,10 @@ spec:
         {{- include "yahalom-gateway.labels" . | nindent 8 }}
       annotations:
         {{- if .Values.resetOnConfigChange }}
-        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+          checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
         {{- if .Values.podAnnotations }}
-        {{- toYaml .Values.podAnnotations | nindent 8 }}
+{{ toYaml .Values.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
       {{- if $cloudProviderImagePullSecretName }}
@@ -44,16 +44,18 @@ spec:
         - name: {{ $cloudProviderImagePullSecretName | quote }}
       {{- end }}
       containers:
-        - name: {{ printf "%s-%s" $releaseName $chartName }}
-          image: {{- if $cloudProviderDockerRegistryUrl }}{{ $cloudProviderDockerRegistryUrl }}/{{- end }}{{ .Values.image.repository }}:{{ $imageTag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+        - name: {{ $releaseName }}-{{ $chartName }}-deployment
+          {{- with .Values.image }}
+          image: {{ $cloudProviderDockerRegistryUrl }}{{ .repository }}:{{ $imageTag }}
+          imagePullPolicy: {{ .pullPolicy | default "IfNotPresent" }}
+          {{- end }}
           {{- if .Values.command }}
           command:
             {{- toYaml .Values.command | nindent 12 }}
+          {{- end }}
           {{- if .Values.args }}
           args:
             {{- toYaml .Values.args | nindent 12 }}
-          {{- end }}
           {{- end }}
           volumeMounts:
             {{- if .Values.caSecretName }}
@@ -62,11 +64,13 @@ spec:
               subPath: {{ quote .Values.caKey }}
             {{- end }}
             {{- if .Values.extraVolumeMounts }}
-              {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
           env:
             - name: SERVER_PORT
               value: {{ .Values.env.targetPort | quote }}
+            - name: CONFIG_SERVER_URL
+              value: {{ .Values.configManagement.serverUrl | quote }}
             {{- if .Values.caSecretName }}
             - name: REQUESTS_CA_BUNDLE
               value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
@@ -115,6 +119,6 @@ spec:
             secretName: {{ .Values.caSecretName }}
         {{- end }}
         {{- if .Values.extraVolumes }}
-          {{ tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
+        {{ tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
         {{- end }}
 {{- end }}
