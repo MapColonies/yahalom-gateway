@@ -68,7 +68,7 @@ export class MessageController {
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error creating message:', error, validatedMessage);
+        console.error('Validation error getting messages:', error, validatedMessage);
       }
 
       this.logger.error({ msg: 'Error retrieving messages', logContext, error });
@@ -92,7 +92,7 @@ export class MessageController {
       return res.status(httpStatus.OK).json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error updating message:', error);
+        console.error('Validation error getting message by id:', error);
       }
 
       this.logger.error({ msg: `Error retrieving message with id: ${id}`, id, logContext, error });
