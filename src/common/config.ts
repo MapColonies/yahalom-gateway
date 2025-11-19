@@ -1,8 +1,8 @@
 import { type ConfigInstance, config } from '@map-colonies/config';
-import { commonYahalomGatewaySchemaV1, type commonYahalomGatewaySchemaV1Type } from '@map-colonies/schemas';
+import { yahalomGatewayCommonV1, type yahalomGatewayCommonV1Type } from '@map-colonies/schemas';
 
 // Choose here the type of the config instance and import this type from the entire application
-type ConfigType = ConfigInstance<commonYahalomGatewaySchemaV1Type>;
+type ConfigType = ConfigInstance<yahalomGatewayCommonV1Type>;
 
 let configInstance: ConfigType | undefined;
 
@@ -13,7 +13,7 @@ let configInstance: ConfigType | undefined;
  */
 async function initConfig(offlineMode?: boolean): Promise<void> {
   configInstance = await config({
-    schema: commonYahalomGatewaySchemaV1,
+    schema: yahalomGatewayCommonV1,
     offlineMode,
   });
 }
