@@ -1,4 +1,4 @@
-# Yahalom Gatewaye
+# Yahalom Gateway
 
 ----------------------------------
 
@@ -37,7 +37,13 @@ Clone the project
 
 ```bash
 
-git clone https://link-to-project
+git clone https://github.com/MapColonies/yahalom-gateway.git
+
+```
+or
+```bash
+
+git clone git@github.com:MapColonies/yahalom-gateway.git
 
 ```
 
