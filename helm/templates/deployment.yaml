@@ -67,19 +67,16 @@ spec:
             {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
           env:
-            - name: SERVER_PORT
-              value: {{ .Values.env.targetPort | quote }}
-            - name: CONFIG_SERVER_URL
-              value: {{ .Values.configManagement.serverUrl | quote }}
-            {{- if .Values.caSecretName }}
-            - name: REQUESTS_CA_BUNDLE
-              value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: {{ printf "[%s/%s]" .Values.caPath .Values.caKey | quote }}
-            {{- end }}
-            {{- if .Values.extraEnvVars }}
-            {{- toYaml .Values.extraEnvVars | nindent 12 }}
-            {{- end }}
+            - name: DB_HOST
+              value: {{ .Values.postgres.host | quote }}
+            - name: DB_PORT
+              value: {{ .Values.postgres.port | quote }}
+            - name: DB_NAME
+              value: {{ .Values.postgres.user.database | quote }}
+            - name: DB_USERNAME
+              value: {{ .Values.postgres.user.username | quote }}
+            - name: DB_PASSWORD
+              value: {{ .Values.postgres.user.password | quote }}
           envFrom:
             - configMapRef:
                 name: {{ printf "%s-configmap" (include "yahalom-gateway.fullname" .) }}

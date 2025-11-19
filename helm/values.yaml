@@ -7,6 +7,26 @@ global:
   tracing: {}
   metrics: {}
 
+  postgres:
+    host:
+    port:
+    schema: ''
+    name: ''
+    user:
+      requirePassword: false
+      rejectUnauthorized: true
+      useExternal: false
+      secretName: ''
+      username: ''
+      password: ''
+    ssl:
+      enabled: false
+      useExternal: true
+      secretName: ''
+      caFileName: ''
+      certFileName: ''
+      keyFileName: ''
+
 mcLabelsAndAnnotations:
   component: backend
   partOf: yahalom
@@ -42,6 +62,31 @@ readinessProbe:
   timeoutSeconds: 5
   failureThreshold: 6
   path: /liveness
+
+postgresql:
+  auth:
+    username: postgres
+    password: postgres
+    database: message_test
+  port: 5432
+
+postgres:
+  host: yahalom-gateway-postgresql
+  port: '5432'
+  user:
+    username: postgres
+    password: postgres
+    database: message_test
+    requirePassword: true
+    rejectUnauthorized: true
+    useExternal: false
+  ssl:
+    enabled: false
+    useExternal: true
+    secretName: ''
+    caFileName: ''
+    certFileName: ''
+    keyFileName: ''
 
 podAnnotations: {}
 
@@ -82,16 +127,9 @@ env:
   metrics:
     enabled: false
     url: http://localhost:55681/v1/metrics
-  db:
-    host: yahalom-db-postgresql
-    port: 5432
-    username: postgres
-    password: postgres
-    database: message_test
-    type: postgres
 
 resources:
-  enabled: true
+  enabled: true 
   value:
     limits:
       cpu: 100m

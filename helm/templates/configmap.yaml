@@ -25,4 +25,9 @@ data:
   CONFIG_OFFLINE_MODE: {{ .offlineMode | quote }}
   CONFIG_SERVER_URL: {{ .serverUrl | quote }}
   {{- end -}}
+  {{- with .Values.postgres }}
+  DB_HOST: {{ .host}}
+  DB_PORT: {{ .port }}
+  DB_NAME: {{ .user.database }}
+  {{- end -}}
 {{- end }}
