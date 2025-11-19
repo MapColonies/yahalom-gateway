@@ -51,7 +51,7 @@ Go to the project directory
 
 ```bash
 
-cd my-project
+cd yahalom-gateway
 
 ```
 
