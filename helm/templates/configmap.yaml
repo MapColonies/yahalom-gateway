@@ -1,10 +1,10 @@
-{{- $tracingUrl := include "yahalom-gateway.tracingUrl" . -}}
-{{- $metricsUrl := include "yahalom-gateway.metricsUrl" . -}}
+{{- $tracingUrl := include "ts-server-boilerplate.tracingUrl" . -}}
+{{- $metricsUrl := include "ts-server-boilerplate.metricsUrl" . -}}
 {{- if .Values.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-configmap" (include "yahalom-gateway.fullname" .) }}
+  name: {{ printf "%s-configmap" (include "ts-server-boilerplate.fullname" .) }}
 data:
   REQUEST_PAYLOAD_LIMIT: {{ .Values.env.requestPayloadLimit | quote }}
   RESPONSE_COMPRESSION_ENABLED: {{ .Values.env.responseCompressionEnabled | quote }}
@@ -24,10 +24,5 @@ data:
   CONFIG_VERSION: {{ .version | quote }}
   CONFIG_OFFLINE_MODE: {{ .offlineMode | quote }}
   CONFIG_SERVER_URL: {{ .serverUrl | quote }}
-  {{- end -}}
-  {{- with .Values.postgres }}
-  DB_HOST: {{ .host}}
-  DB_PORT: {{ .port }}
-  DB_NAME: {{ .user.database }}
   {{- end -}}
 {{- end }}

@@ -1,6 +1,6 @@
 dependencies:
-- name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 18.1.9
-digest: sha256:f98068caa9e81f58e32f3f7ebe6677b0e4ef4eecd01b14f47a8463149e5ea67b
-generated: "2025-11-17T17:00:38.755937533+02:00"
+- name: mc-labels-and-annotations
+  repository: oci://acrarolibotnonprod.azurecr.io/helm/infra
+  version: 0.8.0
+digest: sha256:eea5cc8dea7b4eca7806d3ed72c9c9e09c85cb0f299278e16ec21073ea75d5ae
+generated: "2025-08-31T10:18:36.794274991+03:00"

@@ -1,42 +1,18 @@
 global:
-  cloudProvider:
-    flavor: openshift
-    dockerRegistryUrl: acrarolibotnonprod.azurecr.io
-    imagePullSecretName: mapcolonies-secret
-
+  cloudProvider: {}
   tracing: {}
   metrics: {}
 
-  postgres:
-    host:
-    port:
-    schema: ''
-    name: ''
-    user:
-      requirePassword: false
-      rejectUnauthorized: true
-      useExternal: false
-      secretName: ''
-      username: ''
-      password: ''
-    ssl:
-      enabled: false
-      useExternal: true
-      secretName: ''
-      caFileName: ''
-      certFileName: ''
-      keyFileName: ''
-
 mcLabelsAndAnnotations:
   component: backend
-  partOf: yahalom
+  partOf: boilerplates
   owner: common
   prometheus:
     enabled: true
 
 enabled: true
 replicaCount: 1
-revisionHistoryLimit: 5
+revisionHistoryLimit: 5  # Amount of revisions we keep
 nodePort: 30030  # for minikube deployment only
 resetOnConfigChange: false
 
@@ -44,10 +20,10 @@ nameOverride: ""
 fullnameOverride: ""
 
 configManagement:
-  offlineMode: true
-  name: 'yahalom-gateway'
+  offlineMode: false
+  name: 'service-name'
   version: 'latest'
-  serverUrl: 'http://common-export-management-service.3d-dev.svc.cluster.local:8080/api'
+  serverUrl: 'http://localhost:8080/api'
 
 livenessProbe:
   enabled: true
@@ -63,45 +39,24 @@ readinessProbe:
   failureThreshold: 6
   path: /liveness
 
-postgresql:
-  auth:
-    username: postgres
-    password: postgres
-    database: message_test
-  port: 5432
-
-postgres:
-  host: yahalom-gateway-postgresql
-  port: '5432'
-  user:
-    username: postgres
-    password: postgres
-    database: message_test
-    requirePassword: true
-    rejectUnauthorized: true
-    useExternal: false
-  ssl:
-    enabled: false
-    useExternal: true
-    secretName: ''
-    caFileName: ''
-    certFileName: ''
-    keyFileName: ''
-
 podAnnotations: {}
 
 extraVolumes: []
+
 extraVolumeMounts: []
+
 extraEnvVars: []
 
 command: []
 args: []
+# command: [ "/bin/sh", "-c", "--" ]
+# args: [ "while true; do sleep infinity; done;" ]
 
 sidecars: []
 
 cloudProvider:
-  dockerRegistryUrl: acrarolibotnonprod.azurecr.io
-  imagePullSecretName: mapcolonies-secret
+  dockerRegistryUrl: ''
+  imagePullSecretName: ''
   flavor: openshift
 
 caSecretName: ''
@@ -109,15 +64,16 @@ caPath: '/usr/local/share/ca-certificates'
 caKey: 'ca.crt'
 
 image:
-  repository: yahalom-gateway
-  tag: 1.0.0
+  repository: ts-server-boilerplate
+  # If commented, appVersion will be taken. See: _helpers.tpl
+  # tag: 'latest'
   pullPolicy: IfNotPresent
 
 env:
   port: 8080
   targetPort: 8080
   protocol: TCP
-  logLevel: debug
+  logLevel: info
   logPrettyPrintEnabled: false
   responseCompressionEnabled: true
   requestPayloadLimit: 1mb
@@ -129,7 +85,7 @@ env:
     url: http://localhost:55681/v1/metrics
 
 resources:
-  enabled: true 
+  enabled: true
   value:
     limits:
       cpu: 100m
@@ -143,8 +99,8 @@ route:
   path: /
   host: ''
   timeout:
-    enabled: false
-    duration: 60s
+    enabled: false  # defaults to 30s by openshift
+    duration: 60s  # supported units (us, ms, s, m, h, d)
   rewriteTarget: ''
   tls:
     enabled: true

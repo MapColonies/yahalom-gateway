@@ -1,48 +1,48 @@
 {{- $releaseName := .Release.Name -}}
-{{- $chartName := include "yahalom-gateway.name" . -}}
-{{- $cloudProviderFlavor := include "yahalom-gateway.cloudProviderFlavor" . -}}
-{{- $cloudProviderDockerRegistryUrl := include "yahalom-gateway.cloudProviderDockerRegistryUrl" . -}}
-{{- $cloudProviderImagePullSecretName := include "yahalom-gateway.cloudProviderImagePullSecretName" . -}}
-{{- $imageTag := include "yahalom-gateway.tag" . -}}
-
-{{- if .Values.enabled }}
+{{- $chartName := include "ts-server-boilerplate.name" . -}}
+{{- $cloudProviderFlavor := include "ts-server-boilerplate.cloudProviderFlavor" . -}}
+{{- $cloudProviderDockerRegistryUrl := include "ts-server-boilerplate.cloudProviderDockerRegistryUrl" . -}}
+{{- $cloudProviderImagePullSecretName := include "ts-server-boilerplate.cloudProviderImagePullSecretName" . -}}
+{{- $imageTag := include "ts-server-boilerplate.tag" . -}}
+{{- if .Values.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-deployment" (include "yahalom-gateway.fullname" .) }}
+  name: {{ printf "%s-deployment" (include "ts-server-boilerplate.fullname" .) }}
   labels:
     app: {{ $chartName }}
     component: {{ $chartName }}
     release: {{ $releaseName }}
-    {{- include "yahalom-gateway.labels" . | nindent 4 }}
+    {{- include "ts-server-boilerplate.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ $chartName }}
       release: {{ $releaseName }}
-      run: {{ printf "%s-%s" $releaseName $chartName }}
-      {{- include "yahalom-gateway.selectorLabels" . | nindent 6 }}
+      run: {{ $releaseName }}-{{ $chartName }}
+      {{- include "ts-server-boilerplate.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: {{ $chartName }}
         release: {{ $releaseName }}
-        run: {{ printf "%s-%s" $releaseName $chartName }}
-        {{- include "yahalom-gateway.labels" . | nindent 8 }}
+        run: {{ $releaseName }}-{{ $chartName }}
+        {{- include "ts-server-boilerplate.labels" . | nindent 8 }}
       annotations:
-        {{- if .Values.resetOnConfigChange }}
-          checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- end }}
-        {{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | nindent 8 }}
-        {{- end }}
+        {{ include "mc-labels-and-annotations.annotations" . | nindent 8 }}
+      {{- if .Values.resetOnConfigChange }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- end }}
+      {{- if .Values.podAnnotations }}
+      {{- toYaml .Values.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
-      {{- if $cloudProviderImagePullSecretName }}
+    {{- if $cloudProviderImagePullSecretName }}
       imagePullSecrets:
         - name: {{ $cloudProviderImagePullSecretName | quote }}
-      {{- end }}
+    {{- end }}
       containers:
         - name: {{ $releaseName }}-{{ $chartName }}-deployment
           {{- with .Values.image }}
@@ -50,12 +50,12 @@ spec:
           imagePullPolicy: {{ .pullPolicy | default "IfNotPresent" }}
           {{- end }}
           {{- if .Values.command }}
-          command:
-            {{- toYaml .Values.command | nindent 12 }}
-          {{- end }}
+          command: 
+          {{- toYaml .Values.command | nindent 12 }}
           {{- if .Values.args }}
-          args:
-            {{- toYaml .Values.args | nindent 12 }}
+          args: 
+          {{- toYaml .Values.args | nindent 12 }}
+          {{- end }}
           {{- end }}
           volumeMounts:
             {{- if .Values.caSecretName }}
@@ -63,23 +63,24 @@ spec:
               name: root-ca
               subPath: {{ quote .Values.caKey }}
             {{- end }}
-            {{- if .Values.extraVolumeMounts }}
-            {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- if .Values.extraVolumeMounts -}}
+              {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
           env:
-            - name: DB_HOST
-              value: {{ .Values.postgres.host | quote }}
-            - name: DB_PORT
-              value: {{ .Values.postgres.port | quote }}
-            - name: DB_NAME
-              value: {{ .Values.postgres.user.database | quote }}
-            - name: DB_USERNAME
-              value: {{ .Values.postgres.user.username | quote }}
-            - name: DB_PASSWORD
-              value: {{ .Values.postgres.user.password | quote }}
+            - name: SERVER_PORT
+              value: {{ .Values.env.targetPort | quote }}
+            {{- if .Values.caSecretName }}
+            - name: REQUESTS_CA_BUNDLE
+              value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: {{ printf "[%s/%s]" .Values.caPath .Values.caKey | quote }}
+            {{- end }}
+            {{- if .Values.extraEnvVars }}
+            {{- toYaml .Values.extraEnvVars | nindent 12 }}
+            {{- end }}            
           envFrom:
             - configMapRef:
-                name: {{ printf "%s-configmap" (include "yahalom-gateway.fullname" .) }}
+                name: {{ printf "%s-configmap" (include "ts-server-boilerplate.fullname" .) }}
           ports:
             - name: http
               containerPort: {{ .Values.env.targetPort }}
@@ -101,7 +102,7 @@ spec:
             httpGet:
               path: {{ .Values.readinessProbe.path }}
               port: {{ .Values.env.targetPort }}
-          {{- end }}
+          {{- end }}        
           {{- if .Values.resources.enabled }}
           resources:
             {{- toYaml .Values.resources.value | nindent 12 }}
@@ -110,12 +111,15 @@ spec:
         {{ tpl (toYaml .Values.sidecars) . | nindent 8 }}
         {{- end }}
       volumes:
+        - name: nginx-config
+          configMap:
+            name: 'nginx-extra-configmap'      
         {{- if .Values.caSecretName }}
         - name: root-ca
           secret:
             secretName: {{ .Values.caSecretName }}
         {{- end }}
-        {{- if .Values.extraVolumes }}
-        {{ tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
-        {{- end }}
-{{- end }}
+        {{- if .Values.extraVolumes -}}
+          {{ tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
+        {{- end }}    
+{{- end -}}
