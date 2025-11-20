@@ -10,7 +10,14 @@ import { ConnectionManager } from '@src/DAL/connectionManager';
 import { initConfig } from '@src/common/config';
 import { registerExternalValues } from '@src/containerConfig';
 import { SERVICES } from '@src/common/constants';
-import { NON_EXISTENT_ID, fullQueryParamsInstnace, fullMessageInstance } from '@tests/mocks/generalMocks';
+import {
+  NON_EXISTENT_INVALID_ID,
+  fullQueryParamsInstnace,
+  fullMessageInstance,
+  NON_EXISTENT_VALID_ID,
+  invalidMessageInstance,
+  INVALID_UUID,
+} from '@tests/mocks/generalMocks';
 
 let requestSender: RequestSender<paths, operations>;
 let dependencyContainer: DependencyContainer;
@@ -140,19 +147,19 @@ describe('Message Integration Tests - Happy Path', () => {
 // -------------------- Bad Path --------------------
 describe('Message Integration Tests - Bad Path', () => {
   it('should return 404 for getMessageById with non-existent id', async () => {
-    const response = await requestSender.getMessageById({ pathParams: { id: NON_EXISTENT_ID } });
+    const response = await requestSender.getMessageById({ pathParams: { id: NON_EXISTENT_VALID_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: `No message found with id '${NON_EXISTENT_ID}'` });
+    expect(response.body).toEqual({ message: `No message found with id '${NON_EXISTENT_VALID_ID}'` });
   });
 
   it('should return 404 for tryDeleteMessageById with non-existent id', async () => {
-    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: NON_EXISTENT_ID } });
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: NON_EXISTENT_VALID_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: `No message found to delete with id '${NON_EXISTENT_ID}'` });
+    expect(response.body).toEqual({ message: `No message found to delete with id '${NON_EXISTENT_VALID_ID}'` });
   });
 
   it('should return 400 for patch with empty body', async () => {
@@ -169,11 +176,67 @@ describe('Message Integration Tests - Bad Path', () => {
   it('should return 404 for patch with non-existent id', async () => {
     await requestSender.createMessage({ requestBody: fullMessageInstance });
 
-    const response = await requestSender.patchMessageById({ pathParams: { id: NON_EXISTENT_ID }, requestBody: { severity: 'WARNING' } });
+    const response = await requestSender.patchMessageById({ pathParams: { id: NON_EXISTENT_VALID_ID }, requestBody: { severity: 'WARNING' } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-    expect(response.body).toEqual({ message: `No message found with id '${NON_EXISTENT_ID}'` });
+    expect(response.body).toEqual({ message: `No message found with id '${NON_EXISTENT_VALID_ID}'` });
+  });
+
+  describe('Message Integration Tests - Validation Errors', () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    it('should return 400 for createMessage with invalid params', async () => {
+      const response = await requestSender.createMessage({
+        requestBody: invalidMessageInstance,
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({ message: 'Validation error creating message' });
+    });
+
+    it('should return 400 for getMessageById with invalid UUID', async () => {
+      const response = await requestSender.getMessageById({
+        pathParams: { id: INVALID_UUID },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({ message: 'Validation error getting message by id' });
+    });
+
+    it('should return 400 for patchMessageById with invalid UUID', async () => {
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: INVALID_UUID },
+        requestBody: fullMessageInstance,
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({ message: 'Validation error updating message by id' });
+    });
+
+    it('should return 400 for patchMessageById with invalid body params', async () => {
+      const response = await requestSender.patchMessageById({
+        pathParams: { id: NON_EXISTENT_INVALID_ID },
+        requestBody: invalidMessageInstance,
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({ message: 'Validation error updating message by id' });
+    });
+
+    it('should return 400 for deleteMessageById with invalid UUID', async () => {
+      const response = await requestSender.tryDeleteMessageById({
+        pathParams: { id: INVALID_UUID },
+      });
+
+      expect(response).toSatisfyApiSpec();
+      expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
+      expect(response.body).toEqual({ message: 'Validation error deleting message by id' });
+    });
   });
 });
 
@@ -199,7 +262,7 @@ describe('Message Integration Tests - Sad Path', () => {
     });
 
     const response = await requestSender.getMessages({
-      queryParams: { sessionId: '22342', severity: 'ERROR', component: 'MAP', messageType: 'APPEXITED' },
+      queryParams: { ...fullQueryParamsInstnace },
     });
 
     expect(response).toSatisfyApiSpec();
@@ -212,7 +275,7 @@ describe('Message Integration Tests - Sad Path', () => {
       throw new Error('Simulated DB error');
     });
 
-    const response = await requestSender.getMessageById({ pathParams: { id: 'any-id' } });
+    const response = await requestSender.getMessageById({ pathParams: { id: NON_EXISTENT_VALID_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -224,7 +287,7 @@ describe('Message Integration Tests - Sad Path', () => {
       throw new Error('Simulated DB error');
     });
 
-    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'any-id' } });
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: NON_EXISTENT_VALID_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -237,7 +300,7 @@ describe('Message Integration Tests - Sad Path', () => {
     });
 
     const response = await requestSender.patchMessageById({
-      pathParams: { id: 'any-id' },
+      pathParams: { id: NON_EXISTENT_VALID_ID },
       requestBody: { severity: 'WARNING' },
     });
 

@@ -4,9 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { DeepPartial, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import type { components } from '@openapi';
 import { SERVICES, QUERY_BUILDER_NAME } from '@common/constants';
-import { Message } from '../../DAL/entities/message';
-import { ConnectionManager } from '../../DAL/connectionManager';
-import { IQueryModel, LogContext } from './../../common/interfaces';
+import { Message } from '@src/DAL/entities/message';
+import { ConnectionManager } from '@src/DAL/connectionManager';
+import { IQueryModel, LogContext } from '@src/common/interfaces';
 import { mapMessageToILogObject } from './../../utils/helpers';
 
 export type ILogObject = components['schemas']['ILogObject'];

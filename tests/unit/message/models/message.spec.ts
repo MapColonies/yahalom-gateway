@@ -5,7 +5,7 @@ import { Message } from '@src/DAL/entities/message';
 import { ILogObject } from '@src/common/interfaces';
 import { MessageManager } from '@src/message/models/messageManager';
 import { QUERY_BUILDER_NAME } from '@src/common/constants';
-import { fullMessageInstance, fullQueryParamsInstnace, NON_EXISTENT_ID } from '../../../mocks/generalMocks';
+import { fullMessageInstance, fullQueryParamsInstnace, NON_EXISTENT_VALID_ID } from '../../../mocks/generalMocks';
 
 let messageManager: MessageManager;
 
@@ -65,9 +65,9 @@ describe('MessageManager', () => {
 
     it('should return undefined if id does not exist', async () => {
       mockRepository.findOne = jest.fn().mockResolvedValue(null);
-      const result = await messageManager.getMessageById(NON_EXISTENT_ID);
+      const result = await messageManager.getMessageById(NON_EXISTENT_VALID_ID);
 
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: NON_EXISTENT_ID } });
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: NON_EXISTENT_VALID_ID } });
       expect(result).toBeUndefined();
     });
   });
