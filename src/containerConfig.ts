@@ -2,6 +2,7 @@ import { getOtelMixin } from '@map-colonies/telemetry';
 import { trace } from '@opentelemetry/api';
 import { Registry } from 'prom-client';
 import { DependencyContainer } from 'tsyringe/dist/typings/types';
+import { instancePerContainerCachingFactory } from 'tsyringe';
 import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';
 import { InjectionObject, registerDependencies } from '@common/dependencyRegistration';
@@ -11,6 +12,7 @@ import { messageRouterFactory, MESSAGE_ROUTER_SYMBOL } from './message/routes/me
 import { ConnectionManager } from './DAL/connectionManager';
 import { getConfig } from './common/config';
 import { Message } from './DAL/entities/message';
+import { createConnectionOptions } from './DAL/createConnectionOptions';
 
 export interface RegisterOptions {
   override?: InjectionObject<unknown>[];
@@ -19,6 +21,7 @@ export interface RegisterOptions {
 
 export const registerExternalValues = async (options?: RegisterOptions): Promise<DependencyContainer> => {
   const configInstance = getConfig();
+  const dbConfig = configInstance.get('db');
 
   const loggerConfig = configInstance.get('telemetry.logger');
 
@@ -27,6 +30,8 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   const tracer = trace.getTracer(SERVICE_NAME);
   const metricsRegistry = new Registry();
   configInstance.initializeMetrics(metricsRegistry);
+
+  const prismaClientConfig = createConnectionOptions(dbConfig);
 
   const connectionManager = new ConnectionManager(logger);
   await connectionManager.init();
@@ -37,6 +42,14 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
     { token: MESSAGE_ROUTER_SYMBOL, provider: { useFactory: messageRouterFactory } },
+    {
+      token: SERVICES.PRISMA,
+      provider: {
+        useFactory: instancePerContainerCachingFactory(() => {
+          return createPrismaClient(prismaClientConfig, dbConfig.schema);
+        }),
+      },
+    },
     {
       token: SERVICES.HEALTH_CHECK,
       provider: {

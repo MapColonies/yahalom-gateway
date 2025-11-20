@@ -15,6 +15,7 @@ export const SERVICES = {
   MESSAGE_REPOSITORY: Symbol('MessageRepository'),
   HEALTH_CHECK: Symbol('HealthCheck'),
   CONNECTION_MANAGER: Symbol('ConnectionManager'),
+  PRISMA: Symbol('Prisma'),
 } satisfies Record<string, symbol>;
 /* eslint-enable @typescript-eslint/naming-convention */
 

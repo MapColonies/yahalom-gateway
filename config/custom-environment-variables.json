@@ -1,0 +1,19 @@
+{
+  "db": {
+    "host": "DB_HOST",
+    "port": "DB_PORT",
+    "username": "DB_USERNAME",
+    "password": "DB_PASSWORD",
+    "database": "DB_NAME",
+    "schema": "DB_SCHEMA",
+    "ssl": {
+      "enabled": {
+        "__name": "DB_ENABLE_SSL_AUTH",
+        "__format": "boolean"
+      },
+      "ca": "DB_CA_PATH",
+      "key": "DB_KEY_PATH",
+      "cert": "DB_CERT_PATH"
+    }
+  }
+}
