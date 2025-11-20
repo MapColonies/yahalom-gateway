@@ -42,7 +42,7 @@ export class MessageController {
     } catch (error) {
       if (error instanceof z.ZodError) {
         this.logger.error({ msg: 'Validation error creating message:', error, validatedMessage });
-        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error creatING message' });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error creating message' });
       }
 
       this.logger.error({ msg: 'Error creating message', logContext, error });

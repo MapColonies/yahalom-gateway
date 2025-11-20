@@ -16,7 +16,6 @@ import {
   fullMessageInstance,
   NON_EXISTENT_VALID_ID,
   invalidMessageInstance,
-  invalidQueryParamsInstance,
   INVALID_UUID,
 } from '@tests/mocks/generalMocks';
 
@@ -196,16 +195,6 @@ describe('Message Integration Tests - Bad Path', () => {
       expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
       expect(response.body).toEqual({ message: 'Validation error creating message' });
     });
-
-    // it('should return 400 for getMessages with invalid query params', async () => {
-    //   const response = await requestSender.getMessages({
-    //     queryParams: invalidQueryParamsInstance,
-    //   });
-
-    //   expect(response).toSatisfyApiSpec();
-    //   expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-    //   expect(response.body).toEqual({ message: 'Validation error getting messages' });
-    // });
 
     it('should return 400 for getMessageById with invalid UUID', async () => {
       const response = await requestSender.getMessageById({

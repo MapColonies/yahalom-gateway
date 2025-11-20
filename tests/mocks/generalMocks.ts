@@ -20,24 +20,17 @@ export const fullQueryParamsInstnace = {
   messageType: 'APPEXITED' as AnalyticsMessageTypes,
 };
 
-export const INVALID_UUID = 'NOT-A-UUID-STRING';
-
 export const invalidMessageInstance = {
   id: 1,
-  sessionId: 2234234,
+  sessionId: '2234234',
   severity: 'ERROR' as SeverityLevels,
   component: 'MAP' as LogComponent,
   messageType: 'APPEXITED' as AnalyticsMessageTypes,
   message: 'some message',
-  timeStamp: new Date().toISOString(),
+  timeStamp: '2023-13-27T14:30:00.123Z',
 };
 
-export const invalidQueryParamsInstance = {
-  sessionId: 2234234,
-  severity: 'ERROR' as SeverityLevels,
-  component: 'MAP' as LogComponent,
-  messageType: 'APPEXITED' as AnalyticsMessageTypes,
-};
+export const INVALID_UUID = 'NOT-A-UUID-STRING';
 
 export const NON_EXISTENT_INVALID_ID = '00000000-0000-0000-0000-000000000001';
 
