@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { Logger } from '@map-colonies/js-logger';
 import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
@@ -5,6 +6,7 @@ import { type Registry, Counter } from 'prom-client';
 import type { TypedRequestHandlers } from '@openapi';
 import { SERVICES } from '@common/constants';
 import { IQueryModel, LogContext } from '@common/interfaces';
+import { messageSchema, idSchema } from '@src/schemas';
 import { MessageManager, ILogObject } from '../models/messageManager';
 
 @injectable()
@@ -28,13 +30,21 @@ export class MessageController {
 
   public createMessage: TypedRequestHandlers['POST /message'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.createMessage.name };
+    let validatedMessage;
 
     try {
+      validatedMessage = messageSchema.parse(req.body);
+
       const newMessage = await this.manager.createMessage(req.body);
 
       this.createdMessageCounter.inc(1);
       return res.status(httpStatus.CREATED).json({ id: newMessage.id });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        this.logger.error({ msg: 'Validation error creating message:', error, validatedMessage });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error creating message' });
+      }
+
       this.logger.error({ msg: 'Error creating message', logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create message' });
     }
@@ -42,6 +52,7 @@ export class MessageController {
 
   public getMessages: TypedRequestHandlers['GET /message'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.getMessages.name };
+    let validatedMessage;
 
     try {
       const params: IQueryModel = {
@@ -51,10 +62,17 @@ export class MessageController {
         severity: req.query?.severity as string | undefined,
       };
 
+      validatedMessage = messageSchema.parse(params);
+
       const resultMessages: ILogObject[] = await this.manager.getMessages(params);
 
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        this.logger.error({ msg: 'Validation error getting messages:', error, validatedMessage });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error getting messages' });
+      }
+
       this.logger.error({ msg: 'Error retrieving messages', logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get messages' });
     }
@@ -62,9 +80,11 @@ export class MessageController {
 
   public getMessageById: TypedRequestHandlers['GET /message/{id}'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.getMessageById.name };
+    let id;
 
-    const id = req.params.id;
     try {
+      id = idSchema.parse(req.params.id);
+
       const message = await this.manager.getMessageById(id);
 
       if (!message) {
@@ -73,6 +93,11 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json(message);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        this.logger.error({ msg: 'Validation error getting message by id:', error });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error getting message by id' });
+      }
+
       this.logger.error({ msg: `Error retrieving message with id: ${id}`, id, logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to get message by id' });
     }
@@ -80,10 +105,14 @@ export class MessageController {
 
   public patchMessageById: TypedRequestHandlers['PATCH /message/{id}'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.patchMessageById.name };
+    let validatedMessage;
+    let id;
 
-    const id = req.params.id;
     try {
+      id = idSchema.parse(req.params.id);
+
       const messageChanges = req.body as ILogObject | undefined;
+      validatedMessage = messageSchema.parse(messageChanges);
 
       if (!messageChanges || Object.keys(messageChanges).length === 0) {
         this.logger.warn({ msg: `No params were provided to update the log with the id: ${id}`, id, logContext });
@@ -98,6 +127,11 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json(updatedMessage);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        this.logger.error({ msg: 'Validation error updating message by id:', error, validatedMessage });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error updating message by id' });
+      }
+
       this.logger.error({ msg: `Error retrieving message, id: ${id}`, id, logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to update message' });
     }
@@ -105,9 +139,11 @@ export class MessageController {
 
   public deleteMessageById: TypedRequestHandlers['DELETE /message/{id}'] = async (req, res) => {
     const logContext = { ...this.logContext, function: this.deleteMessageById.name };
+    let id;
 
-    const id = req.params.id;
     try {
+      id = idSchema.parse(req.params.id);
+
       const isDeleted = await this.manager.tryDeleteMessageById(id);
 
       if (!isDeleted) {
@@ -116,6 +152,11 @@ export class MessageController {
 
       return res.status(httpStatus.OK).json();
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        this.logger.error({ msg: 'Validation error deleting message:', error });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error deleting message by id' });
+      }
+
       this.logger.error({ msg: `Error retrieving message with id: ${id}`, id, logContext, error });
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete message' });
     }

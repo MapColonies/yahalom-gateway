@@ -58,7 +58,8 @@
     "reflect-metadata": "^0.2.2",
     "tsyringe": "^4.8.0",
     "typeorm": "^0.3.27",
-    "uuid": "^7.0.3"
+    "uuid": "^7.0.3",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
@@ -95,6 +96,6 @@
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.11",
-    "typescript": "^5.8.2"
+    "typescript": "^5.9.3"
   }
 }
