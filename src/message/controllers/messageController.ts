@@ -41,7 +41,8 @@ export class MessageController {
       return res.status(httpStatus.CREATED).json({ id: newMessage.id });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error creating message:', error, validatedMessage);
+        this.logger.error({ msg: 'Validation error creating message:', error, validatedMessage });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error creatING message' });
       }
 
       this.logger.error({ msg: 'Error creating message', logContext, error });
@@ -68,7 +69,8 @@ export class MessageController {
       return res.status(httpStatus.OK).json(resultMessages);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error getting messages:', error, validatedMessage);
+        this.logger.error({ msg: 'Validation error getting messages:', error, validatedMessage });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error getting messages' });
       }
 
       this.logger.error({ msg: 'Error retrieving messages', logContext, error });
@@ -92,7 +94,8 @@ export class MessageController {
       return res.status(httpStatus.OK).json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error getting message by id:', error);
+        this.logger.error({ msg: 'Validation error getting message by id:', error });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error getting message by id' });
       }
 
       this.logger.error({ msg: `Error retrieving message with id: ${id}`, id, logContext, error });
@@ -125,7 +128,8 @@ export class MessageController {
       return res.status(httpStatus.OK).json(updatedMessage);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error updating message:', error, validatedMessage);
+        this.logger.error({ msg: 'Validation error updating message by id:', error, validatedMessage });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error updating message by id' });
       }
 
       this.logger.error({ msg: `Error retrieving message, id: ${id}`, id, logContext, error });
@@ -149,7 +153,8 @@ export class MessageController {
       return res.status(httpStatus.OK).json();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error deleting message:', error);
+        this.logger.error({ msg: 'Validation error deleting message:', error });
+        return res.status(httpStatus.BAD_REQUEST).json({ message: 'Validation error deleting message by id' });
       }
 
       this.logger.error({ msg: `Error retrieving message with id: ${id}`, id, logContext, error });
