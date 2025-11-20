@@ -24,7 +24,7 @@ export const INVALID_UUID = 'NOT-A-UUID-STRING';
 
 export const invalidMessageInstance = {
   id: 1,
-  sessionId: '2234234',
+  sessionId: 2234234,
   severity: 'ERROR' as SeverityLevels,
   component: 'MAP' as LogComponent,
   messageType: 'APPEXITED' as AnalyticsMessageTypes,

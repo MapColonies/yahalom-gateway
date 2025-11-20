@@ -273,7 +273,7 @@ describe('Message Integration Tests - Sad Path', () => {
     });
 
     const response = await requestSender.getMessages({
-      queryParams: { sessionId: '22342', severity: 'ERROR', component: 'MAP', messageType: 'APPEXITED' },
+      queryParams: { ...fullQueryParamsInstnace },
     });
 
     expect(response).toSatisfyApiSpec();
@@ -286,7 +286,7 @@ describe('Message Integration Tests - Sad Path', () => {
       throw new Error('Simulated DB error');
     });
 
-    const response = await requestSender.getMessageById({ pathParams: { id: 'any-id' } });
+    const response = await requestSender.getMessageById({ pathParams: { id: NON_EXISTENT_VALID_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -298,7 +298,7 @@ describe('Message Integration Tests - Sad Path', () => {
       throw new Error('Simulated DB error');
     });
 
-    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: 'any-id' } });
+    const response = await requestSender.tryDeleteMessageById({ pathParams: { id: NON_EXISTENT_VALID_ID } });
 
     expect(response).toSatisfyApiSpec();
     expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -311,7 +311,7 @@ describe('Message Integration Tests - Sad Path', () => {
     });
 
     const response = await requestSender.patchMessageById({
-      pathParams: { id: 'any-id' },
+      pathParams: { id: NON_EXISTENT_VALID_ID },
       requestBody: { severity: 'WARNING' },
     });
 
