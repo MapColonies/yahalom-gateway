@@ -59,7 +59,7 @@
     "tsyringe": "^4.8.0",
     "typeorm": "^0.3.27",
     "uuid": "^7.0.3",
-    "zod": "^4.1.12"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
