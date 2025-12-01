@@ -1,12 +1,18 @@
 {
   "db": {
     "type": "postgres",
-    "host": "localhost",
+    "host": "127.0.0.1",
     "port": 5433,
     "username": "postgres",
     "password": "postgres",
     "database": "message_test",
     "synchronize": true,
-    "logging": false
+    "logging": false,
+    "ssl": {
+      "enabled": false,
+      "ca": "",
+      "key": "",
+      "cert": ""
+    }
   }
 }

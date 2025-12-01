@@ -32,10 +32,11 @@
   },
   "db": {
     "type": "postgres",
-    "host": "localhost",
+    "host": "10.0.4.4",
+    "name": "liran-test-to-delete",
     "port": 5432,
     "username": "postgres",
-    "password": "postgres",
-    "database": "message_test"
+    "password": "Libot4allnonprod",
+    "database": "liran_message_test_delete"
   }
 }

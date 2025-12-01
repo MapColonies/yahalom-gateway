@@ -22,16 +22,15 @@ export interface RegisterOptions {
 export const registerExternalValues = async (options?: RegisterOptions): Promise<DependencyContainer> => {
   const configInstance = getConfig();
   const dbConfig = configInstance.get('db');
+  type LoggerConfig = Record<string, unknown>;
 
-  const loggerConfig = configInstance.get('telemetry.logger');
+  const loggerConfig = configInstance.get('telemetry.logger') as unknown as LoggerConfig;
 
-  const logger = jsLogger({ ...loggerConfig, prettyPrint: loggerConfig.prettyPrint, mixin: getOtelMixin() });
+  const logger = jsLogger({ ...loggerConfig, prettyPrint: loggerConfig.prettyPrint === 'true', mixin: getOtelMixin() });
 
   const tracer = trace.getTracer(SERVICE_NAME);
   const metricsRegistry = new Registry();
   configInstance.initializeMetrics(metricsRegistry);
-
-  const prismaClientConfig = createConnectionOptions(dbConfig);
 
   const connectionManager = new ConnectionManager(logger);
   await connectionManager.init();
