@@ -42,14 +42,6 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.METRICS, provider: { useValue: metricsRegistry } },
     { token: MESSAGE_ROUTER_SYMBOL, provider: { useFactory: messageRouterFactory } },
     {
-      token: SERVICES.PRISMA,
-      provider: {
-        useFactory: instancePerContainerCachingFactory(() => {
-          return createPrismaClient(prismaClientConfig, dbConfig.schema);
-        }),
-      },
-    },
-    {
       token: SERVICES.HEALTH_CHECK,
       provider: {
         useFactory: (dependencyContainer: DependencyContainer): (() => Promise<void>) => {

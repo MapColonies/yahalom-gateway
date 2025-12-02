@@ -1,18 +1,11 @@
 {
   "db": {
     "type": "postgres",
-    "host": "127.0.0.1",
-    "port": 5433,
+    "host": "10.0.4.4",
+    "name": "liran-test-to-delete",
+    "port": 5432,
     "username": "postgres",
-    "password": "postgres",
-    "database": "message_test",
-    "synchronize": true,
-    "logging": false,
-    "ssl": {
-      "enabled": false,
-      "ca": "",
-      "key": "",
-      "cert": ""
-    }
+    "password": "Libot4allnonprod",
+    "database": "liran_message_test_delete"
   }
 }
