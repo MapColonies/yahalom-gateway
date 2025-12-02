@@ -2,7 +2,6 @@ import { getOtelMixin } from '@map-colonies/telemetry';
 import { trace } from '@opentelemetry/api';
 import { Registry } from 'prom-client';
 import { DependencyContainer } from 'tsyringe/dist/typings/types';
-import { instancePerContainerCachingFactory } from 'tsyringe';
 import { Repository } from 'typeorm';
 import jsLogger from '@map-colonies/js-logger';
 import { InjectionObject, registerDependencies } from '@common/dependencyRegistration';
@@ -12,7 +11,6 @@ import { messageRouterFactory, MESSAGE_ROUTER_SYMBOL } from './message/routes/me
 import { ConnectionManager } from './DAL/connectionManager';
 import { getConfig } from './common/config';
 import { Message } from './DAL/entities/message';
-import { createConnectionOptions } from './DAL/createConnectionOptions';
 
 export interface RegisterOptions {
   override?: InjectionObject<unknown>[];
@@ -21,7 +19,6 @@ export interface RegisterOptions {
 
 export const registerExternalValues = async (options?: RegisterOptions): Promise<DependencyContainer> => {
   const configInstance = getConfig();
-  const dbConfig = configInstance.get('db');
   type LoggerConfig = Record<string, unknown>;
 
   const loggerConfig = configInstance.get('telemetry.logger') as unknown as LoggerConfig;
