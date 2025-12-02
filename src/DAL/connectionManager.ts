@@ -32,7 +32,7 @@ export class ConnectionManager {
       database: this.connectionConfig.database,
     };
 
-    this.logger.info({
+    this.logger.debug({
       msg: 'Trying to connect with the following DB parameters',
       params: safeConfig,
       logContext,

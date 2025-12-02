@@ -12,7 +12,7 @@
     },
     "shared": {},
     "logger": {
-      "level": "info",
+      "level": "debug",
       "prettyPrint": false
     }
   },
@@ -33,10 +33,12 @@
   "db": {
     "type": "postgres",
     "host": "10.0.4.4",
-    "name": "liran-test-to-delete",
     "port": 5432,
     "username": "postgres",
     "password": "Libot4allnonprod",
-    "database": "liran_message_test_delete"
+    "database": "liran_message_test_delete",
+    "ssl": {
+      "rejectUnauthorized": false
+    }
   }
 }
