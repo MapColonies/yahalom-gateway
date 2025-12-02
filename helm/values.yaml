@@ -7,26 +7,6 @@ global:
   tracing: {}
   metrics: {}
 
-  postgres:
-    host:
-    port:
-    schema: ''
-    name: ''
-    user:
-      requirePassword: false
-      rejectUnauthorized: true
-      useExternal: false
-      secretName: ''
-      username: ''
-      password: ''
-    ssl:
-      enabled: false
-      useExternal: true
-      secretName: ''
-      caFileName: ''
-      certFileName: ''
-      keyFileName: ''
-
 mcLabelsAndAnnotations:
   component: backend
   partOf: yahalom
@@ -63,22 +43,15 @@ readinessProbe:
   failureThreshold: 6
   path: /liveness
 
-postgresql:
-  auth:
-    username: postgres
-    password: postgres
-    database: message_test
-  port: 5432
-
 postgres:
-  host: yahalom-gateway-postgresql
+  host: '10.0.4.4'
   port: '5432'
   user:
     username: postgres
-    password: postgres
-    database: message_test
+    password: Libot4allnonprod
+    database: liran_message_test_delete
     requirePassword: true
-    rejectUnauthorized: true
+    rejectUnauthorized: false
     useExternal: false
   ssl:
     enabled: false
@@ -110,7 +83,7 @@ caKey: 'ca.crt'
 
 image:
   repository: yahalom-gateway
-  tag: 1.0.0
+  tag: 1.0.2
   pullPolicy: IfNotPresent
 
 env:

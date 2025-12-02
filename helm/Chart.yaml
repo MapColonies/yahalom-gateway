@@ -2,5 +2,5 @@ apiVersion: v2
 name: yahalom-gateway
 description: A Helm chart for yahalom-gateway service
 type: application
-version: 1.0.0
-appVersion: 1.0.0
+version: 1.0.2
+appVersion: 1.0.2
