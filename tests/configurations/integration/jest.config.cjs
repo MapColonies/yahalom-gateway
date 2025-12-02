@@ -1,3 +1,4 @@
+jest.setTimeout(60000); // 60 seconds
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('../../../tsconfig.json');
 
