@@ -1,4 +1,3 @@
-jest.setTimeout(60000); // 60 seconds
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('../../../tsconfig.json');
 
@@ -7,7 +6,7 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['@swc/jest'],
   },
-  testTimeout: 30000,
+  testTimeout: 60000,
   coverageReporters: ['text', 'html'],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
   collectCoverage: true,
