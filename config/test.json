@@ -5,6 +5,9 @@
     "port": 5432,
     "username": "postgres",
     "password": "postgres",
-    "database": "message_test"
+    "database": "message_test",
+    "ssl": {
+      "rejectUnauthorized": false
+    }
   }
 }
