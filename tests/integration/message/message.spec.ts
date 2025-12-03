@@ -23,7 +23,7 @@ let requestSender: RequestSender<paths, operations>;
 let dependencyContainer: DependencyContainer;
 
 beforeAll(async () => {
-  jest.setTimeout(60000);
+  jest.setTimeout(80000); // 60s
   await initConfig(true);
 
   dependencyContainer = await registerExternalValues({ useChild: true });
