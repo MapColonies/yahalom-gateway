@@ -1,11 +1,11 @@
 {
   "db": {
     "type": "postgres",
-    "host": "127.0.0.1",
+    "host": "10.0.4.4",
     "port": 5432,
     "username": "postgres",
-    "password": "postgres",
-    "database": "message_test",
+    "password": "Libot4allnonprod",
+    "database": "liran_message_test_delete",
     "ssl": {
       "rejectUnauthorized": false
     }
