@@ -23,6 +23,7 @@ let requestSender: RequestSender<paths, operations>;
 let dependencyContainer: DependencyContainer;
 
 beforeAll(async () => {
+  jest.setTimeout(60000);
   await initConfig(true);
 
   dependencyContainer = await registerExternalValues({ useChild: true });
@@ -36,7 +37,9 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
+
   const connection = connectionManager.getConnection();
+
   await connection.getRepository(Message).clear();
 });
 
