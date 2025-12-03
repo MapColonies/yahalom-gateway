@@ -6,7 +6,7 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['@swc/jest'],
   },
-  testTimeout: 60000,
+  testTimeout: 30000,
   coverageReporters: ['text', 'html'],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
   collectCoverage: true,
