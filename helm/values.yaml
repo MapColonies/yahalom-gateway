@@ -7,7 +7,7 @@ global:
   tracing: {}
   metrics: {}
 
-mcLabelsAndAnnotations:
+mclabels:
   component: backend
   partOf: yahalom
   owner: common
