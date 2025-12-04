@@ -1,6 +1,7 @@
+/* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateTestsTable1764837825906 implements MigrationInterface {
+export class CreateTestsTable1764852161523 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`);
 

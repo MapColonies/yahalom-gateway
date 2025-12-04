@@ -9,7 +9,6 @@
     "ssl": {
       "rejectUnauthorized": false
     },
-    "synchronize": true,
-    "logging": false
+    "synchronize": true
   }
 }
