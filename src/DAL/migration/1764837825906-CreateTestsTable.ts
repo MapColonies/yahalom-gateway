@@ -1,7 +1,6 @@
-/* istanbul ignore file */
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateTestsTable1764761039997 implements MigrationInterface {
+export class CreateTestsTable1764837825906 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`);
 
@@ -22,7 +21,7 @@ export class CreateTestsTable1764761039997 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE TABLE IF NOT EXISTS "message_tests" (
+      CREATE TABLE IF NOT EXISTS "tests_table" (
         "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         "sessionId" text NOT NULL,
         "message" text NOT NULL,
@@ -36,7 +35,7 @@ export class CreateTestsTable1764761039997 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE IF EXISTS "message_tests";`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "tests_table";`);
 
     await queryRunner.query(`DROP TYPE IF EXISTS "public"."message_severity_enum";`);
     await queryRunner.query(`DROP TYPE IF EXISTS "public"."message_component_enum";`);

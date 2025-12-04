@@ -38,6 +38,7 @@ beforeEach(async () => {
   const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
 
   const connection = connectionManager.getConnection();
+  console.log(connection.getMetadata(Message).tableName);
 
   await connection.getRepository(Message).clear();
 });
