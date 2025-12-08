@@ -1,13 +1,8 @@
-{{/* ------------------------------------------------------------------
-  Expand the name of the chart
------------------------------------------------------------------- */}}
 {{- define "yahalom-gateway.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{/* ------------------------------------------------------------------
-  Create a default fully qualified app name
------------------------------------------------------------------- */}}
+
 {{- define "yahalom-gateway.fullname" -}}
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
@@ -21,16 +16,11 @@
 {{- end -}}
 {{- end -}}
 
-{{/* ------------------------------------------------------------------
-  Chart name and version for labels
------------------------------------------------------------------- */}}
 {{- define "yahalom-gateway.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{/* ------------------------------------------------------------------
-  Common labels
------------------------------------------------------------------- */}}
+
 {{- define "yahalom-gateway.labels" -}}
 helm.sh/chart: {{ include "yahalom-gateway.chart" . }}
 {{ include "yahalom-gateway.selectorLabels" . }}
@@ -38,26 +28,19 @@ helm.sh/chart: {{ include "yahalom-gateway.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "mclabels.labels" . }}
 {{- end -}}
 
-{{/* ------------------------------------------------------------------
-  Selector labels
------------------------------------------------------------------- */}}
 {{- define "yahalom-gateway.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "yahalom-gateway.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "mclabels.selectorLabels" . }}
 {{- end -}}
 
-{{/* ------------------------------------------------------------------
-  Returns the image tag
------------------------------------------------------------------- */}}
 {{- define "yahalom-gateway.tag" -}}
 {{- default (printf "v%s" .Chart.AppVersion) .Values.image.tag }}
 {{- end -}}
 
-{{/* ------------------------------------------------------------------
-  Cloud provider helpers
------------------------------------------------------------------- */}}
 {{- define "yahalom-gateway.cloudProviderFlavor" -}}
 {{- default "minikube" .Values.cloudProvider.flavor }}
 {{- end -}}
@@ -76,12 +59,13 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "yahalom-gateway.cloudProviderImagePullSecretName" -}}
-{{- default "" .Values.cloudProvider.imagePullSecretName }}
+{{- if .Values.global.cloudProvider.imagePullSecretName }}
+    {{- .Values.global.cloudProvider.imagePullSecretName -}}
+{{- else if .Values.cloudProvider.imagePullSecretName -}}
+    {{- .Values.cloudProvider.imagePullSecretName -}}
+{{- end -}}
 {{- end -}}
 
-{{/* ------------------------------------------------------------------
-  Tracing and metrics URLs
------------------------------------------------------------------- */}}
 {{- define "yahalom-gateway.tracingUrl" -}}
 {{- default "" .Values.env.tracing.url }}
 {{- end -}}

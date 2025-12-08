@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import bodyParser from 'body-parser';
-import compression, { CompressionFilter } from 'compression';
+import compression from 'compression';
 import { OpenapiViewerRouter } from '@map-colonies/openapi-express-viewer';
 import { getErrorHandlerMiddleware } from '@map-colonies/error-express-handler';
 import { middleware as OpenApiMiddleware } from 'express-openapi-validator';
@@ -31,29 +31,17 @@ export class ServerBuilder {
     this.registerPreRoutesMiddleware();
     this.buildRoutes();
     this.registerPostRoutesMiddleware();
+
     return this.serverInstance;
   }
 
-  // Helper: ensures unknown values are objects
-  private asObject<T extends object>(value: unknown, defaultValue: T): T {
-    return typeof value === 'object' && value !== null ? (value as T) : defaultValue;
-  }
-
   private buildDocsRoutes(): void {
-    const openapiConfig = this.asObject(this.config.get('openapiConfig'), {
-      filePath: '/openapi3.yaml',
-      basePath: '/openapi',
-      uiPath: '/docs',
-    });
-
     const openapiRouter = new OpenapiViewerRouter({
-      ...openapiConfig,
-      filePathOrSpec: openapiConfig.filePath,
-      uiPath: openapiConfig.uiPath,
+      ...this.config.get('openapiConfig'),
+      filePathOrSpec: this.config.get('openapiConfig.filePath'),
     });
-
     openapiRouter.setup();
-    this.serverInstance.use(openapiConfig.basePath, openapiRouter.getRouter());
+    this.serverInstance.use(this.config.get('openapiConfig.basePath'), openapiRouter.getRouter());
   }
 
   private buildRoutes(): void {
@@ -65,35 +53,16 @@ export class ServerBuilder {
     this.serverInstance.use(collectMetricsExpressMiddleware({ registry: this.metricsRegistry }));
     this.serverInstance.use(httpLogger({ logger: this.logger, ignorePaths: ['/metrics'] }));
 
-    const compressionConfig = this.asObject(this.config.get('server.response.compression'), {
-      enabled: false,
-      options: undefined as CompressionFilter | undefined,
-    });
-
-    if (compressionConfig.enabled) {
-      this.serverInstance.use(compression(compressionConfig.options));
+    if (this.config.get('server.response.compression.enabled')) {
+      this.serverInstance.use(compression(this.config.get('server.response.compression.options') as unknown as compression.CompressionFilter));
     }
 
-    const payloadOptions = this.asObject(this.config.get('server.request.payload'), {});
-    this.serverInstance.use(bodyParser.json(payloadOptions));
-
+    this.serverInstance.use(bodyParser.json(this.config.get('server.request.payload')));
     this.serverInstance.use(getTraceContexHeaderMiddleware());
 
-    const openapiConfig = this.asObject(this.config.get('openapiConfig'), {
-      filePath: '/openapi3.yaml',
-      basePath: '/openapi',
-      uiPath: '/docs',
-    });
-
-    const ignorePathRegex = new RegExp(`^${openapiConfig.basePath}/.*`, 'i');
-
-    this.serverInstance.use(
-      OpenApiMiddleware({
-        apiSpec: openapiConfig.filePath,
-        validateRequests: true,
-        ignorePaths: ignorePathRegex,
-      })
-    );
+    const ignorePathRegex = new RegExp(`^${this.config.get('openapiConfig.basePath')}/.*`, 'i');
+    const apiSpecPath = this.config.get('openapiConfig.filePath');
+    this.serverInstance.use(OpenApiMiddleware({ apiSpec: apiSpecPath, validateRequests: true, ignorePaths: ignorePathRegex }));
   }
 
   private registerPostRoutesMiddleware(): void {

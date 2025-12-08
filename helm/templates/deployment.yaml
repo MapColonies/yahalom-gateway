@@ -22,18 +22,19 @@ spec:
     matchLabels:
       app: {{ $chartName }}
       release: {{ $releaseName }}
-      run: {{ printf "%s-%s" $releaseName $chartName }}
+      run: {{ $releaseName }}-{{ $chartName }}
       {{- include "yahalom-gateway.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: {{ $chartName }}
         release: {{ $releaseName }}
-        run: {{ printf "%s-%s" $releaseName $chartName }}
+        run: {{ $releaseName }}-{{ $chartName }}
         {{- include "yahalom-gateway.labels" . | nindent 8 }}
       annotations:
+        {{ include "mclabels.annotations" . | nindent 8 }}
         {{- if .Values.resetOnConfigChange }}
-          checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
         {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | nindent 8 }}
@@ -52,10 +53,10 @@ spec:
           {{- if .Values.command }}
           command:
             {{- toYaml .Values.command | nindent 12 }}
-          {{- end }}
           {{- if .Values.args }}
           args:
             {{- toYaml .Values.args | nindent 12 }}
+          {{- end }}
           {{- end }}
           volumeMounts:
             {{- if .Values.caSecretName }}

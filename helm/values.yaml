@@ -10,7 +10,7 @@ global:
 mclabels:
   component: backend
   partOf: yahalom
-  owner: common
+  owner: 3d
   prometheus:
     enabled: true
 
@@ -44,12 +44,12 @@ readinessProbe:
   path: /liveness
 
 postgres:
-  host: '10.0.4.4'
+  host: 'localhost'
   port: '5432'
   user:
     username: postgres
-    password: Libot4allnonprod
-    database: liran_message_test_delete
+    password: postgres
+    database: default_database
     requirePassword: true
     rejectUnauthorized: false
     useExternal: false

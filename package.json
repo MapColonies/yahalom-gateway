@@ -44,7 +44,7 @@
     "@map-colonies/js-logger": "^2.0.0",
     "@map-colonies/openapi-express-viewer": "^4.0.0",
     "@map-colonies/read-pkg": "^1.0.0",
-    "@map-colonies/schemas": "https://ghatmpstorage.blob.core.windows.net/npm-packages/schemas-3b3cc66fd5a9ad3901c0850afaa5b0f327978ae2.tgz",
+    "@map-colonies/schemas": "https://ghatmpstorage.blob.core.windows.net/npm-packages/schemas-7f77492f7f28c2b00567069cd15fd59b3de7a7c7.tgz",
     "@map-colonies/telemetry": "^10.0.1",
     "@opentelemetry/api": "^1.9.0",
     "compression": "^1.8.0",
@@ -96,7 +96,6 @@
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.11",
-    "typescript": "^5.9.3",
-    "wait-on": "^9.0.3"
+    "typescript": "^5.9.3"
   }
 }

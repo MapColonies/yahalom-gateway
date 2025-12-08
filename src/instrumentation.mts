@@ -11,11 +11,6 @@ const config = getConfig();
 const tracingConfig = config.get('telemetry.tracing');
 const sharedConfig = config.get('telemetry.shared');
 
-const tracing = tracingFactory({
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  ...(typeof tracingConfig === 'object' && tracingConfig !== null ? tracingConfig : {}),
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  ...(typeof sharedConfig === 'object' && sharedConfig !== null ? sharedConfig : {}),
-});
+const tracing = tracingFactory({ ...tracingConfig, ...sharedConfig });
 
 tracing.start();
