@@ -16,7 +16,7 @@ metadata:
     release: {{ $releaseName }}
     {{- include "yahalom-gateway.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   selector:
     matchLabels:

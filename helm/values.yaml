@@ -1,8 +1,8 @@
 global:
   cloudProvider:
     flavor: openshift
-    dockerRegistryUrl: acrarolibotnonprod.azurecr.io
-    imagePullSecretName: mapcolonies-secret
+    dockerRegistryUrl: 
+    imagePullSecretName: 
 
   tracing: {}
   metrics: {}
@@ -73,8 +73,8 @@ args: []
 sidecars: []
 
 cloudProvider:
-  dockerRegistryUrl: acrarolibotnonprod.azurecr.io
-  imagePullSecretName: mapcolonies-secret
+  dockerRegistryUrl:
+  imagePullSecretName:
   flavor: openshift
 
 caSecretName: ''
