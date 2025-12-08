@@ -38,38 +38,64 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "yahalom-gateway.tag" -}}
-{{- default (printf "v%s" .Chart.AppVersion) .Values.image.tag }}
+{{- if .Values.global.image.tag }}
+    {{- .Values.global.image.tag -}}
+{{- else if .Values.image.tag }}
+    {{- .Values.image.tag -}}
+{{- else -}}
+    {{- printf "v%s" .Chart.AppVersion -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "yahalom-gateway.cloudProviderFlavor" -}}
-{{- default "minikube" .Values.cloudProvider.flavor }}
+{{- if .Values.global.cloudProvider.flavor }}
+    {{- .Values.global.cloudProvider.flavor -}}
+{{- else if .Values.cloudProvider.flavor }}
+    {{- .Values.cloudProvider.flavor -}}
+{{- else -}}
+    minikube
+{{- end -}}
 {{- end -}}
 
 {{- define "yahalom-gateway.cloudProviderDockerRegistryUrl" -}}
-{{- if .Values.cloudProvider.dockerRegistryUrl }}
-{{- $url := .Values.cloudProvider.dockerRegistryUrl -}}
-{{- if not (hasSuffix $url "/") -}}
-{{- printf "%s/" $url -}}
-{{- else -}}
-{{- $url -}}
+{{- $url := "" -}}
+{{- if .Values.global.cloudProvider.dockerRegistryUrl }}
+    {{- $url = .Values.global.cloudProvider.dockerRegistryUrl -}}
+{{- else if .Values.cloudProvider.dockerRegistryUrl }}
+    {{- $url = .Values.cloudProvider.dockerRegistryUrl -}}
 {{- end -}}
+
+{{- if $url }}
+    {{- if not (hasSuffix $url "/") -}}
+        {{- printf "%s/" $url -}}
+    {{- else -}}
+        {{- $url -}}
+    {{- end -}}
 {{- else -}}
-{{- "" -}}
+    ""
 {{- end -}}
 {{- end -}}
 
 {{- define "yahalom-gateway.cloudProviderImagePullSecretName" -}}
 {{- if .Values.global.cloudProvider.imagePullSecretName }}
     {{- .Values.global.cloudProvider.imagePullSecretName -}}
-{{- else if .Values.cloudProvider.imagePullSecretName -}}
+{{- else if .Values.cloudProvider.imagePullSecretName }}
     {{- .Values.cloudProvider.imagePullSecretName -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "yahalom-gateway.tracingUrl" -}}
-{{- default "" .Values.env.tracing.url }}
+{{- if .Values.global.env.tracing.url }}
+    {{- .Values.global.env.tracing.url -}}
+{{- else if .Values.env.tracing.url }}
+    {{- .Values.env.tracing.url -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "yahalom-gateway.metricsUrl" -}}
-{{- default "" .Values.env.metrics.url }}
+{{- if .Values.global.env.metrics.url }}
+    {{- .Values.global.env.metrics.url -}}
+{{- else if .Values.env.metrics.url }}
+    {{- .Values.env.metrics.url -}}
+{{- end -}}
 {{- end -}}

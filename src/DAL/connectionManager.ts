@@ -65,7 +65,6 @@ export class ConnectionManager {
   }
 
   public getConnection(): DataSource {
-    this.logger.info({ msg: 'Connection details:' });
     const logContext = { ...this.logContext, function: this.getConnection.name };
 
     if (this.dataSource?.isInitialized !== true) {

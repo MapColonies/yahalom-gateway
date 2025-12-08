@@ -21,9 +21,9 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
   const configInstance = getConfig();
   type LoggerConfig = Record<string, unknown>;
 
-  const loggerConfig = configInstance.get('telemetry.logger') as unknown as LoggerConfig;
+  const loggerConfig = configInstance.get('telemetry.logger');
 
-  const logger = jsLogger({ ...loggerConfig, prettyPrint: loggerConfig.prettyPrint === 'true', mixin: getOtelMixin() });
+  const logger = jsLogger({ ...loggerConfig, prettyPrint: loggerConfig.prettyPrint, mixin: getOtelMixin() });
 
   const tracer = trace.getTracer(SERVICE_NAME);
   const metricsRegistry = new Registry();

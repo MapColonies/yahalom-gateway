@@ -26,6 +26,6 @@ spec:
   selector:
     app: {{ $chartName }}
     release: {{ $releaseName }}
-    run: {{ printf "%s-%s" $releaseName $chartName }}
+    run: {{ $releaseName }}-{{ $chartName }}
     {{- include "yahalom-gateway.selectorLabels" . | nindent 4 }}
 {{- end }}
