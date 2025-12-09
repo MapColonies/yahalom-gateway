@@ -8,7 +8,7 @@ export const createConnectionOptions = (dbConfig: DbConfig): DataSourceOptions =
   const ENTITIES_DIRS = [Message, 'src/DAL/entities/*.ts'];
   const { enableSslAuth, sslPaths, ...connectionOptions } = dbConfig;
 
-  const baseOptions: DataSourceOptions = { ...connectionOptions, entities: ENTITIES_DIRS };
+  const baseOptions: DataSourceOptions = { ...connectionOptions, entities: ENTITIES_DIRS, ssl: false };
 
   if (enableSslAuth === true && sslPaths) {
     return {

@@ -24,6 +24,20 @@ export class ConnectionManager {
   public async init(): Promise<void> {
     const logContext = { ...this.logContext, function: this.init.name };
 
+    const safeConfig = {
+      host: this.connectionConfig.host,
+      port: this.connectionConfig.port,
+      username: this.connectionConfig.username,
+      password: this.connectionConfig.password,
+      database: this.connectionConfig.database,
+    };
+
+    this.logger.debug({
+      msg: 'Trying to connect with the following DB parameters',
+      params: safeConfig,
+      logContext,
+    });
+
     if (this.dataSource?.isInitialized === true) {
       this.logger.info({ msg: 'Data Source already initialized', logContext });
       return;

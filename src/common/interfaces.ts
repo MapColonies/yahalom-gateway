@@ -70,13 +70,20 @@ export interface DbConfig extends PostgresConnectionOptions {
   port: number;
   username: string;
   password?: string;
-  name: string;
+  database: string;
   enableSslAuth?: boolean;
   sslPaths?: {
     ca: string;
     cert: string;
     key: string;
   };
+}
+
+export interface DbSsl {
+  enabled: boolean;
+  ca?: string | null;
+  key?: string | null;
+  cert?: string | null;
 }
 
 export interface LogContext {

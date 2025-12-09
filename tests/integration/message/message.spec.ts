@@ -36,7 +36,9 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   const connectionManager = dependencyContainer.resolve<ConnectionManager>(SERVICES.CONNECTION_MANAGER);
+
   const connection = connectionManager.getConnection();
+
   await connection.getRepository(Message).clear();
 });
 

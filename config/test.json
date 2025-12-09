@@ -6,7 +6,9 @@
     "username": "postgres",
     "password": "postgres",
     "database": "message_test",
-    "synchronize": true,
-    "logging": false
+    "ssl": {
+      "rejectUnauthorized": false
+    },
+    "synchronize": true
   }
 }
